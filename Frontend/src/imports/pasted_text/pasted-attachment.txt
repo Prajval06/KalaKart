@@ -1,0 +1,119 @@
+Design a clean, minimal, and highly intuitive web dashboard for local artisans selling handmade products. The users are non-technical, so the interface must be extremely simple, clear, and action-oriented.
+
+The goal is to help artisans quickly manage products, orders, and earnings while also guiding them to sell better through smart suggestions.
+
+OVERALL LAYOUT:
+
+* Use a simple layout with a fixed left sidebar and a top navigation bar
+* Below the top bar, include a “Smart Assistant Bar” that displays dynamic, helpful messages
+* Main content area changes based on selected section
+* Design should be mobile-friendly and responsive
+
+SIDEBAR (ONLY 4 ITEMS):
+
+* Home
+* Products
+* Orders
+* Earnings
+
+TOP NAVBAR:
+
+* Search bar (for products and orders)
+* Notification bell icon
+* User profile icon
+* Primary CTA button: “+ Add Product”
+
+SMART ASSISTANT BAR (CORE DIFFERENTIATOR):
+
+* Positioned below the top navbar
+* Displays 1–2 short, actionable messages at a time
+* Examples:
+  “You have 2 new orders to ship today”
+  “Your product is low on stock”
+  “Add more images to improve sales”
+  “Your sales increased this week”
+* Messages should be simple, human-readable, and helpful
+
+HOME PAGE (MAIN DASHBOARD):
+
+* Show 4 KPI cards:
+  Total Earnings, Orders, Products, Alerts
+* Add two large primary action buttons:
+  “Add Product” and “View Orders”
+* Highlight “New Orders” prominently at the top with quick action buttons (Accept)
+* Show recent activity:
+  low stock alerts, recent sales updates
+* Include small visual tags like “Low Stock” or “Selling Fast”
+
+PRODUCTS PAGE:
+
+* Header with “+ Add Product” button and search
+* Display products in a simple table:
+  Image, Name, Price, Stock, Status, Actions
+* Actions: Edit, Delete
+* Include stock indicators (Low Stock / Out of Stock)
+
+ADD/EDIT PRODUCT EXPERIENCE:
+
+* Fields: name, price, stock, category, description, image upload
+* Show real-time smart suggestions:
+  “Image looks blurry”
+  “Add at least 2 images”
+  “Your price is higher than similar products”
+
+ORDERS PAGE:
+
+* Tabs: New, Processing, Completed
+* Highlight new orders at the top
+* Orders table:
+  Order ID, Product, Amount, Status, Actions
+* Actions: Accept, Mark as Shipped, Mark as Completed
+* Show helpful warnings like:
+  “Ship within 24 hours”
+
+EARNINGS PAGE:
+
+* Show summary:
+  Total Earned, Available Balance
+* Simple transaction list:
+  Date, Order ID, Amount
+* Show small insights like:
+  “You earned 20% more this week”
+  “Top earning product”
+
+NOTIFICATIONS:
+
+* Accessible via bell icon
+* Include alerts for new orders, low stock, and payments
+* Also surface important alerts on the Home page
+
+MICRO FEATURE (EMOTIONAL TOUCH):
+
+* Include a “Store Story” section:
+  short description of the artisan’s work
+* Allow editing this text easily
+
+DESIGN STYLE:
+
+* Clean, minimal, and modern
+* Warm and slightly handcrafted feel (not corporate)
+* Use soft colors, rounded cards, and subtle shadows
+* Large buttons and readable typography
+* Use icons alongside text labels
+
+UX PRINCIPLES:
+
+* The user should understand what to do within 5 seconds
+* Minimize clicks (max 2–3 steps for key actions)
+* Avoid technical terms and complex data
+* Prioritize clarity over feature richness
+
+DO NOT INCLUDE:
+
+* Complex analytics dashboards
+* Heavy charts or graphs
+* Advanced filters or multi-level navigation
+* Technical jargon like conversion rate
+
+GOAL:
+Create a simple but powerful dashboard that not only helps artisans manage their shop but also guides them with smart, human-like suggestions to improve their sales.
