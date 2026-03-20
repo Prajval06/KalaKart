@@ -1,0 +1,507 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&display=swap');
+
+:root {
+  /* Indian-inspired color palette - Updated to match design */
+  --saffron: #ff9933;
+  --white: #ffffff;
+  --green: #138808;
+  --navy: #000080;
+  
+  /* New design colors */
+  --sage-green: #7FA99B;
+  --peach-pink: #E8BDB1;
+  --cream-bg: #F5EDD3;
+  --rust-red: #A64B3A;
+  --dark-brown: #4A2C2A;
+  
+  /* Legacy colors */
+  --peacock-blue: #005f73;
+  --turmeric: #f4a261;
+  --marigold: #e76f51;
+  --sandalwood: #dda15e;
+  --henna: #bc6c25;
+  --gold: #d4af37;
+  --terracotta: #c1666b;
+  --indigo: #4a5899;
+  
+  /* Neutral tones */
+  --cream: #fefae0;
+  --beige: #faedcd;
+  --light-beige: #faf8f3;
+  --text-dark: #2c1810;
+  --text-gray: #5a4a42;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--light-beige);
+  color: var(--text-dark);
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-dark);
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-dark);
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+p {
+  line-height: 1.6;
+  color: var(--text-gray);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ===========================
+   ANNOUNCEMENT BAR STYLES
+   ========================== */
+
+.announcement-bar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  width: 100%;
+  background: linear-gradient(90deg, 
+    #5c0a0a 0%, 
+    #8b1a1a 25%, 
+    #a52020 50%, 
+    #8b1a1a 75%, 
+    #5c0a0a 100%
+  );
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Fixed state when scrolled */
+.announcement-bar-wrapper.scrolled {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Add subtle noise texture overlay */
+.announcement-bar-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Top Border - Thick Stripe Pattern */
+.border-stripe-top {
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    #d4a843 0px,
+    #d4a843 12px,
+    #f0c96b 12px,
+    #f0c96b 24px,
+    #5c0a0a 24px,
+    #5c0a0a 36px
+  );
+}
+
+/* Top Border - Gold Hairline */
+.border-hairline-top {
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #d4a843 10%,
+    #f0c96b 50%,
+    #d4a843 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 4px rgba(240, 201, 107, 0.5);
+}
+
+/* Top Border - Paisley/Dot Pattern */
+.border-paisley-top {
+  height: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='5' cy='5' r='2' fill='%23f0c96b'/%3E%3Cpath d='M 5 5 Q 20 0, 35 5' stroke='%23d4a843' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='35' cy='5' r='2' fill='%23f0c96b'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* Bottom Border - Paisley/Dot Pattern */
+.border-paisley-bottom {
+  height: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='5' cy='5' r='2' fill='%23f0c96b'/%3E%3Cpath d='M 5 5 Q 20 10, 35 5' stroke='%23d4a843' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='35' cy='5' r='2' fill='%23f0c96b'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* Bottom Border - Gold Hairline */
+.border-hairline-bottom {
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #d4a843 10%,
+    #f0c96b 50%,
+    #d4a843 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 4px rgba(240, 201, 107, 0.5);
+}
+
+/* Bottom Border - Thick Stripe Pattern */
+.border-stripe-bottom {
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    #d4a843 0px,
+    #d4a843 12px,
+    #f0c96b 12px,
+    #f0c96b 24px,
+    #5c0a0a 24px,
+    #5c0a0a 36px
+  );
+}
+
+/* Marquee Container */
+.marquee-container {
+  position: relative;
+  padding: 12px 0;
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* Left fade mask */
+.marquee-container::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  background: linear-gradient(90deg, #a52020, transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Right fade mask */
+.marquee-container::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  background: linear-gradient(270deg, #a52020, transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Marquee Content */
+.marquee-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  white-space: nowrap;
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+
+/* Pause animation on hover */
+.marquee-container:hover .marquee-content {
+  animation-play-state: paused;
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Marquee Items */
+.marquee-item {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #f5deb3;
+  display: inline-block;
+}
+
+/* Bold/Highlighted Keywords */
+.marquee-item strong {
+  color: #f0c96b;
+  font-weight: 600;
+}
+
+/* Divider */
+.marquee-content .divider {
+  color: #f0c96b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Hindi text styling */
+.marquee-item .hindi {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 12px;
+  color: #f0c96b;
+  letter-spacing: 1px;
+}
+
+/* English translation styling */
+.marquee-item .translation {
+  font-size: 10px;
+  color: #d4b896;
+  font-style: italic;
+  letter-spacing: 1px;
+  margin-left: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .marquee-item {
+    font-size: 10px;
+    letter-spacing: 1.2px;
+  }
+  
+  .marquee-content {
+    gap: 18px;
+  }
+  
+  .marquee-container::before,
+  .marquee-container::after {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .marquee-item {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  
+  .marquee-content {
+    gap: 12px;
+  }
+}
+
+/* ===========================
+   TOAST NOTIFICATION STYLES
+   ========================== */
+
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast-notification {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 320px;
+  max-width: 400px;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: white;
+  animation: toastSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  overflow: hidden;
+}
+
+.toast-notification.toast-closing {
+  animation: toastSlideOut 0.3s ease-in forwards;
+}
+
+/* Toast Icon */
+.toast-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  animation: toastIconPulse 0.6s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+/* Toast Content */
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-message {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Close Button */
+.toast-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.toast-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+}
+
+.toast-close:active {
+  transform: scale(0.95);
+}
+
+/* Progress Bar */
+.toast-progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.toast-progress-bar {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: width 0.1s linear;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Animations */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(120%) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(120%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes toastIconPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .toast-container {
+    top: 70px;
+    right: 12px;
+    left: 12px;
+  }
+  
+  .toast-notification {
+    min-width: auto;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    top: 65px;
+    right: 8px;
+    left: 8px;
+  }
+  
+  .toast-notification {
+    padding: 12px;
+    gap: 10px;
+    min-width: auto;
+  }
+  
+  .toast-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .toast-message {
+    font-size: 13px;
+  }
+}
