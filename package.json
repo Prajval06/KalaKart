@@ -1,0 +1,13 @@
+"scripts": {
+  "dev":        "nodemon src/server.js",
+  "start":      "node src/server.js",
+  "test":       "jest --runInBand --forceExit",
+  "test:watch": "jest --watchAll --runInBand",
+  "test:cover": "jest --coverage --runInBand --forceExit"
+},
+"jest": {
+  "testEnvironment": "node",
+  "setupFilesAfterFramework": ["./tests/setup.js"],
+  "testMatch": ["**/tests/**/*.test.js"],
+  "testTimeout": 30000
+}
