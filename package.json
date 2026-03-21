@@ -1,13 +1,43 @@
-"scripts": {
-  "dev":        "nodemon src/server.js",
-  "start":      "node src/server.js",
-  "test":       "jest --runInBand --forceExit",
-  "test:watch": "jest --watchAll --runInBand",
-  "test:cover": "jest --coverage --runInBand --forceExit"
-},
-"jest": {
-  "testEnvironment": "node",
-  "setupFilesAfterFramework": ["./tests/setup.js"],
-  "testMatch": ["**/tests/**/*.test.js"],
-  "testTimeout": 30000
+{
+  "name": "kalakart",
+  "version": "1.0.0",
+  "description": "KalaKart e-commerce platform",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "dev": "cd backend && nodemon src/server.js",
+    "start": "cd backend && node src/server.js",
+    "test": "cd backend && jest --runInBand --forceExit",
+    "test:watch": "cd backend && jest --watchAll --runInBand",
+    "test:cover": "cd backend && jest --coverage --runInBand --forceExit"
+  },
+  "keywords": [
+    "ecommerce",
+    "artisan",
+    "kalakart"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.0.3",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "stripe": "^11.0.0",
+    "express-rate-limit": "^6.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["./backend/tests/setup.js"],
+    "testMatch": ["**/tests/**/*.test.js"],
+    "testTimeout": 30000
+  }
 }

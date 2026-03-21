@@ -1,4 +1,7 @@
-<<<<<<<<< Temporary merge branch 1
+<<<<<<< HEAD
+\.venv
+=======
+<<<<<<< HEAD
 # dependencies
 node_modules
 Frontend/node_modules
@@ -24,6 +27,15 @@ Frontend/dist
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-=========
+
+\venv1
+
+>>>>>>> main
+<<<<<<< HEAD
+=======
 \.venv
->>>>>>>>> Temporary merge branch 2
+>>>>>>> origin/backend
+\node_modules
+=======
+.venv
+>>>>>>> abhay
