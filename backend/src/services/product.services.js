@@ -1,5 +1,5 @@
-const Product  = require('../models/Product.model');
-const Category = require('../models/Category.model');
+const Product  = require('../models/product.model');
+const Category = require('../models/category.model');
 const AppError = require('../utils/AppError');
 
 const getProducts = async ({ page = 1, per_page = 20, category, search, min_price, max_price, sort = 'newest' }) => {

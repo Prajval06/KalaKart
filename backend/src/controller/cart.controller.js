@@ -1,4 +1,4 @@
-const cartService = require('../services/cart.service');
+const cartService = require('../services/Cart.service');
 const asyncHandler = require('../utils/asyncHandler');
 const { success } = require('../utils/response');
 

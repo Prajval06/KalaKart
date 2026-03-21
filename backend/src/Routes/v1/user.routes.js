@@ -1,5 +1,5 @@
 const router     = require('express').Router();
-const controller = require('../../controllers/user.controller');
+const controller = require('../../controller/user.controller');
 const protect    = require('../../middlewares/auth.middleware');
 
 // All user routes require authentication

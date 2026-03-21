@@ -1,5 +1,5 @@
 const router     = require('express').Router();
-const controller = require('../../controllers/payment.controller');
+const controller = require('../../controller/payment.controller');
 const protect    = require('../../middlewares/auth.middleware');
 
 // Webhook: NO auth — but raw body + Stripe signature verification
