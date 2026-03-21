@@ -1,6 +1,6 @@
-const Order   = require('../models/Order.model');
-const Cart    = require('../models/Cart.model');
-const Product = require('../models/Product.model');
+const Order   = require('../models/order.model');
+const Cart    = require('../models/cart.model');
+const Product = require('../models/product.model');
 const AppError = require('../utils/AppError');
 
 // Valid status transitions — what can follow what

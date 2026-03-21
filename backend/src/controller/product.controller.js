@@ -1,4 +1,4 @@
-const productService = require('../services/product.service');
+const productService = require('../services/product.services');
 const asyncHandler   = require('../utils/asyncHandler');
 const { success }    = require('../utils/response');
 
@@ -10,9 +10,17 @@ const getProducts = asyncHandler(async (req, res) => {
   return success(res, { products: result.products }, 200, result.meta);
 });
 
+const { getRecommendations } = require('../utils/mlClient');
+
 const getProductBySlug = asyncHandler(async (req, res) => {
-  const product = await productService.getProductBySlug(req.params.slug);
-  return success(res, { product });
+  const product     = await productService.getProductBySlug(req.params.slug);
+  const recommended = await getRecommendations(product.id);
+
+  return success(res, {
+    product,
+    recommended_product_ids: recommended,
+  });
+});
 });
 
 const getCategories = asyncHandler(async (req, res) => {
