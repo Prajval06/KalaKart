@@ -1,0 +1,29 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files first — layer caching means npm install
+# only re-runs when package.json changes, not on every code change
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["node", "src/server.js"]
+```
+
+---
+
+## `.env.example`
+```
+PORT=8000
+MONGODB_URL=mongodb://localhost:27017/ecommerce
+JWT_SECRET=replace-with-a-long-random-string
+JWT_EXPIRE_MINUTES=30
+REFRESH_EXPIRE_DAYS=7
+STRIPE_SECRET_KEY=sk_test_replace_me
+STRIPE_WEBHOOK_SECRET=whsec_replace_me
+FRONTEND_URL=http://localhost:3000
+NODE_ENV=development
