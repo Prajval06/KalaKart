@@ -5,7 +5,7 @@ const config   = require('../config/config');
 const orderService = require('./order.service');
 
 
-const stripe = new Stripe(config.stripeSecretKey);
+const stripe = new Stripe(config.stripeSecretKey) // ✅ correct
 
 const createPaymentIntent = async (userId) => {
   const cart = await Cart.findOne({ user_id: userId });

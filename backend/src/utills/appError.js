@@ -3,6 +3,7 @@ class AppError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.field = field;
+    this.isOperational = true;
   }
 
   static create(code, field = null) {
