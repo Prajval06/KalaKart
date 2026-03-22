@@ -41,7 +41,7 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <h3 style={{ color: 'var(--dark-brown)' }}>Verified Artisan</h3>
-            <p className="text-sm" style={{ color: 'var(--text-gray)' }}>KarigarKart Authenticity Programme</p>
+            <p className="text-sm" style={{ color: 'var(--text-gray)' }}>KalaKart Authenticity Programme</p>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
           className="mt-6 p-3 rounded-xl text-center text-sm"
           style={{ backgroundColor: 'rgba(74,140,74,0.08)', color: '#4A8C4A' }}
         >
-          This artisan's products carry the KarigarKart Seal of Authenticity
+          This artisan's products carry the KalaKart Seal of Authenticity
         </div>
       </div>
     </div>
@@ -175,8 +175,7 @@ export default function ProductDetail() {
                   <img
                     src={artisan.image}
                     alt={`${artisan.name} — artisan at work`}
-                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 ring-2"
-                    style={{ ringColor: 'var(--saffron)' }}
+                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 ring-2 ring-[var(--saffron)]"
                   />
                   <div>
                     <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Proof of Craft — Artisan at Work</p>

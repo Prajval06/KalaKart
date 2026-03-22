@@ -17,7 +17,7 @@ export function Footer() {
                   letterSpacing: '0.05em'
                 }}
               >
-                KARIGARKART
+                KALAKART
               </span>
             </div>
             <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
@@ -77,7 +77,7 @@ export function Footer() {
               <li className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" style={{ color: 'var(--rust-red)' }} />
                 <span className="text-sm" style={{ color: 'var(--text-gray)' }}>
-                  hello@karigarkart.in
+                  hello@kalakart.in
                 </span>
               </li>
               <li className="flex items-center space-x-2">
@@ -112,7 +112,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t mt-8 pt-8" style={{ borderTopColor: 'var(--sage-green)' }}>
           <p className="text-center text-sm" style={{ color: 'var(--text-gray)' }}>
-            © 2026 KARIGARKART. Crafted with love for Indian heritage. All rights reserved.
+            © 2026 KALAKART. Crafted with love for Indian heritage. All rights reserved.
           </p>
         </div>
       </div>

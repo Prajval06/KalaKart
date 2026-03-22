@@ -11,7 +11,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="mb-6">About ArtisanBazaar</h1>
+            <h1 className="mb-6">About KalaKart</h1>
             <p className="text-xl max-w-3xl mx-auto">
               Connecting India's talented artisans with the world, one handcrafted masterpiece at a time
             </p>
@@ -25,7 +25,7 @@ export default function About() {
             <div>
               <h2 className="mb-4">Our Story</h2>
               <p className="mb-4">
-                ArtisanBazaar was born from a simple yet powerful vision: to preserve India's rich heritage of traditional crafts while 
+                KalaKart was born from a simple yet powerful vision: to preserve India's rich heritage of traditional crafts while 
                 empowering the artisans who keep these age-old traditions alive.
               </p>
               <p className="mb-4">
@@ -33,7 +33,7 @@ export default function About() {
                 Our platform bridges this gap, connecting master craftspeople directly with customers who appreciate authentic, handcrafted products.
               </p>
               <p>
-                Every purchase on ArtisanBazaar directly supports artisan families and helps preserve traditional Indian crafts for future generations.
+                Every purchase on KalaKart directly supports artisan families and helps preserve traditional Indian crafts for future generations.
               </p>
             </div>
             <div className="aspect-video rounded-xl overflow-hidden">

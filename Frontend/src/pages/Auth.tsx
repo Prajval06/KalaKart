@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Eye, EyeOff, Flame, Key, Check, Loader2, ShoppingBag } from 'lucide-react';
-import logoImage from 'figma:asset/6894975ff7bda70b68315fd77903bff02141295f.png';
+import logoImage from '../assets/6894975ff7bda70b68315fd77903bff02141295f.png';
 import { useAppContext } from '../context/AppContext';
 
 const mandalaBg = "https://unsplash.com/photos/intricate-circular-floral-pattern-on-textured-background-NVd9dvwXWc4";
@@ -112,12 +112,12 @@ export default function Auth() {
 
         {/* Logo */}
         <div className="mb-6 text-center">
-          <img src={logoImage} alt="Karigarkart Logo" className="h-20 mx-auto mb-3 drop-shadow-md" />
+          <img src={logoImage} alt="Kalakart Logo" className="h-20 mx-auto mb-3 drop-shadow-md" />
           <h1
             className="font-bold text-3xl md:text-4xl text-[#8B2500]"
             style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.05em', textShadow: '2px 2px 4px rgba(255,255,255,0.8)' }}
           >
-            KARIGARKART
+            KALAKART
           </h1>
           <p className="text-[#4A2C2A] font-serif italic mt-1 font-semibold text-lg drop-shadow-sm">
             Connecting Artisans to the World
@@ -148,7 +148,7 @@ export default function Auth() {
                   {formMode === 'login' ? (
                     <>Welcome Back <span className="block text-sm font-sans font-normal text-[#8B4513] mt-2">Sign in to access your account</span></>
                   ) : (
-                    <>Join KarigarKart <span className="block text-sm font-sans font-normal text-[#8B4513] mt-2">Create your account today</span></>
+                    <>Join KalaKart <span className="block text-sm font-sans font-normal text-[#8B4513] mt-2">Create your account today</span></>
                   )}
                 </h2>
               </div>
@@ -355,7 +355,7 @@ export default function Auth() {
               {/* Toggle login / signup */}
               <div className="mt-8 text-center border-t border-[#DAA520]/30 pt-4">
                 <p className="text-[#5D4037] text-sm font-serif">
-                  {formMode === 'login' ? 'New to KarigarKart? ' : 'Already have an account? '}
+                  {formMode === 'login' ? 'New to KalaKart? ' : 'Already have an account? '}
                   <button
                     onClick={() => { setFormMode(formMode === 'login' ? 'signup' : 'login'); setError(''); }}
                     className="text-[#8B2500] font-bold hover:underline"
