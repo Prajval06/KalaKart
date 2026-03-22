@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      MONGODB_URL: ${MONGODB_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE_MINUTES: 30
+      REFRESH_EXPIRE_DAYS: 7
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      FRONTEND_URL: http://localhost:3000
+      ML_SERVICE_URL: http://ml:8001
+      NODE_ENV: production
+    depends_on:
+      - ml
+    restart: unless-stopped
+
+  ml:
+    build:
+      context: ./AI
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      MONGODB_URL: ${MONGODB_URL}
+      ML_SERVICE_PORT: 8001
+      MODEL_PATH: /app/models
+      NODE_BACKEND_URL: http://backend:8000
+      ENVIRONMENT: production
+    volumes:
+      - ml_models:/app/models
+    restart: unless-stopped
+
+volumes:
+  ml_models:
