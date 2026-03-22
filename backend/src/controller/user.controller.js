@@ -3,7 +3,6 @@ const AppError     = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const { success }  = require('../utils/response');
 
-
 const getMe = asyncHandler(async (req, res) => {
   // req.user is already attached by auth middleware
   return success(res, { user: req.user });

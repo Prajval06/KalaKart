@@ -4,8 +4,12 @@ const AppError = require('../utils/AppError');
 const config   = require('../config/config');
 const orderService = require('./order.service');
 
+<<<<<<< HEAD
 
 const stripe = new Stripe(config.stripeSecretKey) // ✅ correct
+=======
+const stripe = new Stripe(config.stripeSecretKey);
+>>>>>>> 18162e28587c6135138c9c72550ea8a1837278f8
 
 const createPaymentIntent = async (userId) => {
   const cart = await Cart.findOne({ user_id: userId });

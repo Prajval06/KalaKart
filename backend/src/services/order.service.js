@@ -1,6 +1,6 @@
-const Order    = require('../models/order.model');
-const Cart     = require('../models/cart.model');
-const Product  = require('../models/product.model');
+const Order   = require('../models/order.model');
+const Cart    = require('../models/cart.model');
+const Product = require('../models/product.model');
 const AppError = require('../utils/AppError');
 
 // Valid status transitions — what can follow what
@@ -20,10 +20,14 @@ const createOrder = async (userId, { shipping_address, payment_intent_id, notes 
   for (const item of cart.items) {
     const product = await Product.findById(item.product_id);
     if (!product || !product.is_active) {
-      throw AppError.create('PRODUCT_NOT_FOUND');
+      throw new (require('../utils/AppError'))(
+        400, 'PRODUCT_NOT_FOUND', `Product "${item.name}" is no longer available`
+      );
     }
     if (product.inventory_count < item.quantity) {
-      throw AppError.create('INSUFFICIENT_INVENTORY');
+      throw new (require('../utils/AppError'))(
+        400, 'INSUFFICIENT_INVENTORY', `Insufficient stock for "${item.name}"`
+      );
     }
   }
 
@@ -31,7 +35,6 @@ const createOrder = async (userId, { shipping_address, payment_intent_id, notes 
   const total_amount = cart.items.reduce(
     (sum, item) => sum + item.price * item.quantity, 0
   );
-
 
   const order = await Order.create({
     user_id:                  userId,

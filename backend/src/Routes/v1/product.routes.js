@@ -1,9 +1,8 @@
-const router = require('express').Router();
-const { getProducts, getProductBySlug, getCategories } = require('../../controller/product.controller');
+const router     = require('express').Router();
+const controller = require('../../controller/product.controller');
 
-// Public routes — no auth needed
-router.get('/',          getProducts);
-router.get('/categories', getCategories);
-router.get('/:slug',     getProductBySlug);
+// All public — no auth required
+router.get('/',           controller.getProducts);
+router.get('/:slug',      controller.getProductBySlug);
 
-module.exports = router;
+module.exports = router;

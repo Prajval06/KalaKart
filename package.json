@@ -1,35 +1,51 @@
 {
+  "name": "kalakart",
+  "version": "1.0.0",
+  "description": "KalaKart e-commerce platform",
+  "main": "backend/src/server.js",
   "scripts": {
     "dev": "cd backend && nodemon src/server.js",
     "start": "cd backend && node src/server.js",
-    "test": "jest --runInBand --forceExit",
-    "test:watch": "jest --watchAll --runInBand",
-    "test:cover": "jest --coverage --runInBand --forceExit"
+    "test": "cd backend && jest --runInBand --forceExit",
+    "test:watch": "cd backend && jest --watchAll --runInBand",
+    "test:cover": "cd backend && jest --coverage --runInBand --forceExit"
+  },
+  "keywords": [
+    "ecommerce",
+    "artisan",
+    "kalakart"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^7.0.0",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongodb": "^7.1.0",
+    "mongoose": "^7.0.0",
+    "morgan": "^1.10.0",
+    "stripe": "^11.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "mongodb-memory-server": "^11.0.1",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
   },
   "jest": {
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
-      "./tests/setup.js"
+      "./backend/tests/setup.js"
     ],
     "testMatch": [
       "**/tests/**/*.test.js"
     ],
     "testTimeout": 30000
-  },
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.3.1",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.3.1",
-    "morgan": "^1.10.1",
-    "razorpay": "^2.9.6",
-    "stripe": "^20.4.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
   }
 }

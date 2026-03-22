@@ -1,7 +1,7 @@
-const jwt        = require('jsonwebtoken');
-const User       = require('../models/user.model');
-const AppError  = require('../utils/AppError');
-const config     = require('../config/config');
+const jwt      = require('jsonwebtoken');
+const User     = require('../models/user.model');
+const AppError = require('../utils/AppError');
+const config   = require('../config/config');
 const asyncHandler = require('../utils/asyncHandler');
 
 const protect = asyncHandler(async (req, res, next) => {
@@ -14,12 +14,9 @@ const protect = asyncHandler(async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   // 2. Verify JWT
-  let decoded;
-  try {
-    decoded = jwt.verify(token, config.jwtSecret);
-  } catch {
-    throw AppError.create('UNAUTHORIZED');
-  }
+  const decoded = jwt.verify(token, config.jwtSecret);
+  // If invalid: jwt.verify throws JsonWebTokenError or TokenExpiredError
+  // Those are caught by error.middleware.js automatically
 
   // 3. Check user still exists and is active
   const user = await User.findById(decoded.sub);
@@ -32,11 +29,4 @@ const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-const isAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== 'admin') {
-    throw AppError.create('FORBIDDEN');
-  }
-  next();
-};
-
-module.exports = { protect, isAdmin };
+module.exports = protect;

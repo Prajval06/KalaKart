@@ -1,7 +1,6 @@
-const cartService  = require('../services/Cart.service');
+const cartService = require('../services/Cart.service');
 const asyncHandler = require('../utils/asyncHandler');
-const { success }  = require('../utils/response');
-
+const { success } = require('../utils/response');
 
 const getCart = asyncHandler(async (req, res) => {
   const cart = await cartService.getCart(req.user._id);

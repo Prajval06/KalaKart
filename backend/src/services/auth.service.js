@@ -4,7 +4,6 @@ const Session   = require('../models/session.model');
 const AppError  = require('../utils/AppError');
 const config    = require('../config/config');
 
-
 const generateAccessToken = (userId, role) => {
   return jwt.sign(
     { sub: userId, role },
@@ -45,11 +44,12 @@ const register = async ({ email, password, full_name }) => {
 };
 
 const login = async ({ email, password }) => {
-  // Always use INVALID_CREDENTIALS — never reveal if email exists or not
   const user = await User.findOne({ email: email.toLowerCase() }).select('+hashed_password');
+  console.log('LOGIN DEBUG — user found:', !!user);
   if (!user) throw AppError.create('INVALID_CREDENTIALS');
 
   const isMatch = await user.comparePassword(password);
+  console.log('LOGIN DEBUG — password match:', isMatch);
   if (!isMatch) throw AppError.create('INVALID_CREDENTIALS');
 
   if (!user.is_active) throw AppError.create('ACCOUNT_DISABLED');
@@ -59,10 +59,17 @@ const login = async ({ email, password }) => {
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + config.refreshExpireDays);
-  await Session.create({ user_id: user._id, refresh_token, expires_at: expiresAt });
+
+  try {
+    await Session.create({ user_id: user._id, refresh_token, expires_at: expiresAt });
+    console.log('LOGIN DEBUG — session created');
+  } catch (err) {
+    console.log('LOGIN DEBUG — session error:', err.message);
+  }
 
   return { user, access_token, refresh_token };
 };
+
 
 const refresh = async ({ refresh_token }) => {
   // Verify JWT

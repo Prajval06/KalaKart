@@ -1,12 +1,14 @@
-const router = require('express').Router();
-const { getCart, addItem, updateItem, removeItem } = require('../../controller/cart.controller');
-const { protect } = require('../../middlewares/auth.middleware');
+const router     = require('express').Router();
+const controller = require('../../controller/cart.controller');
+const protect    = require('../../middlewares/auth.middleware');
+const validate   = require('../../middlewares/validate.middleware');
+const schemas    = require('../../validators/cart.validators');
 
 router.use(protect);
 
-router.get('/',                  getCart);
-router.post('/',                 addItem);
-router.put('/items/:itemId',     updateItem);
-router.delete('/items/:itemId',  removeItem);
+router.get('/',                 controller.getCart);
+router.post('/items',           validate(schemas.addItem),    controller.addItem);
+router.patch('/items/:itemId',  validate(schemas.updateItem), controller.updateItem);
+router.delete('/items/:itemId',                               controller.removeItem);
 
-module.exports = router;
+module.exports = router;

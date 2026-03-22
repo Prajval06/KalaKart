@@ -2,7 +2,6 @@ const Product  = require('../models/product.model');
 const Category = require('../models/category.model');
 const AppError = require('../utils/AppError');
 
-
 const getProducts = async ({ page = 1, per_page = 20, category, search, min_price, max_price, sort = 'newest' }) => {
   const filter = { is_active: true };
 
@@ -77,4 +76,54 @@ const getCategories = async () => {
   return Category.find({ is_active: true }).sort({ display_order: 1 });
 };
 
-module.exports = { getProducts, getProductBySlug, getCategories };
+
+const createProduct = async (data) => {
+  // Auto-generate slug from name if not provided
+  if (!data.slug) {
+    data.slug = data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
+  // Check slug is unique
+  const existing = await Product.findOne({ slug: data.slug });
+  if (existing) {
+    data.slug = `${data.slug}-${Date.now()}`;
+  }
+
+  const product = await Product.create(data);
+  return product;
+};
+
+const updateProduct = async (productId, updates) => {
+  const product = await Product.findByIdAndUpdate(
+    productId,
+    updates,
+    { new: true }
+  );
+  if (!product) throw AppError.create('PRODUCT_NOT_FOUND');
+  return product;
+};
+
+const deleteProduct = async (productId) => {
+  // Soft delete only — never hard delete
+  // Orders reference products and need name/price snapshots
+  const product = await Product.findByIdAndUpdate(
+    productId,
+    { is_active: false },
+    { new: true }
+  );
+  if (!product) throw AppError.create('PRODUCT_NOT_FOUND');
+  return product;
+};
+
+
+module.exports = {
+  getProducts,
+  getProductBySlug,
+  getCategories,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+};
