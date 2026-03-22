@@ -1,10 +1,26 @@
 class AppError extends Error {
   constructor(statusCode, code, message, field = null) {
     super(message);
+<<<<<<< HEAD
+    this.statusCode = statusCode;
+    this.field = field;
+    this.isOperational = true;
+  }
+
+  static create(code, field = null) {
+    const errors = {
+      EMAIL_ALREADY_EXISTS: new AppError('Email already exists', field, 400),
+      INVALID_CREDENTIALS: new AppError('Invalid email or password', field, 401),
+      ACCOUNT_DISABLED: new AppError('Account is disabled', field, 403),
+      INVALID_REFRESH_TOKEN: new AppError('Invalid or expired refresh token', field, 401),
+    };
+    return errors[code] || new AppError('Something went wrong', field, 500);
+=======
     this.statusCode  = statusCode;
     this.code        = code;         // machine-readable: "EMAIL_ALREADY_EXISTS"
     this.field       = field;        // optional: "email" (for validation errors)
     this.isOperational = true;       // our own errors vs unexpected crashes
+>>>>>>> 18162e28587c6135138c9c72550ea8a1837278f8
   }
 }
 
