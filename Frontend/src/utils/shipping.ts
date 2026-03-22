@@ -1,5 +1,5 @@
 /**
- * Shipping calculation utility — KarigarKart
+ * Shipping calculation utility — KalaKart
  *
  * Rules from pricing-logic.md:
  *  • Shipping is category-based (NOT fixed)

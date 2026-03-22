@@ -722,7 +722,7 @@ export default function SellerDashboard() {
       >
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-white text-lg" style={{ fontFamily: "'Cinzel', serif" }}>KARIGARKART</h2>
+            <h2 className="text-white text-lg" style={{ fontFamily: "'Cinzel', serif" }}>KALAKART</h2>
             <p className="text-xs" style={{ color: 'var(--peach-pink)', fontFamily: "'Tiro Devanagari Hindi', serif" }}>कारीगर कार्ट</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1 rounded text-white/60 hover:text-white">

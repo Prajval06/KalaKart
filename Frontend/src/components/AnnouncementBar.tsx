@@ -41,7 +41,7 @@ export function AnnouncementBar() {
         <div className="marquee-container">
           <div className="marquee-content">
             <span className="marquee-item">
-              🪔 Namaste! Welcome to <strong>KARIGARKART</strong> — Where Every Craft Tells a Story
+              🪔 Namaste! Welcome to <strong>KALAKART</strong> — Where Every Craft Tells a Story
             </span>
             <span className="divider">✦</span>
             
@@ -107,7 +107,7 @@ export function AnnouncementBar() {
             
             {/* Duplicate content for seamless loop */}
             <span className="marquee-item">
-              🪔 Namaste! Welcome to <strong>KARIGARKART</strong> — Where Every Craft Tells a Story
+              🪔 Namaste! Welcome to <strong>KALAKART</strong> — Where Every Craft Tells a Story
             </span>
             <span className="divider">✦</span>
             

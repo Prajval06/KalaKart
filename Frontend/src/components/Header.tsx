@@ -1,7 +1,7 @@
 import { ShoppingCart, Menu, X, User, Heart, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { useState } from 'react';
-import logoImage from 'figma:asset/6894975ff7bda70b68315fd77903bff02141295f.png';
+import logoImage from '../assets/6894975ff7bda70b68315fd77903bff02141295f.png';
 
 interface HeaderProps {
   cartCount: number;
@@ -22,7 +22,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
           <Link to="/" className="flex items-center flex-shrink-0 gap-2">
             <img 
               src={logoImage}
-              alt="Karigarkart Logo"
+              alt="Kalakart Logo"
               className="h-10"
             />
             <span 
@@ -33,7 +33,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                 letterSpacing: '0.05em'
               }}
             >
-              KARIGARKART
+              KALAKART
             </span>
           </Link>
 

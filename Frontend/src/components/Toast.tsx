@@ -9,7 +9,7 @@ export interface ToastProps {
   duration?: number;
 }
 
-export function Toast({ id, type, productName, onClose, duration = 4000 }: ToastProps) {
+export function Toast({ type, productName, onClose, duration = 4000 }: ToastProps) {
   const [progress, setProgress] = useState(100);
   const [isClosing, setIsClosing] = useState(false);
 
