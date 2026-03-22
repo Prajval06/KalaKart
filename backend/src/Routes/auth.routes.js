@@ -1,9 +1,14 @@
-const router     = require('express').Router();
-const controller = require('../../controller/auth.controller');
-const rateLimit  = require('express-rate-limit');
+const router      = require('express').Router();
+const { register, login, refreshToken } = require('../../controller/auth.controller');
+const validate    = require('../../middlewares/validate.middleware');
+const schemas     = require('../../validators/auth.validators');
+const rateLimit   = require('express-rate-limit');
 
-const loginLimiter = rateLimit({
-  windowMs: 60 * 1000,  // 1 minute
+// Disable rate limiting in test environment
+const isTest = process.env.NODE_ENV === 'test';
+
+const loginLimiter = isTest ? (req, res, next) => next() : rateLimit({
+  windowMs: 60 * 1000,
   max: 5,
   message: {
     success: false,
@@ -11,7 +16,7 @@ const loginLimiter = rateLimit({
   },
 });
 
-const registerLimiter = rateLimit({
+const registerLimiter = isTest ? (req, res, next) => next() : rateLimit({
   windowMs: 60 * 1000,
   max: 3,
   message: {
@@ -20,8 +25,8 @@ const registerLimiter = rateLimit({
   },
 });
 
-router.post('/register', registerLimiter, controller.register);
-router.post('/login',    loginLimiter,    controller.login);
-router.post('/refresh',                  controller.refreshToken);
+router.post('/register', registerLimiter, validate(schemas.register), register);
+router.post('/login',    loginLimiter,    validate(schemas.login),    login);
+router.post('/refresh',                  validate(schemas.refresh),   refreshToken);
 
 module.exports = router;

@@ -1,12 +1,13 @@
 const router     = require('express').Router();
 const controller = require('../../controller/order.controller');
 const protect    = require('../../middlewares/auth.middleware');
+const validate   = require('../../middlewares/validate.middleware');
+const schemas    = require('../../validators/order.validators');
 
-// All order routes require authentication
 router.use(protect);
 
-router.post('/',             controller.createOrder);
-router.get('/',              controller.getMyOrders);
-router.get('/:orderId',      controller.getOrderById);
+router.post('/',         validate(schemas.createOrder), controller.createOrder);
+router.get('/',                                         controller.getMyOrders);
+router.get('/:orderId',                                 controller.getOrderById);
 
 module.exports = router;

@@ -1,13 +1,14 @@
 const router     = require('express').Router();
 const controller = require('../../controller/cart.controller');
 const protect    = require('../../middlewares/auth.middleware');
+const validate   = require('../../middlewares/validate.middleware');
+const schemas    = require('../../validators/cart.validators');
 
-// All cart routes require authentication
 router.use(protect);
 
-router.get('/',                    controller.getCart);
-router.post('/items',              controller.addItem);
-router.patch('/items/:itemId',     controller.updateItem);
-router.delete('/items/:itemId',    controller.removeItem);
+router.get('/',                 controller.getCart);
+router.post('/items',           validate(schemas.addItem),    controller.addItem);
+router.patch('/items/:itemId',  validate(schemas.updateItem), controller.updateItem);
+router.delete('/items/:itemId',                               controller.removeItem);
 
 module.exports = router;

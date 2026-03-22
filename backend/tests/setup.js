@@ -1,13 +1,23 @@
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
-const config   = require('../src/config/config');
+
+// Set test environment variables before anything else loads
+process.env.JWT_SECRET          = 'test-secret-key-for-jest';
+process.env.JWT_EXPIRE_MINUTES  = '30';
+process.env.REFRESH_EXPIRE_DAYS = '7';
+process.env.STRIPE_SECRET_KEY   = 'sk_test_placeholder';
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_placeholder';
+process.env.NODE_ENV            = 'test';
+
+let mongoServer;
 
 beforeAll(async () => {
-  // Connect to a separate test database
-  await mongoose.connect(process.env.TEST_MONGODB_URL || 'mongodb://localhost:27017/ecommerce_test');
-});
+  mongoServer = await MongoMemoryServer.create();
+  const uri   = mongoServer.getUri();
+  await mongoose.connect(uri);
+}, 60000);
 
 afterEach(async () => {
-  // Clean all collections after each test
   const collections = mongoose.connection.collections;
   for (const key in collections) {
     await collections[key].deleteMany({});
@@ -16,4 +26,5 @@ afterEach(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect();
-});
+  await mongoServer.stop();
+}, 60000);
