@@ -1,13 +1,12 @@
 const router            = require('express').Router();
 const orderController   = require('../../controller/order.controller');
 const productController = require('../../controller/product.controller');
-const protect           = require('../../middlewares/auth.middleware');
-const adminOnly         = require('../../middlewares/admin.middleware');
+const { protect, isAdmin } = require('../../middlewares/auth.middleware');
 const validate          = require('../../middlewares/validate.middleware');
 const orderSchemas      = require('../../validators/order.validators');
 const productSchemas    = require('../../validators/product.validators');
 
-router.use(protect, adminOnly);
+router.use(protect, isAdmin);
 
 // Orders
 router.get('/orders',

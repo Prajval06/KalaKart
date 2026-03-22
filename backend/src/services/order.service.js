@@ -19,12 +19,12 @@ const createOrder = async (userId, { shipping_address, payment_intent_id, notes 
   // Final inventory check before creating order
   for (const item of cart.items) {
     const product = await Product.findById(item.product_id);
-    if (!product || !product.is_active) {
+    if (!product || !product.isAvailable) {
       throw new (require('../utils/AppError'))(
         400, 'PRODUCT_NOT_FOUND', `Product "${item.name}" is no longer available`
       );
     }
-    if (product.inventory_count < item.quantity) {
+    if (product.stock < item.quantity) {
       throw new (require('../utils/AppError'))(
         400, 'INSUFFICIENT_INVENTORY', `Insufficient stock for "${item.name}"`
       );
@@ -68,9 +68,9 @@ const fulfillOrder = async (paymentIntentId) => {
     const result = await Product.findOneAndUpdate(
       {
         _id:             item.product_id,
-        inventory_count: { $gte: item.quantity }, // only update if enough stock
+        stock: { $gte: item.quantity }, // only update if enough stock
       },
-      { $inc: { inventory_count: -item.quantity } }
+      { $inc: { stock: -item.quantity } }
     );
 
     // If result is null — inventory ran out between order creation and fulfillment

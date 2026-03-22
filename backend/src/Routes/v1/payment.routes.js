@@ -1,12 +1,16 @@
-const router     = require('express').Router();
-const controller = require('../../controller/payment.controller');
-const protect    = require('../../middlewares/auth.middleware');
+const router = require('express').Router();
+const { protect, isAdmin } = require('../../middlewares/auth.middleware');
 
-// Webhook: NO auth — but raw body + Stripe signature verification
-// express.raw() is already applied in app.js specifically for this route
-router.post('/webhook', controller.handleWebhook);
+router.use(protect);
 
-// Payment intent: requires auth
-router.post('/intent', protect, controller.createPaymentIntent);
+router.post('/create-intent', async (req, res) => {
+  try {
+    const { createPaymentIntent } = require('../../services/payment.service');
+    const paymentIntent = await createPaymentIntent(req.body);
+    res.json({ success: true, data: paymentIntent });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 module.exports = router;

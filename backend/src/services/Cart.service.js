@@ -16,8 +16,8 @@ const addItem = async (userId, { product_id, quantity }) => {
 
   // Fetch product and validate
   const product = await Product.findById(product_id);
-  if (!product || !product.is_active) throw AppError.create('PRODUCT_NOT_FOUND');
-  if (product.inventory_count < quantity) throw AppError.create('INSUFFICIENT_INVENTORY');
+  if (!product || !product.isAvailable) throw AppError.create('PRODUCT_NOT_FOUND');
+  if (product.stock < quantity) throw AppError.create('INSUFFICIENT_INVENTORY');
 
   let cart = await Cart.findOne({ user_id: userId });
 
@@ -43,7 +43,7 @@ const addItem = async (userId, { product_id, quantity }) => {
   if (existingItem) {
     // Product already in cart — increment quantity
     const newQty = existingItem.quantity + quantity;
-    if (product.inventory_count < newQty) throw AppError.create('INSUFFICIENT_INVENTORY');
+    if (product.stock < newQty) throw AppError.create('INSUFFICIENT_INVENTORY');
 
     await Cart.updateOne(
       { user_id: userId, 'items._id': existingItem._id },
@@ -81,7 +81,7 @@ const updateItem = async (userId, itemId, { quantity }) => {
 
   // Re-validate inventory with new quantity
   const product = await Product.findById(item.product_id);
-  if (!product || product.inventory_count < quantity) {
+  if (!product || product.stock < quantity) {
     throw AppError.create('INSUFFICIENT_INVENTORY');
   }
 

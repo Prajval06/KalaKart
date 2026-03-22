@@ -1,6 +1,6 @@
 const router     = require('express').Router();
 const controller = require('../../controller/order.controller');
-const protect    = require('../../middlewares/auth.middleware');
+const { protect, isAdmin } = require('../../middlewares/auth.middleware');
 const validate   = require('../../middlewares/validate.middleware');
 const schemas    = require('../../validators/order.validators');
 

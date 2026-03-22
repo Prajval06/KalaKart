@@ -11,8 +11,8 @@ const getProducts = asyncHandler(async (req, res) => {
   return success(res, { products: result.products }, 200, result.meta);
 });
 
-const getProductBySlug = asyncHandler(async (req, res) => {
-  const product     = await productService.getProductBySlug(req.params.slug);
+const getProductById = asyncHandler(async (req, res) => {
+  const product     = await productService.getProductById(req.params.id);
   const recommended = await getRecommendations(product.id);
   return success(res, {
     product,
@@ -45,7 +45,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 module.exports = {
   getProducts,
-  getProductBySlug,
+  getProductById,
   getCategories,
   createProduct,
   updateProduct,
