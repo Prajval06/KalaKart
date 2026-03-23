@@ -152,6 +152,8 @@ export default function Home() {
               Visit Store <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
+
         </div>
 
         {/* Arrows */}

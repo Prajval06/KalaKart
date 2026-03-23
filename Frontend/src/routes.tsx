@@ -13,6 +13,7 @@ import SellerDashboard from "./pages/SellerDashboard";
 import CategoryPage from "./pages/CategoryPage";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import SearchResults from "./pages/SearchResults";
 
 // Router is created ONCE so the history stack is never reset.
 // State is shared via AppContext (context/AppContext.tsx).
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "seller-dashboard", element: <SellerDashboard /> },
       { path: "category/:categoryName", element: <CategoryPage /> },
       { path: "checkout", element: <Checkout /> },
+      { path: "search", element: <SearchResults /> },
       { path: "*", element: <NotFound /> },
     ],
   },
