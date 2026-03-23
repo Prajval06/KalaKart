@@ -50,31 +50,7 @@ export function useAppContext() {
   return ctx;
 }
 
-<<<<<<< HEAD
 const BASE_URL = 'http://localhost:5000/api/v1';
-
-=======
-// ── Stored user record ────────────────────────────────────────────────────────
-interface StoredUser {
-  email: string;
-  name: string;
-  password: string; // stored plaintext (demo/mock only)
-  role: 'buyer' | 'seller';
-}
-
-function loadRegistry(): StoredUser[] {
-  try {
-    const raw = localStorage.getItem('kk_users');
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveRegistry(users: StoredUser[]) {
-  localStorage.setItem('kk_users', JSON.stringify(users));
-}
-
-// ── Auth session helpers ──────────────────────────────────────────────────────
->>>>>>> 8212aa0d4cd2a37849cafe3a0279f2ac9232b3d9
 function loadUser(): AuthUser | null {
   try {
     const raw = localStorage.getItem('kk_user');
@@ -168,8 +144,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-<<<<<<< HEAD
-  // ── Real API Auth ──
+
+
+  const signup = async (email: string, password: string, name: string, role: 'buyer' | 'seller' = 'buyer'): Promise<{ error?: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, full_name: name, role: role === 'seller' ? 'admin' : 'customer' }),
+      });
+      const json = await res.json();
+      if (!res.ok) return { error: json.message || json.error?.message || 'Registration failed.' };
+      const { user: userData, access_token, refresh_token } = json.data;
+      const user: AuthUser = { email: userData.email, name: userData.full_name, role: userData.role === 'admin' ? 'seller' : 'buyer' };
+      setCurrentUser(user);
+      saveUser(user);
+      localStorage.setItem('kk_token', access_token);
+      localStorage.setItem('kk_refresh_token', refresh_token);
+      return {};
+    } catch (err: any) {
+      return { error: err.message || 'Network error. Please try again.' };
+    }
+  };
+
   const login = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
       const res = await fetch(`${BASE_URL}/auth/login`, {
@@ -178,9 +175,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
       const json = await res.json();
-      if (!res.ok) return { error: json.message || json.error?.message || 'Invalid email or password.' };
+      if (!res.ok) return { error: json.message || json.error?.message || 'Login failed.' };
       const { user: userData, access_token, refresh_token } = json.data;
-      const user: AuthUser = { email: userData.email, name: userData.full_name };
+      const user: AuthUser = { email: userData.email, name: userData.full_name, role: userData.role === 'admin' ? 'seller' : 'buyer' };
       setCurrentUser(user);
       saveUser(user);
       localStorage.setItem('kk_token', access_token);
@@ -191,90 +188,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<{ error?: string }> => {
-    try {
-      const res = await fetch(`${BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, full_name: name }),
-      });
-      const json = await res.json();
-      if (!res.ok) return { error: json.message || json.error?.message || 'Registration failed.' };
-      const { user: userData, access_token, refresh_token } = json.data;
-      const user: AuthUser = { email: userData.email, name: userData.full_name };
-      setCurrentUser(user);
-      saveUser(user);
-      localStorage.setItem('kk_token', access_token);
-      localStorage.setItem('kk_refresh_token', refresh_token);
-      return {};
-    } catch (err: any) {
-      return { error: err.message || 'Network error. Please try again.' };
-    }
-=======
-  // ── Auth actions ──────────────────────────────────────────────────────────
 
-  /**
-   * Login: verifies the email exists in the registry, then checks the password.
-   * Returns a descriptive error if the email was never registered.
-   */
-  const login = async (email: string, password: string): Promise<{ error?: string }> => {
-    await mockDelay();
-    if (!email.includes('@')) return { error: 'Please enter a valid email address.' };
-    if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
-
-    const registry = loadRegistry();
-    const found = registry.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (!found) {
-      return {
-        error:
-          'No account found with this email. Please sign up first to create an account.',
-      };
-    }
-
-    if (found.password !== password) {
-      return { error: 'Incorrect password. Please try again.' };
-    }
-
-    const user: AuthUser = { email: found.email, name: found.name, role: found.role };
-    setCurrentUser(user);
-    saveUser(user);
-    return {};
-  };
-
-  /**
-   * Signup: registers a new user in the registry with their chosen role.
-   * Returns an error if the email is already taken.
-   */
-  const signup = async (
-    email: string,
-    password: string,
-    name: string,
-    role: 'buyer' | 'seller' = 'buyer',
-  ): Promise<{ error?: string }> => {
-    await mockDelay();
-    if (!email.includes('@')) return { error: 'Please enter a valid email address.' };
-    if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
-    if (!name.trim()) return { error: 'Please enter your name.' };
-
-    const registry = loadRegistry();
-    const alreadyExists = registry.some(u => u.email.toLowerCase() === email.toLowerCase());
-    if (alreadyExists) {
-      return {
-        error:
-          'An account with this email already exists. Please log in instead.',
-      };
-    }
-
-    const newRecord: StoredUser = { email, name: name.trim(), password, role };
-    saveRegistry([...registry, newRecord]);
-
-    const user: AuthUser = { email, name: name.trim(), role };
-    setCurrentUser(user);
-    saveUser(user);
-    return {};
->>>>>>> 8212aa0d4cd2a37849cafe3a0279f2ac9232b3d9
-  };
 
   const logout = () => {
     setCurrentUser(null);
