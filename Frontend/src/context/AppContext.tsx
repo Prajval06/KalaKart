@@ -49,7 +49,8 @@ export function useAppContext() {
   return ctx;
 }
 
-// ── Mock auth helpers (localStorage-backed) ─────────────────────────────────
+const BASE_URL = 'http://localhost:5000/api/v1';
+
 function loadUser(): AuthUser | null {
   try {
     const raw = localStorage.getItem('kk_user');
@@ -69,9 +70,6 @@ function loadSavedAddress(): AddressData | null {
   } catch { return null; }
 }
 
-// Simulate network latency for mock auth
-const mockDelay = () => new Promise<void>(r => setTimeout(r, 700));
-
 export function AppProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
@@ -89,17 +87,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [toasts, setToasts] = useState<Omit<ToastProps, 'onClose'>[]>([]);
 
-  // ── Auth state ──
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(loadUser);
   const isLoggedIn = currentUser !== null;
 
-  // ── Saved Address ──
   const [savedAddress, setSavedAddressState] = useState<AddressData | null>(loadSavedAddress);
 
   useEffect(() => { localStorage.setItem('cart', JSON.stringify(cartItems)); }, [cartItems]);
   useEffect(() => { localStorage.setItem('wishlist', JSON.stringify(wishlistItems)); }, [wishlistItems]);
 
-  // ── Cart actions ──
   const addToCart = (productId: string, productName: string) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.productId === productId);
@@ -130,9 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCartItems(prev => prev.filter(item => item.productId !== productId));
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const clearCart = () => { setCartItems([]); };
 
   const toggleWishlist = (productId: string, productName: string) => {
     const isAdding = !wishlistItems.includes(productId);
@@ -151,31 +144,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // ── Auth actions ──
+  // ── Real API Auth ──
   const login = async (email: string, password: string): Promise<{ error?: string }> => {
-    await mockDelay();
-    if (!email.includes('@')) return { error: 'Please enter a valid email address.' };
-    if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
-    const user: AuthUser = { email, name: email.split('@')[0] };
-    setCurrentUser(user);
-    saveUser(user);
-    return {};
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+      if (!res.ok) return { error: json.message || json.error?.message || 'Invalid email or password.' };
+      const { user: userData, access_token, refresh_token } = json.data;
+      const user: AuthUser = { email: userData.email, name: userData.full_name };
+      setCurrentUser(user);
+      saveUser(user);
+      localStorage.setItem('kk_token', access_token);
+      localStorage.setItem('kk_refresh_token', refresh_token);
+      return {};
+    } catch (err: any) {
+      return { error: err.message || 'Network error. Please try again.' };
+    }
   };
 
   const signup = async (email: string, password: string, name: string): Promise<{ error?: string }> => {
-    await mockDelay();
-    if (!email.includes('@')) return { error: 'Please enter a valid email address.' };
-    if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
-    if (!name.trim()) return { error: 'Please enter your name.' };
-    const user: AuthUser = { email, name: name.trim() };
-    setCurrentUser(user);
-    saveUser(user);
-    return {};
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, full_name: name }),
+      });
+      const json = await res.json();
+      if (!res.ok) return { error: json.message || json.error?.message || 'Registration failed.' };
+      const { user: userData, access_token, refresh_token } = json.data;
+      const user: AuthUser = { email: userData.email, name: userData.full_name };
+      setCurrentUser(user);
+      saveUser(user);
+      localStorage.setItem('kk_token', access_token);
+      localStorage.setItem('kk_refresh_token', refresh_token);
+      return {};
+    } catch (err: any) {
+      return { error: err.message || 'Network error. Please try again.' };
+    }
   };
 
   const logout = () => {
     setCurrentUser(null);
     saveUser(null);
+    localStorage.removeItem('kk_token');
+    localStorage.removeItem('kk_refresh_token');
   };
 
   const setSavedAddress = (addr: AddressData) => {

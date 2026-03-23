@@ -1,9 +1,10 @@
 import { Link } from 'react-router';
 import { ArrowRight, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 
-
-import { products } from '../data/products';
+import { useProducts } from '../hooks/useProducts';
 import { useState, useEffect } from 'react';
+import type { Product } from '../hooks/useProducts';
+
 
 const CATEGORY_CONFIG: Record<string, { emoji: string; accent: string; label: string }> = {
   'Jewelry':            { emoji: '💎', accent: '#B5851A', label: 'Jewelry' },
@@ -90,8 +91,13 @@ const categories = [
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, typeof products>>((acc, cat) => {
-    acc[cat] = products.filter(p => p.category === cat);
+  const { products: allProducts } = useProducts({ per_page: 70 });
+
+  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, Product[]>>((acc, cat) => {
+    acc[cat] = allProducts.filter(p => {
+      const catName = typeof p.category === 'object' ? p.category?.name : p.category;
+      return catName === cat;
+    });
     return acc;
   }, {});
 
@@ -292,7 +298,7 @@ export default function Home() {
                     gap: '10px',
                   }}
                 >
-                  {catProducts.map(product => (
+                  {catProducts.map((product: Product) => (
                     <Link
                       key={product.id}
                       to={`/product/${product.id}`}
@@ -300,7 +306,7 @@ export default function Home() {
                     >
                       <div className="relative overflow-hidden" style={{ aspectRatio: '1/1' }}>
                         <img
-                          src={product.image}
+                          src={product.images?.[0] || '/placeholder.jpg'}
                           alt={product.name}
                           className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
@@ -320,7 +326,7 @@ export default function Home() {
                           ₹{product.price.toLocaleString('en-IN')}
                         </p>
                         <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.63rem' }}>
-                          by {product.artisan}
+                          by {product.artisanName}
                         </p>
                       </div>
                     </Link>
