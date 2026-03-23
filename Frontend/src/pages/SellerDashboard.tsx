@@ -4,6 +4,7 @@ import {
   CheckCircle, XCircle, Clock, TrendingUp, AlertTriangle, Edit2, Trash2,
   Lightbulb, ChevronRight, Menu, X, Truck, Star, ImageIcon, Save
 } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 // ─── Types ────────────────────────────────────────────────────
 type Section = 'home' | 'products' | 'orders' | 'earnings';
@@ -649,6 +650,14 @@ function EarningsSection({ totalEarnings, availableBalance }: EarningsSectionPro
 
 // ─── Main Dashboard Component ──────────────────────────────────
 export default function SellerDashboard() {
+  const { currentUser } = useAppContext();
+  const artisanName = currentUser?.name ?? 'Artisan';
+  const artisanInitials = artisanName
+    .split(' ')
+    .map(w => w[0]?.toUpperCase() ?? '')
+    .slice(0, 2)
+    .join('');
+
   const [section, setSection] = useState<Section>('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -756,13 +765,13 @@ export default function SellerDashboard() {
           })}
         </nav>
 
-        {/* Artisan Profile Stub */}
+        {/* Artisan Profile */}
         <div className="mt-auto pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm text-white" style={{ backgroundColor: 'var(--sage-green)', fontWeight: 600 }}>RS</div>
-            <div>
-              <p className="text-sm text-white" style={{ fontWeight: 500 }}>Ravi Shankar</p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Jaipur, Rajasthan</p>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm text-white" style={{ backgroundColor: 'var(--sage-green)', fontWeight: 600 }}>{artisanInitials}</div>
+            <div className="min-w-0">
+              <p className="text-sm text-white truncate" style={{ fontWeight: 500 }}>{artisanName}</p>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Artisan · KalaKart</p>
             </div>
           </div>
         </div>
