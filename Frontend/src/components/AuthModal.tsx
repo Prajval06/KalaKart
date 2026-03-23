@@ -29,7 +29,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (isOpen) {
       setError('');
       setLoading(false);
-      // Autofocus email field per spec
       setTimeout(() => emailRef.current?.focus(), 50);
     }
   }, [isOpen, mode]);
@@ -51,7 +50,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     const result = mode === 'login'
       ? await login(email, password)
-      : await signup(email, password, name);
+      : await signup(email, password, name, 'buyer');
 
     setLoading(false);
 
@@ -60,7 +59,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       return;
     }
 
-    // ✅ Auth succeeded — cart data is preserved in localStorage, go to checkout
+    // ✅ Auth succeeded
     onClose();
     navigate('/checkout');
   };
@@ -72,6 +71,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setEmail('');
     setPassword('');
   };
+
+  const needsSignup = error.toLowerCase().includes('sign up');
 
   return (
     <div
@@ -106,7 +107,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <Lock className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
             </div>
             <div>
-              <h3 style={{ color: 'var(--dark-brown)' }}>Login to Continue</h3>
+              <h3 style={{ color: 'var(--dark-brown)' }}>
+                {mode === 'login' ? 'Login to Continue' : 'Create an Account'}
+              </h3>
               <p className="text-xs" style={{ color: 'var(--text-gray)' }}>
                 {mode === 'login' ? 'Sign in to place your order' : 'Create your account to get started'}
               </p>
@@ -119,7 +122,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             style={{ backgroundColor: 'rgba(74,140,74,0.08)', color: '#4A8C4A' }}
           >
             <ShieldCheck className="w-4 h-4 flex-shrink-0" />
-            Your cart items are saved — login to complete checkout
+            Your cart items are saved — {mode === 'login' ? 'login' : 'sign up'} to complete checkout
           </div>
 
           {/* Mode Tabs */}
@@ -226,18 +229,31 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             {/* Inline error */}
             {error && (
               <div
-                className="px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl text-sm"
                 style={{ backgroundColor: 'rgba(200,50,50,0.08)', color: '#C03030', border: '1px solid rgba(200,50,50,0.2)' }}
               >
-                <span className="flex-shrink-0">⚠</span>
-                <span>{error}</span>
-                <button
-                  type="button"
-                  className="ml-auto text-xs underline"
-                  onClick={() => { setError(''); setLoading(false); }}
-                >
-                  Retry
-                </button>
+                <div className="flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-0.5">⚠</span>
+                  <span className="flex-1">{error}</span>
+                  <button
+                    type="button"
+                    className="ml-auto text-xs underline flex-shrink-0"
+                    onClick={() => { setError(''); setLoading(false); }}
+                  >
+                    Retry
+                  </button>
+                </div>
+                {/* Quick switch to signup if the email doesn't exist */}
+                {needsSignup && mode === 'login' && (
+                  <button
+                    type="button"
+                    className="mt-2 text-xs font-bold underline"
+                    style={{ color: '#8B2500' }}
+                    onClick={() => { setMode('signup'); setError(''); }}
+                  >
+                    → Switch to Sign Up
+                  </button>
+                )}
               </div>
             )}
 

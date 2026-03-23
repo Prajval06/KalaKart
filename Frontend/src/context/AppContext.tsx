@@ -9,6 +9,7 @@ export interface CartItem {
 export interface AuthUser {
   email: string;
   name: string;
+  role: 'buyer' | 'seller';
 }
 
 export interface AddressData {
@@ -34,7 +35,7 @@ interface AppContextType {
   isLoggedIn: boolean;
   currentUser: AuthUser | null;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  signup: (email: string, password: string, name: string) => Promise<{ error?: string }>;
+  signup: (email: string, password: string, name: string, role?: 'buyer' | 'seller') => Promise<{ error?: string }>;
   logout: () => void;
   // ── Saved Address ──
   savedAddress: AddressData | null;
@@ -50,7 +51,6 @@ export function useAppContext() {
 }
 
 const BASE_URL = 'http://localhost:5000/api/v1';
-
 function loadUser(): AuthUser | null {
   try {
     const raw = localStorage.getItem('kk_user');
@@ -144,18 +144,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // ── Real API Auth ──
-  const login = async (email: string, password: string): Promise<{ error?: string }> => {
+
+
+  const signup = async (email: string, password: string, name: string, role: 'buyer' | 'seller' = 'buyer'): Promise<{ error?: string }> => {
     try {
-      const res = await fetch(`${BASE_URL}/auth/login`, {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, full_name: name, role: role === 'seller' ? 'admin' : 'customer' }),
       });
       const json = await res.json();
-      if (!res.ok) return { error: json.message || json.error?.message || 'Invalid email or password.' };
+      if (!res.ok) return { error: json.message || json.error?.message || 'Registration failed.' };
       const { user: userData, access_token, refresh_token } = json.data;
-      const user: AuthUser = { email: userData.email, name: userData.full_name };
+      const user: AuthUser = { email: userData.email, name: userData.full_name, role: userData.role === 'admin' ? 'seller' : 'buyer' };
       setCurrentUser(user);
       saveUser(user);
       localStorage.setItem('kk_token', access_token);
@@ -166,17 +167,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<{ error?: string }> => {
+  const login = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
-      const res = await fetch(`${BASE_URL}/auth/register`, {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, full_name: name }),
+        body: JSON.stringify({ email, password }),
       });
       const json = await res.json();
-      if (!res.ok) return { error: json.message || json.error?.message || 'Registration failed.' };
+      if (!res.ok) return { error: json.message || json.error?.message || 'Login failed.' };
       const { user: userData, access_token, refresh_token } = json.data;
-      const user: AuthUser = { email: userData.email, name: userData.full_name };
+      const user: AuthUser = { email: userData.email, name: userData.full_name, role: userData.role === 'admin' ? 'seller' : 'buyer' };
       setCurrentUser(user);
       saveUser(user);
       localStorage.setItem('kk_token', access_token);
@@ -186,6 +187,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return { error: err.message || 'Network error. Please try again.' };
     }
   };
+
+
 
   const logout = () => {
     setCurrentUser(null);

@@ -17,8 +17,9 @@ export default function Auth() {
   // Where to send the user after successful auth
   const redirectTo = searchParams.get('redirect') || '/';
 
+  // Default to 'signup' so new users can create an account first
   const [userType, setUserType]               = useState<UserType>('buyer');
-  const [formMode, setFormMode]               = useState<FormMode>('login');
+  const [formMode, setFormMode]               = useState<FormMode>('signup');
   const [showPassword, setShowPassword]       = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe]           = useState(false);
@@ -52,26 +53,30 @@ export default function Auth() {
     if (formMode === 'login') {
       const result = await login(email, password);
       setLoading(false);
-      if (result.error) { setError(result.error); return; }
+      if (result.error) {
+        // If the error mentions "sign up first", offer to switch to signup
+        setError(result.error);
+        return;
+      }
 
-      // Seller login always goes to dashboard; buyer goes to redirect target
+      // Seller login always goes to dashboard; buyer goes to redirect target or home
       if (userType === 'seller') {
         navigate('/seller-dashboard');
       } else {
-        navigate(redirectTo);
+        navigate(redirectTo === '/checkout' ? redirectTo : '/');
       }
     } else {
-      // signup
+      // signup — pass the chosen role
       const displayName = userType === 'seller' ? (businessName || name) : name;
-      const result = await signup(email, password, displayName);
+      const result = await signup(email, password, displayName, userType);
       setLoading(false);
       if (result.error) { setError(result.error); return; }
 
-      // Seller signup always goes to dashboard
+      // Seller signup always goes to dashboard; buyer goes home (or checkout redirect)
       if (userType === 'seller') {
         navigate('/seller-dashboard');
       } else {
-        navigate(redirectTo);
+        navigate(redirectTo === '/checkout' ? redirectTo : '/');
       }
     }
   };
@@ -163,17 +168,30 @@ export default function Auth() {
                       userType === t ? 'bg-[#8B2500] text-white shadow-md' : 'text-[#5D4037] hover:bg-[#DEB887]'
                     }`}
                   >
-                    {t === 'buyer' ? 'Buyer' : 'Seller'}
+                    {t === 'buyer' ? 'Buyer' : 'Artisan / Seller'}
                   </button>
                 ))}
               </div>
 
               {/* Error banner */}
               {error && (
-                <div className="mb-4 px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" style={{ backgroundColor: 'rgba(200,50,50,0.08)', color: '#C03030', border: '1px solid rgba(200,50,50,0.25)' }}>
-                  <span>⚠</span>
-                  <span>{error}</span>
-                  <button type="button" className="ml-auto text-xs underline" onClick={() => setError('')}>✕</button>
+                <div className="mb-4 px-4 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'rgba(200,50,50,0.08)', color: '#C03030', border: '1px solid rgba(200,50,50,0.25)' }}>
+                  <div className="flex items-start gap-2">
+                    <span className="flex-shrink-0 mt-0.5">⚠</span>
+                    <span className="flex-1">{error}</span>
+                    <button type="button" className="ml-auto text-xs underline flex-shrink-0" onClick={() => setError('')}>✕</button>
+                  </div>
+                  {/* If the error says "sign up first", show a quick switch link */}
+                  {error.toLowerCase().includes('sign up') && formMode === 'login' && (
+                    <button
+                      type="button"
+                      className="mt-2 text-xs font-bold underline"
+                      style={{ color: '#8B2500' }}
+                      onClick={() => { setFormMode('signup'); setError(''); }}
+                    >
+                      → Switch to Sign Up
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -188,7 +206,7 @@ export default function Auth() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Business Name"
+                      placeholder="Business / Shop Name"
                       value={businessName}
                       onChange={e => setBusinessName(e.target.value)}
                       required
@@ -206,6 +224,23 @@ export default function Auth() {
                     <input
                       type="text"
                       placeholder="Full Name"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      required
+                      className="w-full pl-10 pr-4 py-3 bg-[#FFF8DC] border border-[#DEB887] rounded-lg focus:outline-none focus:border-[#8B2500] focus:ring-1 focus:ring-[#8B2500] transition-colors placeholder-[#8B4513]/50 text-[#4A2C2A]"
+                    />
+                  </div>
+                )}
+
+                {/* Seller signup: Full Name (alongside business name) */}
+                {formMode === 'signup' && userType === 'seller' && (
+                  <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B2500]">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Your Full Name"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       required
