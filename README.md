@@ -1,4 +1,5 @@
 # 🏺 KalaKart
+# 🏺 KalaKart
 
 > **"Where Every Craft Tells a Story"**
 
