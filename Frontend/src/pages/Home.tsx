@@ -1,9 +1,7 @@
 import { Link } from 'react-router';
 import { ArrowRight, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useProducts } from '../hooks/useProducts';
+import { products } from '../data/products';
 import { useState, useEffect } from 'react';
-import type { Product } from '../hooks/useProducts';
-
 
 // ── Category config: display name, emoji, accent colour ──────────
 const CATEGORY_CONFIG: Record<string, { emoji: string; accent: string; label: string }> = {
@@ -31,13 +29,9 @@ const FEATURED_CATEGORIES = [
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const { products: allProducts } = useProducts({ per_page: 70 });
-
-  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, Product[]>>((acc, cat) => {
-    acc[cat] = allProducts.filter(p => {
-      const catName = typeof p.category === 'object' ? p.category?.name : p.category;
-      return catName === cat;
-    });
+  // Group products by category
+  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, typeof products>>((acc, cat) => {
+    acc[cat] = products.filter(p => p.category === cat);
     return acc;
   }, {});
 
@@ -344,47 +338,71 @@ export default function Home() {
                   </Link>
                 </div>
 
-                {/* Product grid — 6 equal columns fill all available width */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(6, 1fr)',
-                    gap: '10px',
-                  }}
-                >
-                  {catProducts.map((product: Product) => (
+                {/* Horizontally scrollable product row */}
+                <div className="relative">
+                  <div
+                    className="flex gap-4 overflow-x-auto pb-3"
+                    style={{ scrollbarWidth: 'thin', scrollbarColor: `${cfg.accent}40 transparent` }}
+                  >
+                    {catProducts.map(product => (
+                      <Link
+                        key={product.id}
+                        to={`/product/${product.id}`}
+                        className="flex-none w-40 sm:w-44 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
+                        style={{ backgroundColor: 'white' }}
+                      >
+                        <div className="aspect-square relative overflow-hidden">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          {/* Hover overlay */}
+                          <div
+                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            style={{ background: `linear-gradient(to top, ${cfg.accent}cc, ${cfg.accent}22)` }}
+                          />
+                        </div>
+                        <div className="px-3 py-2.5">
+                          <p
+                            className="line-clamp-2 mb-1"
+                            style={{ color: 'var(--dark-brown)', fontSize: '0.72rem', fontWeight: 600, lineHeight: 1.35 }}
+                          >
+                            {product.name}
+                          </p>
+                          <p style={{ color: cfg.accent, fontSize: '0.75rem', fontWeight: 700 }}>
+                            ₹{product.price.toLocaleString('en-IN')}
+                          </p>
+                          <p
+                            className="truncate mt-0.5"
+                            style={{ color: '#9B8B7A', fontSize: '0.65rem' }}
+                          >
+                            by {product.artisan}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+
+                    {/* "See all" end card */}
                     <Link
-                      key={product.id}
-                      to={`/product/${product.id}`}
-                      className="rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group bg-white"
+                      to={`/category/${encodeURIComponent(cat)}`}
+                      className="flex-none w-40 sm:w-44 rounded-2xl flex flex-col items-center justify-center gap-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-dashed"
+                      style={{ borderColor: `${cfg.accent}60`, minHeight: '200px', backgroundColor: `${cfg.accent}08` }}
                     >
-                      <div className="relative overflow-hidden" style={{ aspectRatio: '1/1' }}>
-                        <img
-                          src={product.images?.[0] || '/placeholder.jpg'}
-                          alt={product.name}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                        <div
-                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                          style={{ background: `linear-gradient(to top, ${cfg.accent}bb, ${cfg.accent}22)` }}
-                        />
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: `${cfg.accent}20` }}
+                      >
+                        <ArrowRight className="w-5 h-5" style={{ color: cfg.accent }} />
                       </div>
-                      <div className="px-2.5 py-2">
-                        <p
-                          className="line-clamp-2 mb-0.5 leading-snug font-semibold"
-                          style={{ color: 'var(--dark-brown)', fontSize: '0.72rem' }}
-                        >
-                          {product.name}
-                        </p>
-                        <p className="font-bold" style={{ color: cfg.accent, fontSize: '0.78rem' }}>
-                          ₹{product.price.toLocaleString('en-IN')}
-                        </p>
-                        <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.63rem' }}>
-                          by {product.artisanName}
-                        </p>
-                      </div>
+                      <p className="text-xs text-center px-4" style={{ color: cfg.accent, fontWeight: 600 }}>
+                        See all {cfg.label}
+                      </p>
                     </Link>
-                  ))}
+                  </div>
+
+                  {/* Bottom border separator */}
+                  <div className="mt-2 h-px" style={{ background: `linear-gradient(to right, ${cfg.accent}40, transparent)` }} />
                 </div>
               </div>
             );

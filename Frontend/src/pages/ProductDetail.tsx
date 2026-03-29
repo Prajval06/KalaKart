@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import {
-  ShoppingCart, Heart, MapPin, Award,
-  ChevronDown, ChevronUp,
-  Shield, Star, X, BadgeCheck, Sparkles, Truck, User,
+  ShoppingCart, Heart, MapPin, Award, ArrowRight,
+  Clock, User, ChevronDown, ChevronUp,
+  Shield, Star, X, BadgeCheck, Sparkles, Truck,
 } from 'lucide-react';
-import { useProduct } from '../hooks/useProduct';
+import { products } from '../data/products';
+import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
+import { getProductStory } from '../data/productStories';
 import { calculateShipping, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
 
 /* ─────────────────────────── Verified Artisan Modal ─────────────────────── */
@@ -48,7 +50,7 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
             {
               icon: <MapPin className="w-5 h-5" style={{ color: 'var(--saffron)' }} />,
               title: 'Location Verified',
-              desc: "Artisan's workshop address physically verified by our field team.",
+              desc: 'Artisan\'s workshop address physically verified by our field team.',
             },
             {
               icon: <Award className="w-5 h-5" style={{ color: 'var(--saffron)' }} />,
@@ -91,40 +93,41 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart, toggleWishlist, wishlistItems } = useAppContext();
-  const { product, loading, error } = useProduct(id);
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [pricingOpen, setPricingOpen]             = useState(false);
   const [zone, setZone]                           = useState<DeliveryZone>('regional');
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-2xl font-bold animate-pulse" style={{ color: 'var(--saffron)' }}>Loading product...</p>
-    </div>
-  );
+  const product = products.find(p => p.id === id);
+  const artisan = product ? artisans.find(a => a.id === product.artisanId) : null;
 
-  if (error || !product) return (
-    <div className="min-h-screen py-16 px-4 text-center">
-      <h2 className="mb-4">{error || 'Product not found'}</h2>
-      <Link to="/" className="inline-flex items-center font-semibold hover:opacity-70 transition-opacity" style={{ color: 'var(--saffron)' }}>
-        Back to Home
-      </Link>
-    </div>
-  );
+  if (!product) {
+    return (
+      <div className="min-h-screen py-16 px-4 text-center">
+        <h2 className="mb-4">Product not found</h2>
+        <Link
+          to="/"
+          className="inline-flex items-center font-semibold hover:opacity-70 transition-opacity"
+          style={{ color: 'var(--saffron)' }}
+        >
+          Back to Home
+        </Link>
+      </div>
+    );
+  }
 
-  const categoryName = typeof product.category === 'object' ? product.category?.name : (product.category || '');
-  const categoryId   = typeof product.category === 'object' ? product.category?.id : '';
   const isWishlisted = wishlistItems.includes(product.id);
-
-  const shipping = calculateShipping(categoryName, product.price, zone);
-  const total    = product.price + shipping;
+  const story = getProductStory(product, artisan);
+  const relatedProducts = products
+    .filter(p => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
       <Breadcrumb
         items={[
           { label: 'Home', href: '/' },
-          { label: categoryName, href: `/category/${encodeURIComponent(categoryId || categoryName)}` },
+          { label: product.category, href: `/category/${encodeURIComponent(product.category)}` },
           { label: product.name },
         ]}
       />
@@ -138,7 +141,7 @@ export default function ProductDetail() {
             <div className="relative">
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl">
                 <img
-                  src={product.images?.[0] || '/placeholder.jpg'}
+                  src={product.image}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -163,29 +166,39 @@ export default function ProductDetail() {
                 </div>
               </div>
 
-              {/* Artisan proof strip */}
-              <div
-                className="mt-4 p-4 rounded-xl flex items-center gap-4"
-                style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid var(--beige)' }}
-              >
-                <div className="w-16 h-16 rounded-full bg-[var(--beige)] flex items-center justify-center flex-shrink-0 ring-2 ring-[var(--saffron)]">
-                  <User className="w-8 h-8" style={{ color: 'var(--saffron)' }} />
+              {/* Proof-of-craft artisan thumbnail strip */}
+              {artisan && (
+                <div
+                  className="mt-4 p-4 rounded-xl flex items-center gap-4"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid var(--beige)' }}
+                >
+                  <img
+                    src={artisan.image}
+                    alt={`${artisan.name} — artisan at work`}
+                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2"
+                    style={{ borderColor: 'var(--saffron)' }}
+                  />
+                  <div>
+                    <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Proof of Craft — Artisan at Work</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--dark-brown)' }}>{artisan.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--saffron)' }}>{artisan.specialization}</p>
+                  </div>
+                  <div className="ml-auto flex-shrink-0">
+                    <span
+                      className="text-xs px-2 py-1 rounded-full"
+                      style={{ backgroundColor: 'rgba(74,140,74,0.1)', color: '#4A8C4A' }}
+                    >
+                      ✔ Verified
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Proof of Craft — Made by</p>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--dark-brown)' }}>{product.artisanName}</p>
-                  <p className="text-xs" style={{ color: 'var(--saffron)' }}>{product.specialty}</p>
-                </div>
-                <div className="ml-auto flex-shrink-0">
-                  <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(74,140,74,0.1)', color: '#4A8C4A' }}>✔ Verified</span>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* ── Right: Purchase Info ── */}
             <div className="flex flex-col">
 
-              {/* Verified Badge */}
+              {/* Verified Artisan Badge */}
               <button
                 onClick={() => setShowVerifiedModal(true)}
                 className="self-start flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 hover:opacity-80 transition-opacity"
@@ -197,68 +210,80 @@ export default function ProductDetail() {
               </button>
 
               {/* Category pill */}
-              <div className="self-start px-3 py-1 rounded-full text-sm mb-3" style={{ backgroundColor: 'var(--cream)', color: 'var(--saffron)' }}>
-                {categoryName}
+              <div
+                className="self-start px-3 py-1 rounded-full text-sm mb-3"
+                style={{ backgroundColor: 'var(--cream)', color: 'var(--saffron)' }}
+              >
+                {product.category}
               </div>
 
               {/* Product Title */}
               <h1 className="mb-3" style={{ color: 'var(--dark-brown)' }}>{product.name}</h1>
-
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < Math.round(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
-                  ))}
-                </div>
-                <span className="text-sm" style={{ color: 'var(--text-gray)' }}>({product.numReviews} reviews)</span>
-              </div>
 
               {/* Price */}
               <p className="mb-6" style={{ color: 'var(--saffron)', fontSize: '2rem', fontWeight: 700 }}>
                 ₹{product.price.toLocaleString('en-IN')}
               </p>
 
-              {/* Artisan card */}
-              <div
-                className="flex items-center gap-4 p-4 rounded-xl mb-6"
-                style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)' }}
-              >
-                <div className="w-14 h-14 rounded-full bg-[var(--beige)] flex items-center justify-center flex-shrink-0" style={{ outline: '2px solid var(--saffron)', outlineOffset: 2 }}>
-                  <User className="w-7 h-7" style={{ color: 'var(--saffron)' }} />
+              {/* ── Artisan Identity Card ── */}
+              {artisan ? (
+                <Link
+                  to={`/artisan/${artisan.id}`}
+                  className="flex items-center gap-4 p-4 rounded-xl mb-6 hover:shadow-md transition-shadow"
+                  style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)' }}
+                >
+                  <img
+                    src={artisan.image}
+                    alt={artisan.name}
+                    className="w-14 h-14 rounded-full object-cover flex-shrink-0"
+                    style={{ outline: '2px solid var(--saffron)', outlineOffset: 2 }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Made by</p>
+                    <p className="font-semibold truncate" style={{ color: 'var(--dark-brown)' }}>{artisan.name}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
+                      {story.artisanCity} &nbsp;·&nbsp; {artisan.yearsOfExperience} years experience
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--saffron)' }} />
+                </Link>
+              ) : (
+                <div
+                  className="flex items-center gap-3 p-4 rounded-xl mb-6"
+                  style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)' }}
+                >
+                  <User className="w-8 h-8" style={{ color: 'var(--saffron)' }} />
+                  <div>
+                    <p className="text-xs" style={{ color: 'var(--text-gray)' }}>Made by</p>
+                    <p className="font-semibold" style={{ color: 'var(--dark-brown)' }}>{product.artisan}</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Made by</p>
-                  <p className="font-semibold truncate" style={{ color: 'var(--dark-brown)' }}>{product.artisanName}</p>
-                  <p className="text-sm" style={{ color: 'var(--text-gray)' }}>{product.specialty}</p>
-                </div>
-              </div>
+              )}
 
-              {/* Origin/Specialty */}
+              {/* Origin Verification */}
               <div
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-6 self-start"
                 style={{ backgroundColor: 'rgba(180,140,90,0.08)', border: '1px solid rgba(180,140,90,0.2)' }}
               >
                 <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--saffron)' }} />
                 <span className="text-sm" style={{ color: 'var(--dark-brown)' }}>
-                  Specialty: <strong>{product.specialty || categoryName}</strong>
+                  Sourced directly from: <strong>{story.artisanCity}</strong>
                 </span>
               </div>
 
-              {/* Add to cart */}
+              {/* Action Buttons */}
               <div className="flex gap-3 mb-6">
                 <button
                   onClick={() => addToCart(product.id, product.name)}
-                  disabled={product.stock === 0}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-white font-semibold hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: 'var(--saffron)' }}
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  Add to Cart
                 </button>
               </div>
 
-              {/* Guarantee */}
+              {/* Authenticity Guarantee strip */}
               <div
                 className="flex items-center gap-3 p-3 rounded-xl"
                 style={{ backgroundColor: 'rgba(74,140,74,0.07)', border: '1px solid rgba(74,140,74,0.2)' }}
@@ -273,36 +298,53 @@ export default function ProductDetail() {
         </div>
       </section>
 
-      {/* ══════════════ SECTION 2: Story / Description ════════════════════════ */}
+      {/* ══════════════ SECTION 2: Story Layer ════════════════════════════════ */}
       <section
         className="py-14 px-4"
         style={{ background: 'linear-gradient(135deg, #FDF6EC 0%, #FFF9F2 60%, #F9F3E8 100%)' }}
       >
         <div className="max-w-5xl mx-auto">
+          {/* Decorative top element */}
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
             <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-            <span className="text-sm tracking-widest uppercase" style={{ color: 'var(--saffron)' }}>About This Piece</span>
+            <span className="text-sm tracking-widest uppercase" style={{ color: 'var(--saffron)' }}>The Story Behind This Piece</span>
             <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
             <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
           </div>
 
-          <h2 className="text-center mb-6 leading-snug" style={{ color: 'var(--dark-brown)', maxWidth: 700, margin: '0 auto 1.5rem' }}>
-            {product.name}
+          {/* Emotional Title */}
+          <h2
+            className="text-center mb-6 leading-snug"
+            style={{ color: 'var(--dark-brown)', maxWidth: 700, margin: '0 auto 1.5rem' }}
+          >
+            {story.emotionalTitle}
           </h2>
 
-          <p className="text-center leading-relaxed mb-10" style={{ color: 'var(--text-dark)', maxWidth: 680, margin: '0 auto 2.5rem', fontSize: '1.05rem' }}>
-            {product.description}
+          {/* Narrative */}
+          <p
+            className="text-center leading-relaxed mb-10"
+            style={{ color: 'var(--text-dark)', maxWidth: 680, margin: '0 auto 2.5rem', fontSize: '1.05rem' }}
+          >
+            {story.narrative}
           </p>
 
+          {/* Effort & Time Indicators */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             {[
-              { icon: <Star className="w-6 h-6" />, label: `${product.rating} / 5 Stars`, sub: 'Customer Rating' },
-              { icon: <User className="w-6 h-6" />, label: product.artisanName, sub: 'Artisan' },
-              { icon: <Award className="w-6 h-6" />, label: product.specialty || categoryName, sub: 'Craft Specialty' },
+              { icon: <Clock className="w-6 h-6" />, label: story.effortMetrics.timeToMake, sub: 'Time to Make' },
+              { icon: <User className="w-6 h-6" />, label: story.effortMetrics.generationsCrafted, sub: 'Heritage' },
+              { icon: <Award className="w-6 h-6" />, label: story.effortMetrics.technique, sub: 'Technique' },
             ].map(item => (
-              <div key={item.sub} className="flex items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.7)', border: '1.5px solid var(--beige)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(180,140,90,0.1)', color: 'var(--saffron)' }}>
+              <div
+                key={item.sub}
+                className="flex items-center gap-4 p-4 rounded-2xl"
+                style={{ backgroundColor: 'rgba(255,255,255,0.7)', border: '1.5px solid var(--beige)' }}
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(180,140,90,0.1)', color: 'var(--saffron)' }}
+                >
                   {item.icon}
                 </div>
                 <div>
@@ -313,46 +355,32 @@ export default function ProductDetail() {
             ))}
           </div>
 
-          {/* Tags */}
-          {product.tags && product.tags.length > 0 && (
-            <div className="flex flex-wrap gap-3 justify-center">
-              {product.tags.map(tag => (
-                <span key={tag} className="px-4 py-2 rounded-full text-sm capitalize" style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)', color: 'var(--dark-brown)' }}>
-                  🏷️ {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ══════════════ SECTION 3: Product Images Gallery ═════════════════════ */}
-      <section className="py-14 px-4" style={{ backgroundColor: 'var(--cream-bg)' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-1 h-8 rounded-full" style={{ backgroundColor: 'var(--saffron)' }} />
-            <h2 style={{ color: 'var(--dark-brown)' }}>Product Gallery</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {product.images?.slice(0, 2).map((img, idx) => (
-              <div key={idx} className="rounded-2xl overflow-hidden shadow-md border border-[var(--beige)]">
-                <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-72 object-cover" />
-                <div className="p-4">
-                  <p className="font-semibold text-sm" style={{ color: 'var(--dark-brown)' }}>{idx === 0 ? 'Main View' : 'Alternate View'}</p>
-                  <p className="text-sm" style={{ color: 'var(--text-gray)' }}>{product.name}</p>
-                </div>
-              </div>
+          {/* Cultural Context Tags */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            {[
+              { emoji: '📍', label: `Origin: ${story.culturalTags.origin}` },
+              { emoji: '🪡', label: `Craft Type: ${story.culturalTags.craftType}` },
+              { emoji: '🎉', label: `Occasion: ${story.culturalTags.occasion}` },
+            ].map(tag => (
+              <span
+                key={tag.label}
+                className="px-4 py-2 rounded-full text-sm"
+                style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)', color: 'var(--dark-brown)' }}
+              >
+                {tag.emoji} {tag.label}
+              </span>
             ))}
           </div>
-          {/* Hint */}
-          <p className="text-xs mt-3 text-center" style={{ color: 'var(--text-gray)' }}>
-            Authentic photographs of the actual product
-          </p>
         </div>
       </section>
 
+    
+
       {/* ══════════════ SECTION 4: Transparent Pricing ════════════════════════ */}
-      <section className="py-10 px-4" style={{ background: 'linear-gradient(135deg, #FDF6EC, #FFF9F2)' }}>
+      <section
+        className="py-10 px-4"
+        style={{ background: 'linear-gradient(135deg, #FDF6EC, #FFF9F2)' }}
+      >
         <div className="max-w-2xl mx-auto">
           <button
             onClick={() => setPricingOpen(v => !v)}
@@ -360,7 +388,10 @@ export default function ProductDetail() {
             style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(180,140,90,0.1)' }}>
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'rgba(180,140,90,0.1)' }}
+              >
                 <span className="text-lg">💰</span>
               </div>
               <div className="text-left">
@@ -374,86 +405,173 @@ export default function ProductDetail() {
             }
           </button>
 
-          {pricingOpen && (
-            <div className="mt-2 p-6 rounded-2xl" style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}>
-              {/* Zone Selector */}
-              <div className="mb-6">
-                <p className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--dark-brown)' }}>
-                  <Truck className="w-4 h-4" style={{ color: 'var(--saffron)' }} />
-                  Delivery Location
+          {pricingOpen && (() => {
+            const shipping    = calculateShipping(product.category, product.price, zone);
+            const total       = product.price + shipping;
+            const artisanPct  = Math.round((story.pricingBreakdown.artisanEarns / product.price) * 100);
+            const platformPct = 100 - artisanPct;
+
+            return (
+              <div
+                className="mt-2 p-6 rounded-2xl"
+                style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}
+              >
+                {/* ── Zone Selector ── */}
+                <div className="mb-6">
+                  <p className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--dark-brown)' }}>
+                    <Truck className="w-4 h-4" style={{ color: 'var(--saffron)' }} />
+                    Delivery Location
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    {(Object.keys(ZONE_LABELS) as DeliveryZone[]).map(z => (
+                      <button
+                        key={z}
+                        onClick={() => setZone(z)}
+                        className="px-3 py-1.5 rounded-full text-sm transition-all"
+                        style={
+                          zone === z
+                            ? { backgroundColor: 'var(--saffron)', color: 'white', fontWeight: 600 }
+                            : { backgroundColor: 'var(--beige)', color: 'var(--dark-brown)', border: '1px solid transparent' }
+                        }
+                      >
+                        {ZONE_LABELS[z]}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-gray)' }}>
+                    Shipping cost varies based on product type and delivery location
+                  </p>
+                </div>
+
+                {/* ── Price Summary ── */}
+                <div
+                  className="rounded-xl p-4 mb-6 space-y-2"
+                  style={{ backgroundColor: 'var(--cream)' }}
+                >
+                  <div className="flex justify-between text-sm">
+                    <span style={{ color: 'var(--text-gray)' }}>Product Price</span>
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{product.price.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping ({ZONE_LABELS[zone]})</span>
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{shipping.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="h-px" style={{ backgroundColor: 'var(--beige)' }} />
+                  <div className="flex justify-between">
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>Total Payable</span>
+                    <span style={{ color: 'var(--saffron)', fontWeight: 700, fontSize: '1.1rem' }}>
+                      ₹{total.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* ── Breakdown Bars ── */}
+                <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-gray)' }}>
+                  Breakdown of Base Price
                 </p>
-                <div className="flex gap-2 flex-wrap">
-                  {(Object.keys(ZONE_LABELS) as DeliveryZone[]).map(z => (
-                    <button
-                      key={z}
-                      onClick={() => setZone(z)}
-                      className="px-3 py-1.5 rounded-full text-sm transition-all"
-                      style={
-                        zone === z
-                          ? { backgroundColor: 'var(--saffron)', color: 'white', fontWeight: 600 }
-                          : { backgroundColor: 'var(--beige)', color: 'var(--dark-brown)', border: '1px solid transparent' }
-                      }
-                    >
-                      {ZONE_LABELS[z]}
-                    </button>
+                <div className="space-y-4 mb-5">
+                  {[
+                    {
+                      emoji: '🧑‍🎨',
+                      label: 'Artisan Earnings',
+                      amount: story.pricingBreakdown.artisanEarns,
+                      pct: artisanPct,
+                      color: '#4A8C4A',
+                      note: `Goes directly to ${product.artisan}`,
+                    },
+                    {
+                      emoji: '🏪',
+                      label: 'Platform Fee (10%)',
+                      amount: story.pricingBreakdown.platformFee,
+                      pct: platformPct,
+                      color: 'var(--saffron)',
+                      note: '10% platform fee helps us operate and support artisans',
+                    },
+                    {
+                      emoji: '🚚',
+                      label: `Shipping Cost`,
+                      amount: shipping,
+                      pct: null,     // shipping is separate — no bar
+                      color: 'var(--rust-red)',
+                      note: `Calculated for ${ZONE_LABELS[zone]} delivery`,
+                    },
+                  ].map(row => (
+                    <div key={row.label}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-sm font-semibold" style={{ color: 'var(--dark-brown)' }}>
+                          {row.emoji} {row.label}
+                        </span>
+                        <span className="text-sm font-bold" style={{ color: row.color }}>
+                          ₹{row.amount.toLocaleString('en-IN')}
+                          {row.pct !== null && (
+                            <span className="font-normal text-xs ml-1" style={{ color: 'var(--text-gray)' }}>({row.pct}%)</span>
+                          )}
+                        </span>
+                      </div>
+                      {row.pct !== null && (
+                        <div className="relative h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--beige)' }}>
+                          <div
+                            className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${row.pct}%`, backgroundColor: row.color }}
+                          />
+                        </div>
+                      )}
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-gray)' }}>{row.note}</p>
+                    </div>
                   ))}
                 </div>
-                <p className="text-xs mt-2" style={{ color: 'var(--text-gray)' }}>
-                  Shipping cost varies based on product type and delivery location
-                </p>
-              </div>
 
-              {/* Price Summary */}
-              <div className="rounded-xl p-4 mb-6 space-y-2" style={{ backgroundColor: 'var(--cream)' }}>
-                <div className="flex justify-between text-sm">
-                  <span style={{ color: 'var(--text-gray)' }}>Product Price</span>
-                  <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{product.price.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping ({ZONE_LABELS[zone]})</span>
-                  <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{shipping.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="h-px" style={{ backgroundColor: 'var(--beige)' }} />
-                <div className="flex justify-between">
-                  <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>Total Payable</span>
-                  <span style={{ color: 'var(--saffron)', fontWeight: 700, fontSize: '1.1rem' }}>₹{total.toLocaleString('en-IN')}</span>
+                {/* ── UX rule confirmation ── */}
+                <div
+                  className="rounded-xl p-3 text-xs"
+                  style={{ backgroundColor: 'rgba(74,140,74,0.07)', color: '#4A8C4A' }}
+                >
+                  ✔ Artisan Earnings + Platform Fee = ₹{product.price.toLocaleString('en-IN')} (base price) · Shipping shown separately
                 </div>
               </div>
+            );
+          })()}
+        </div>
+      </section>
 
-              <div className="rounded-xl p-3 text-xs" style={{ backgroundColor: 'rgba(74,140,74,0.07)', color: '#4A8C4A' }}>
-                ✔ Artisan Earnings + Platform Fee = ₹{product.price.toLocaleString('en-IN')} (base price) · Shipping shown separately
-              </div>
+      {/* ══════════════ SECTION 5: Related Products ═══════════════════════════ */}
+      {relatedProducts.length > 0 && (
+        <section className="py-14 px-4" style={{ backgroundColor: 'var(--cream-bg)' }}>
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: 'var(--rust-red)' }} />
+              <h2 style={{ color: 'var(--dark-brown)' }}>More from {product.category}</h2>
             </div>
-          )}
-        </div>
-      </section>
 
-      {/* ══════════════ SECTION 5: Related Products Link ══════════════════════ */}
-      <section className="py-14 px-4" style={{ backgroundColor: 'var(--cream-bg)' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-8 rounded-full" style={{ backgroundColor: 'var(--rust-red)' }} />
-            <h2 style={{ color: 'var(--dark-brown)' }}>More from {categoryName}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map(rp => (
+                <Link
+                  key={rp.id}
+                  to={`/product/${rp.id}`}
+                  className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  style={{ border: '1px solid var(--beige)' }}
+                >
+                  <div className="relative aspect-square overflow-hidden">
+                    <img
+                      src={rp.image}
+                      alt={rp.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs mb-1" style={{ color: 'var(--saffron)' }}>{rp.category}</p>
+                    <h3 className="text-base mb-1 line-clamp-1" style={{ color: 'var(--dark-brown)' }}>{rp.name}</h3>
+                    <p className="text-sm mb-1" style={{ color: 'var(--text-gray)' }}>by {rp.artisan}</p>
+                    <p className="font-semibold" style={{ color: 'var(--dark-brown)' }}>
+                      ₹{rp.price.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          <p className="text-sm mb-6" style={{ color: 'var(--text-gray)' }}>
-            Browse more handcrafted goods from the{' '}
-            <Link
-              to={`/category/${encodeURIComponent(categoryId || categoryName)}`}
-              className="underline font-semibold"
-              style={{ color: 'var(--saffron)' }}
-            >
-              {categoryName} collection
-            </Link>.
-          </p>
-          <Link
-            to={`/category/${encodeURIComponent(categoryId || categoryName)}`}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: 'var(--saffron)' }}
-          >
-            View All {categoryName}
-          </Link>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Verified Artisan Modal */}
       {showVerifiedModal && (

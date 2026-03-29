@@ -1,9 +1,8 @@
 import { useParams, Link, useNavigate } from 'react-router';
-import { ShoppingBag, SlidersHorizontal, ChevronDown, Star } from 'lucide-react';
+import { ShoppingBag, SlidersHorizontal, ChevronDown, ArrowLeft } from 'lucide-react';
+import { products } from '../data/products';
 import { useState, useMemo } from 'react';
-import { useProducts } from '../hooks/useProducts';
 import { Breadcrumb } from '../components/Breadcrumb';
-
 
 const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: string }> = {
   'Jewelry':            { accent: '#B5851A', emoji: '💎', bg: '#FDF6E3' },
@@ -40,25 +39,18 @@ export default function CategoryPage() {
   const decoded = decodeURIComponent(categoryName || '');
   const cfg = CATEGORY_ACCENTS[decoded] ?? { accent: 'var(--rust-red)', emoji: '🛍️', bg: '#F8F4EA' };
 
-  const [maxPrice, setMaxPrice] = useState(15000);
-  const [minRating, setMinRating] = useState(0);
-  const [sortOrder, setSortOrder] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-
-  // Fetch real products filtered by category name
-  const { products: rawProducts, loading, error } = useProducts({ category: decoded, per_page: 50 });
+  const [sort, setSort] = useState('default');
+  const [showSort, setShowSort] = useState(false);
 
   const categoryProducts = useMemo(() => {
-    let base = [...rawProducts].filter(p => p.price <= maxPrice);
-    if (minRating > 0) {
-      base = base.filter(p => p.rating >= minRating);
+    const base = products.filter(p => p.category === decoded);
+    switch (sort) {
+      case 'price-asc':  return [...base].sort((a, b) => a.price - b.price);
+      case 'price-desc': return [...base].sort((a, b) => b.price - a.price);
+      case 'name-asc':   return [...base].sort((a, b) => a.name.localeCompare(b.name));
+      default:           return base;
     }
-    if (sortOrder === 'price-asc') {
-      base.sort((a, b) => a.price - b.price);
-    } else if (sortOrder === 'price-desc') {
-      base.sort((a, b) => b.price - a.price);
-    }
-    return base;
-  }, [rawProducts, maxPrice, minRating, sortOrder]);
+  }, [decoded, sort]);
 
   if (!decoded) {
     return (
@@ -67,19 +59,6 @@ export default function CategoryPage() {
       </div>
     );
   }
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-xl font-bold animate-pulse" style={{ color: 'var(--saffron)' }}>Loading {decoded}...</p>
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-xl font-bold text-red-500">{error}</p>
-    </div>
-  );
-
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
@@ -203,11 +182,10 @@ export default function CategoryPage() {
               >
                 <div className="aspect-square relative overflow-hidden">
                   <img
-                    src={product.images?.[0] || '/placeholder.jpg'}
+                    src={product.image}
                     alt={product.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-106 transition-transform duration-400"
                   />
-
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: `linear-gradient(to top, ${cfg.accent}bb, transparent 60%)` }}
@@ -231,16 +209,8 @@ export default function CategoryPage() {
                     ₹{product.price.toLocaleString('en-IN')}
                   </p>
                   <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.7rem' }}>
-                    by {product.artisanName}
+                    by {product.artisan} · {product.state}
                   </p>
-                  <div className="flex items-center mt-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3 h-3 ${i < Math.round(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`}
-                      />
-                    ))}
-                  </div>
                 </div>
               </Link>
             ))}
