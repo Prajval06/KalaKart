@@ -9,6 +9,8 @@ export interface CartItem {
 export interface AuthUser {
   email: string;
   name: string;
+  photoURL?: string; // Google profile photo
+  userType?: 'buyer' | 'seller';
 }
 
 export interface AddressData {
@@ -18,6 +20,15 @@ export interface AddressData {
   pincode: string;
   city: string;
   state: string;
+}
+
+// ── Stored user record (includes hashed-ish password for mock) ──────────────
+interface StoredUserRecord {
+  email: string;
+  name: string;
+  password: string; // plain text for mock purposes only
+  photoURL?: string;
+  userType?: 'buyer' | 'seller';
 }
 
 interface AppContextType {
@@ -33,8 +44,10 @@ interface AppContextType {
   // ── Auth ──
   isLoggedIn: boolean;
   currentUser: AuthUser | null;
-  login: (email: string, password: string) => Promise<{ error?: string }>;
-  signup: (email: string, password: string, name: string) => Promise<{ error?: string }>;
+  login: (email: string, password: string, userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
+  signup: (email: string, password: string, name: string, userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
+  forgotPassword: (email: string) => Promise<{ error?: string; success?: string }>;
+  loginWithGoogle: (userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
   logout: () => void;
   // ── Saved Address ──
   savedAddress: AddressData | null;
@@ -49,42 +62,46 @@ export function useAppContext() {
   return ctx;
 }
 
-// ── Mock auth helpers (localStorage-backed) ─────────────────────────────────
+// ── LocalStorage keys ────────────────────────────────────────────────────────
+const LS_USER      = 'kk_user';
+const LS_REGISTRY  = 'kk_registry';  // { [email]: StoredUserRecord }
+const LS_ADDRESS   = 'kk_address';
+
 function loadUser(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem('kk_user');
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+  try { const r = localStorage.getItem(LS_USER); return r ? JSON.parse(r) : null; }
+  catch { return null; }
 }
 
 function saveUser(user: AuthUser | null) {
-  if (user) localStorage.setItem('kk_user', JSON.stringify(user));
-  else localStorage.removeItem('kk_user');
+  if (user) localStorage.setItem(LS_USER, JSON.stringify(user));
+  else localStorage.removeItem(LS_USER);
+}
+
+function loadRegistry(): Record<string, StoredUserRecord> {
+  try { const r = localStorage.getItem(LS_REGISTRY); return r ? JSON.parse(r) : {}; }
+  catch { return {}; }
+}
+
+function saveRegistry(reg: Record<string, StoredUserRecord>) {
+  localStorage.setItem(LS_REGISTRY, JSON.stringify(reg));
 }
 
 function loadSavedAddress(): AddressData | null {
-  try {
-    const raw = localStorage.getItem('kk_address');
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+  try { const r = localStorage.getItem(LS_ADDRESS); return r ? JSON.parse(r) : null; }
+  catch { return null; }
 }
 
-// Simulate network latency for mock auth
-const mockDelay = () => new Promise<void>(r => setTimeout(r, 700));
+const mockDelay = () => new Promise<void>(r => setTimeout(r, 800));
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
+    try { const s = localStorage.getItem('cart'); return s ? JSON.parse(s) : []; }
+    catch { return []; }
   });
 
   const [wishlistItems, setWishlistItems] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('wishlist');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
+    try { const s = localStorage.getItem('wishlist'); return s ? JSON.parse(s) : []; }
+    catch { return []; }
   });
 
   const [toasts, setToasts] = useState<Omit<ToastProps, 'onClose'>[]>([]);
@@ -130,9 +147,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCartItems(prev => prev.filter(item => item.productId !== productId));
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const clearCart = () => { setCartItems([]); };
 
   const toggleWishlist = (productId: string, productName: string) => {
     const isAdding = !wishlistItems.includes(productId);
@@ -152,24 +167,111 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   // ── Auth actions ──
-  const login = async (email: string, password: string): Promise<{ error?: string }> => {
+
+  /**
+   * LOGIN: checks registry; returns proper inline errors.
+   */
+  const login = async (
+    email: string,
+    password: string,
+    userType?: 'buyer' | 'seller'
+  ): Promise<{ error?: string }> => {
     await mockDelay();
-    if (!email.includes('@')) return { error: 'Please enter a valid email address.' };
-    if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
-    const user: AuthUser = { email, name: email.split('@')[0] };
+    const registry = loadRegistry();
+    const key = email.toLowerCase().trim();
+
+    if (!registry[key]) {
+      return { error: 'This email is not registered. Please sign up first.' };
+    }
+    if (registry[key].password !== password) {
+      return { error: 'Incorrect password.' };
+    }
+
+    const rec = registry[key];
+    // userType passed at login overrides stored value (e.g. buyer tab selected)
+    const resolvedType = userType ?? rec.userType ?? 'buyer';
+    const user: AuthUser = { email: rec.email, name: rec.name, photoURL: rec.photoURL, userType: resolvedType };
     setCurrentUser(user);
     saveUser(user);
     return {};
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<{ error?: string }> => {
+  /**
+   * SIGN UP: prevents duplicate emails.
+   */
+  const signup = async (
+    email: string,
+    password: string,
+    name: string,
+    userType?: 'buyer' | 'seller'
+  ): Promise<{ error?: string }> => {
     await mockDelay();
-    if (!email.includes('@')) return { error: 'Please enter a valid email address.' };
-    if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
-    if (!name.trim()) return { error: 'Please enter your name.' };
-    const user: AuthUser = { email, name: name.trim() };
-    setCurrentUser(user);
-    saveUser(user);
+    const registry = loadRegistry();
+    const key = email.toLowerCase().trim();
+
+    if (registry[key]) {
+      return { error: 'An account with this email already exists. Please log in.' };
+    }
+
+    const record: StoredUserRecord = { email, name: name.trim(), password, userType: userType ?? 'buyer' };
+    registry[key] = record;
+    saveRegistry(registry);
+
+    // Don't auto-login after signup — caller switches to login view
+    return {};
+  };
+
+  /**
+   * FORGOT PASSWORD: validates email exists, simulates sending reset email.
+   */
+  const forgotPassword = async (
+    email: string
+  ): Promise<{ error?: string; success?: string }> => {
+    await mockDelay();
+    const registry = loadRegistry();
+    const key = email.toLowerCase().trim();
+
+    if (!registry[key]) {
+      return { error: 'No account found with this email.' };
+    }
+
+    // In production this would call your backend/Firebase.
+    // Mock: just return success message.
+    return { success: 'Password reset email sent. Please check your inbox.' };
+  };
+
+  /**
+   * GOOGLE SIGN IN: simulates OAuth with a mock Google profile.
+   * In production, replace with Firebase/Auth0 Google provider.
+   */
+  const loginWithGoogle = async (userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
+    await mockDelay();
+
+    // Mock Google user — in production this comes from OAuth callback
+    const googleUser: AuthUser = {
+      email: 'google.user@gmail.com',
+      name: 'Google User',
+      photoURL: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+      userType: userType ?? 'buyer',
+    };
+
+    const registry = loadRegistry();
+    const key = googleUser.email.toLowerCase();
+
+    // Auto-register Google user if first time
+    if (!registry[key]) {
+      registry[key] = {
+        email: googleUser.email,
+        name: googleUser.name,
+        password: '__google_oauth__',
+        photoURL: googleUser.photoURL,
+        userType: googleUser.userType,
+      };
+      saveRegistry(registry);
+    }
+
+    setCurrentUser(googleUser);
+    saveUser(googleUser);
     return {};
   };
 
@@ -180,7 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setSavedAddress = (addr: AddressData) => {
     setSavedAddressState(addr);
-    localStorage.setItem('kk_address', JSON.stringify(addr));
+    localStorage.setItem(LS_ADDRESS, JSON.stringify(addr));
   };
 
   return (
@@ -188,7 +290,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         cartItems, wishlistItems, toasts,
         addToCart, updateQuantity, removeItem, clearCart, toggleWishlist, removeToast,
-        isLoggedIn, currentUser, login, signup, logout,
+        isLoggedIn, currentUser, login, signup, forgotPassword, loginWithGoogle, logout,
         savedAddress, setSavedAddress,
       }}
     >
