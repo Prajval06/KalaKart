@@ -16,6 +16,13 @@ const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: stri
   'Home Decor':         { accent: '#8B4513', emoji: '🏮', bg: '#F8F0E8' },
 };
 
+const SORT_OPTIONS = [
+  { value: 'default', label: 'Featured' },
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'name-asc', label: 'Name: A–Z' },
+];
+
 const ALL_CATEGORIES = [
   'Jewelry',
   'Art & Paintings',
@@ -52,7 +59,6 @@ export default function CategoryPage() {
     }
     return base;
   }, [rawProducts, maxPrice, minRating, sortOrder]);
-
 
   if (!decoded) {
     return (
@@ -96,6 +102,7 @@ export default function CategoryPage() {
               className="p-2 rounded-full hover:bg-white/70 transition-colors"
               style={{ color: cfg.accent }}
             >
+              <ArrowLeft className="w-6 h-6" />
             </button>
             <div>
               <div className="flex items-center gap-3 mb-1">
@@ -138,119 +145,37 @@ export default function CategoryPage() {
             </span>
           </div>
 
-          {/* Filter Dropdown */}
-          <div className="relative group/filter">
+          {/* Sort Dropdown */}
+          <div className="relative">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm transition-all shadow-sm focus:outline-none"
+              onClick={() => setShowSort(!showSort)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm hover:border-gray-300 transition-colors"
               style={{ color: 'var(--dark-brown)' }}
             >
-              Filter By
-              <ChevronDown className="w-4 h-4 text-gray-400 group-hover/filter:rotate-180 transition-transform duration-300" />
+              {SORT_OPTIONS.find(o => o.value === sort)?.label}
+              <ChevronDown className="w-4 h-4 text-gray-400" />
             </button>
-            <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20 opacity-0 invisible group-hover/filter:opacity-100 group-hover/filter:visible transition-all duration-300 translate-y-2 group-hover/filter:translate-y-0">
-              <div className="p-4 border-b border-gray-100">
-                <h4 className="text-sm font-semibold mb-3 text-gray-800">Price Range</h4>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="15000"
-                    step="500"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className="w-full cursor-pointer"
-                    style={{ accentColor: cfg.accent }}
-                  />
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>₹0</span>
-                    <span className="font-semibold text-gray-700">Up to ₹{maxPrice.toLocaleString('en-IN')}</span>
-                    <span>₹15k+</span>
-                  </div>
+            {showSort && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowSort(false)} />
+                <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20">
+                  {SORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setSort(opt.value); setShowSort(false); }}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors"
+                      style={{
+                        color: sort === opt.value ? cfg.accent : 'var(--dark-brown)',
+                        fontWeight: sort === opt.value ? 600 : 400,
+                        backgroundColor: sort === opt.value ? `${cfg.accent}10` : 'transparent',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
-              </div>
-              <div className="p-4">
-                <h4 className="text-sm font-semibold mb-3 text-gray-800">Rating</h4>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-                    <input
-                      type="radio"
-                      name="rating"
-                      value="all"
-                      checked={minRating === 0}
-                      onChange={() => setMinRating(0)}
-                      className="cursor-pointer"
-                      style={{ accentColor: cfg.accent }}
-                    />
-                    <span>All Ratings</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-                    <input
-                      type="radio"
-                      name="rating"
-                      value="4"
-                      checked={minRating === 4}
-                      onChange={() => setMinRating(4)}
-                      className="cursor-pointer"
-                      style={{ accentColor: cfg.accent }}
-                    />
-                    <span className="flex items-center">4 <Star className="w-3 h-3 mx-1 fill-yellow-400 text-yellow-400"/> & above</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-                    <input
-                      type="radio"
-                      name="rating"
-                      value="3"
-                      checked={minRating === 3}
-                      onChange={() => setMinRating(3)}
-                      className="cursor-pointer"
-                      style={{ accentColor: cfg.accent }}
-                    />
-                    <span className="flex items-center">3 <Star className="w-3 h-3 mx-1 fill-yellow-400 text-yellow-400"/> & above</span>
-                  </label>
-                </div>
-              </div>
-              <div className="p-4 border-t border-gray-100">
-                <h4 className="text-sm font-semibold mb-3 text-gray-800">Sort By</h4>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-                    <input
-                      type="radio"
-                      name="sort"
-                      value="default"
-                      checked={sortOrder === 'default'}
-                      onChange={() => setSortOrder('default')}
-                      className="cursor-pointer"
-                      style={{ accentColor: cfg.accent }}
-                    />
-                    <span>Featured</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-                    <input
-                      type="radio"
-                      name="sort"
-                      value="price-asc"
-                      checked={sortOrder === 'price-asc'}
-                      onChange={() => setSortOrder('price-asc')}
-                      className="cursor-pointer"
-                      style={{ accentColor: cfg.accent }}
-                    />
-                    <span>Price: Low to High</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-                    <input
-                      type="radio"
-                      name="sort"
-                      value="price-desc"
-                      checked={sortOrder === 'price-desc'}
-                      onChange={() => setSortOrder('price-desc')}
-                      className="cursor-pointer"
-                      style={{ accentColor: cfg.accent }}
-                    />
-                    <span>Price: High to Low</span>
-                  </label>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -259,14 +184,14 @@ export default function CategoryPage() {
           <div className="py-24 text-center">
             <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <h3 className="mb-2" style={{ color: 'var(--dark-brown)' }}>No products found</h3>
-            <p className="text-gray-500 mb-6">We couldn't find any products matching your filters.</p>
-            <button
-              onClick={() => { setMaxPrice(15000); setMinRating(0); setSortOrder('default'); }}
+            <p className="text-gray-500 mb-6">We couldn't find any products in this category.</p>
+            <Link
+              to="/"
               className="inline-flex items-center px-6 py-3 rounded-xl text-white hover:opacity-90 transition-opacity"
               style={{ backgroundColor: cfg.accent }}
             >
-              Clear Filters
-            </button>
+              Back to Home
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">

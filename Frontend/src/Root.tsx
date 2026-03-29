@@ -4,7 +4,6 @@ import { Footer } from './components/Footer';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { ScrollToTop } from './components/ScrollToTop';
 import { useAppContext } from './context/AppContext';
-import { DiscoveryWidget } from './components/DiscoveryWidget';
 
 export default function Root() {
   const { cartItems, wishlistItems } = useAppContext();
@@ -20,7 +19,6 @@ export default function Root() {
         <Outlet />
       </main>
       <Footer />
-      <DiscoveryWidget />
     </div>
   );
 }

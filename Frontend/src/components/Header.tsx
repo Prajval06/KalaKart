@@ -1,9 +1,8 @@
-import { ShoppingCart, Menu, X, User, Heart, Search, LogOut, LayoutDashboard } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router';
-import { useState, useRef, useEffect } from 'react';
-import logoImage from '../assets/6894975ff7bda70b68315fd77903bff02141295f.png';
-import { useAppContext } from '../context/AppContext';
+import { ShoppingCart, Menu, X, User, Heart, Search } from 'lucide-react';
+import { Link, useLocation } from 'react-router';
+import { useState } from 'react';
 
+const logoImage = "https://raw.githubusercontent.com/Prajval06/KalaKart/refs/heads/main/Kalakart%20logo.png";
 interface HeaderProps {
   cartCount: number;
   wishlistCount: number;
@@ -11,46 +10,9 @@ interface HeaderProps {
 
 export function Header({ cartCount, wishlistCount }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isLoggedIn, currentUser, logout } = useAppContext();
-  const profileRef = useRef<HTMLDivElement>(null);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
-  };
 
   const isActive = (path: string) => location.pathname === path;
-
-  // Close profile dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setProfileOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const handleProfileClick = () => {
-    if (!isLoggedIn) {
-      // Not signed in → go to auth page (signup mode by default)
-      navigate('/auth');
-    } else {
-      setProfileOpen(prev => !prev);
-    }
-  };
-
-  const handleLogout = () => {
-    logout();
-    setProfileOpen(false);
-    navigate('/');
-  };
 
   return (
     <header className="bg-white shadow-sm" style={{ backgroundColor: 'var(--cream-bg)' }}>
@@ -60,7 +22,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
           <Link to="/" className="flex items-center flex-shrink-0 gap-2">
             <img 
               src={logoImage}
-              alt="Kalakart Logo"
+              alt="KalaKart Logo"
               className="h-10"
             />
             <span 
@@ -77,11 +39,9 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-            <form className="relative w-full" onSubmit={handleSearch}>
+            <div className="relative w-full">
               <input
                 type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search for handicrafts, artisans..."
                 className="w-full px-4 py-3 pr-12 rounded-full border-2 focus:outline-none focus:ring-2"
                 style={{ 
@@ -90,88 +50,20 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                 }}
               />
               <button 
-                type="submit"
                 className="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full hover:opacity-70 transition-opacity"
                 style={{ backgroundColor: 'var(--cream-bg)' }}
               >
                 <Search className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
               </button>
-            </form>
+            </div>
           </div>
 
           {/* Right Icons */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* User / Profile Icon */}
-            <div className="relative" ref={profileRef}>
-              <button
-                onClick={handleProfileClick}
-                className="w-12 h-12 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity relative"
-                style={{ backgroundColor: '#F4C95D' }}
-                aria-label={isLoggedIn ? 'Profile menu' : 'Sign in'}
-                title={isLoggedIn ? currentUser?.name : 'Sign up / Login'}
-              >
-                {isLoggedIn && currentUser ? (
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: 'var(--dark-brown)' }}
-                  >
-                    {currentUser.name.charAt(0).toUpperCase()}
-                  </span>
-                ) : (
-                  <User className="w-6 h-6" style={{ color: 'var(--dark-brown)' }} />
-                )}
-              </button>
-
-              {/* Profile Dropdown (only when logged in) */}
-              {isLoggedIn && profileOpen && (
-                <div
-                  className="absolute right-0 top-14 w-52 rounded-xl shadow-lg overflow-hidden z-50"
-                  style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)' }}
-                >
-                  {/* User info */}
-                  <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--beige)' }}>
-                    <p className="text-sm font-bold truncate" style={{ color: 'var(--dark-brown)' }}>
-                      {currentUser?.name}
-                    </p>
-                    <p className="text-xs truncate" style={{ color: 'var(--text-gray)' }}>
-                      {currentUser?.email}
-                    </p>
-                    <span
-                      className="mt-1 inline-block text-xs px-2 py-0.5 rounded-full font-semibold"
-                      style={{
-                        backgroundColor: currentUser?.role === 'seller' ? 'rgba(180,140,90,0.15)' : 'rgba(74,140,74,0.1)',
-                        color: currentUser?.role === 'seller' ? 'var(--saffron)' : '#4A8C4A',
-                      }}
-                    >
-                      {currentUser?.role === 'seller' ? 'Artisan / Seller' : 'Buyer'}
-                    </span>
-                  </div>
-
-                  {/* Dashboard link (sellers only) */}
-                  {currentUser?.role === 'seller' && (
-                    <Link
-                      to="/seller-dashboard"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-amber-50 transition-colors"
-                      style={{ color: 'var(--dark-brown)' }}
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      Artisan Dashboard
-                    </Link>
-                  )}
-
-                  {/* Logout */}
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-red-50 transition-colors"
-                    style={{ color: '#C03030' }}
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* User Icon */}
+            <Link to="/auth" className="w-12 h-12 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity" style={{ backgroundColor: '#F4C95D' }}>
+              <User className="w-6 h-6" style={{ color: 'var(--dark-brown)' }} />
+            </Link>
             
             {/* Wishlist Icon */}
             <Link to="/wishlist" className="relative w-12 h-12 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity" style={{ backgroundColor: 'var(--dark-brown)' }}>
@@ -215,11 +107,9 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
 
         {/* Mobile Search */}
         <div className="md:hidden pb-4">
-          <form className="relative w-full" onSubmit={handleSearch}>
+          <div className="relative w-full">
             <input
               type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search..."
               className="w-full px-4 py-2 pr-10 rounded-full border-2 focus:outline-none"
               style={{ 
@@ -227,10 +117,10 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                 backgroundColor: 'white'
               }}
             />
-            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2">
+            <button className="absolute right-2 top-1/2 -translate-y-1/2">
               <Search className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
             </button>
-          </form>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -269,34 +159,14 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
               >
                 About
               </Link>
-              {isLoggedIn && currentUser?.role === 'seller' && (
-                <Link 
-                  to="/seller-dashboard" 
-                  className={`py-2 transition-colors ${isActive('/seller-dashboard') ? 'font-semibold' : ''}`}
-                  style={{ color: isActive('/seller-dashboard') ? 'var(--rust-red)' : 'var(--text-dark)' }}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Artisan Dashboard
-                </Link>
-              )}
-              {isLoggedIn ? (
-                <button
-                  onClick={() => { handleLogout(); setMenuOpen(false); }}
-                  className="py-2 text-left transition-colors"
-                  style={{ color: '#C03030' }}
-                >
-                  Logout
-                </button>
-              ) : (
-                <Link
-                  to="/auth"
-                  className="py-2 transition-colors font-semibold"
-                  style={{ color: 'var(--rust-red)' }}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Sign Up / Login
-                </Link>
-              )}
+              <Link 
+                to="/seller-dashboard" 
+                className={`py-2 transition-colors ${isActive('/seller-dashboard') ? 'font-semibold' : ''}`}
+                style={{ color: isActive('/seller-dashboard') ? 'var(--rust-red)' : 'var(--text-dark)' }}
+                onClick={() => setMenuOpen(false)}
+              >
+                Seller Dashboard
+              </Link>
             </div>
           </nav>
         )}

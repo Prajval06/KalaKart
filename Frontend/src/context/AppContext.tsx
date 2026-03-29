@@ -9,7 +9,6 @@ export interface CartItem {
 export interface AuthUser {
   email: string;
   name: string;
-  role: 'buyer' | 'seller';
 }
 
 export interface AddressData {
@@ -35,7 +34,7 @@ interface AppContextType {
   isLoggedIn: boolean;
   currentUser: AuthUser | null;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  signup: (email: string, password: string, name: string, role?: 'buyer' | 'seller') => Promise<{ error?: string }>;
+  signup: (email: string, password: string, name: string) => Promise<{ error?: string }>;
   logout: () => void;
   // ── Saved Address ──
   savedAddress: AddressData | null;
@@ -144,8 +143,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-
-
   const signup = async (email: string, password: string, name: string, role: 'buyer' | 'seller' = 'buyer'): Promise<{ error?: string }> => {
     try {
       const res = await fetch(`${BASE_URL}/auth/register`, {
@@ -187,8 +184,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return { error: err.message || 'Network error. Please try again.' };
     }
   };
-
-
 
   const logout = () => {
     setCurrentUser(null);
