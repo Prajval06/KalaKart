@@ -4,11 +4,12 @@
   "description": "KalaKart e-commerce platform",
   "main": "backend/src/server.js",
   "scripts": {
-    "dev": "cd backend && nodemon src/server.js",
-    "start": "cd backend && node src/server.js",
-    "test": "cd backend && jest --runInBand --forceExit",
-    "test:watch": "cd backend && jest --watchAll --runInBand",
-    "test:cover": "cd backend && jest --coverage --runInBand --forceExit"
+    "dev": "node --watch backend/src/server.js",
+    "dev:nodemon": "npx --no-install nodemon backend/src/server.js",
+    "start": "node backend/src/server.js",
+    "test": "jest --runInBand --forceExit",
+    "test:watch": "jest --watchAll --runInBand",
+    "test:cover": "jest --coverage --runInBand --forceExit"
   },
   "keywords": [
     "ecommerce",
@@ -28,12 +29,13 @@
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^7.1.0",
-    "mongoose": "^7.0.0",
+    "mongoose": "^8.23.0",
     "morgan": "^1.10.0",
     "stripe": "^11.0.0"
   },
   "devDependencies": {
     "jest": "^29.5.0",
+    "minimatch": "^3.1.2",
     "mongodb-memory-server": "^11.0.1",
     "nodemon": "^2.0.22",
     "supertest": "^6.3.3"

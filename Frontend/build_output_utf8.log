@@ -1,0 +1,92 @@
+﻿
+> E-commerce UI/UX Design@0.1.0 build
+> vite build
+
+[36mvite v6.3.5 [32mbuilding for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 5 modules transformed.
+node.exe : [31mΓ£ù[39m 
+Build failed in 193ms
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: ([3  
+  1mΓ£ù[39m Build faile   
+ d in 193ms:String) [],    
+ RemoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+[31merror during build:
+[31m[vite:esbuild] 
+Transform failed with 1 
+error:
+C:/Users/LENOVO/OneDrive/De
+sktop/KalaKart222/KalaKart/
+Frontend/src/routes.ts:22:1
+9: ERROR: Expected ">" but 
+found "/"[31m
+file: [36mC:/Users/LENOVO/
+OneDrive/Desktop/KalaKart22
+2/KalaKart/Frontend/src/rou
+tes.ts:22:19[31m
+[33m
+[33mExpected ">" but 
+found "/"[33m
+20 |    {
+21 |      path: "/",
+22 |      element: <Root 
+/>,
+   |                     ^
+23 |      children: [
+24 |        { index: true, 
+element: <Home /> },
+[31m
+    at failureErrorWithLog 
+(C:\Users\LENOVO\OneDrive\D
+esktop\KalaKart222\KalaKart
+\Frontend\node_modules\esbu
+ild\lib\main.js:1467:15)
+    at C:\Users\LENOVO\OneD
+rive\Desktop\KalaKart222\Ka
+laKart\Frontend\node_module
+s\esbuild\lib\main.js:736:5
+0
+    at responseCallbacks.<c
+omputed> (C:\Users\LENOVO\O
+neDrive\Desktop\KalaKart222
+\KalaKart\Frontend\node_mod
+ules\esbuild\lib\main.js:60
+3:9)
+    at 
+handleIncomingPacket (C:\Us
+ers\LENOVO\OneDrive\Desktop
+\KalaKart222\KalaKart\Front
+end\node_modules\esbuild\li
+b\main.js:658:12)
+    at 
+Socket.readFromStdout (C:\U
+sers\LENOVO\OneDrive\Deskto
+p\KalaKart222\KalaKart\Fron
+tend\node_modules\esbuild\l
+ib\main.js:581:7)
+    at Socket.emit 
+(node:events:508:28)
+    at addChunk (node:inter
+nal/streams/readable:563:12
+)
+    at readableAddChunkPush
+ByteMode (node:internal/str
+eams/readable:514:3)
+    at Readable.push (node:
+internal/streams/readable:3
+94:5)
+    at Pipe.onStreamRead (n
+ode:internal/stream_base_co
+mmons:189:23)[39m
