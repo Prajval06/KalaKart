@@ -6,6 +6,24 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface OrderItem {
+  productId: string;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  artisan: string;
+  category: string;
+}
+
+export interface Order {
+  id: string;           // e.g. KK12345678
+  placedAt: string;     // ISO date string
+  items: OrderItem[];
+  total: number;
+  status: 'Processing' | 'Shipped' | 'Delivered';
+}
+
 export interface AuthUser {
   email: string;
   name: string;
@@ -52,6 +70,9 @@ interface AppContextType {
   // ── Saved Address ──
   savedAddress: AddressData | null;
   setSavedAddress: (addr: AddressData) => void;
+  // ── Orders ──
+  orders: Order[];
+  placeOrder: (items: OrderItem[], total: number, orderId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -66,6 +87,12 @@ export function useAppContext() {
 const LS_USER      = 'kk_user';
 const LS_REGISTRY  = 'kk_registry';  // { [email]: StoredUserRecord }
 const LS_ADDRESS   = 'kk_address';
+const LS_ORDERS    = 'kk_orders';
+
+function loadOrders(): Order[] {
+  try { const r = localStorage.getItem(LS_ORDERS); return r ? JSON.parse(r) : []; }
+  catch { return []; }
+}
 
 function loadUser(): AuthUser | null {
   try { const r = localStorage.getItem(LS_USER); return r ? JSON.parse(r) : null; }
@@ -112,6 +139,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ── Saved Address ──
   const [savedAddress, setSavedAddressState] = useState<AddressData | null>(loadSavedAddress);
+
+  // ── Orders ──
+  const [orders, setOrders] = useState<Order[]>(loadOrders);
+
+  useEffect(() => { localStorage.setItem(LS_ORDERS, JSON.stringify(orders)); }, [orders]);
 
   useEffect(() => { localStorage.setItem('cart', JSON.stringify(cartItems)); }, [cartItems]);
   useEffect(() => { localStorage.setItem('wishlist', JSON.stringify(wishlistItems)); }, [wishlistItems]);
@@ -285,6 +317,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(LS_ADDRESS, JSON.stringify(addr));
   };
 
+  const placeOrder = (items: OrderItem[], total: number, orderId: string) => {
+    const newOrder: Order = {
+      id: orderId,
+      placedAt: new Date().toISOString(),
+      items,
+      total,
+      status: 'Processing',
+    };
+    setOrders(prev => [newOrder, ...prev]);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -292,6 +335,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addToCart, updateQuantity, removeItem, clearCart, toggleWishlist, removeToast,
         isLoggedIn, currentUser, login, signup, forgotPassword, loginWithGoogle, logout,
         savedAddress, setSavedAddress,
+        orders, placeOrder,
       }}
     >
       {children}

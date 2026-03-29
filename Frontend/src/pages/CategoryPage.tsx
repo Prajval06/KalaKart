@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router';
 import { ShoppingBag, SlidersHorizontal, ChevronDown, ArrowLeft } from 'lucide-react';
 import { products } from '../data/products';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 
 const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: string }> = {
@@ -10,47 +10,148 @@ const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: stri
   'Pottery & Ceramics': { accent: '#4B8B6F', emoji: '🏺', bg: '#EDF7F2' },
   'Clothing':           { accent: '#9B2335', emoji: '👗', bg: '#FCF0F1' },
   'Textiles & Fabrics': { accent: '#6B4E8A', emoji: '🧵', bg: '#F3EEF9' },
-  'Miniatures':         { accent: '#1A6B8A', emoji: '🖼️', bg: '#EAF4F8' },
   'Crafts & Weaving':   { accent: '#5A7A2E', emoji: '🧶', bg: '#EFF5E7' },
   'Home Decor':         { accent: '#8B4513', emoji: '🏮', bg: '#F8F0E8' },
 };
 
 const SORT_OPTIONS = [
-  { value: 'default', label: 'Featured' },
-  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'default',    label: 'Featured' },
+  { value: 'price-asc',  label: 'Price: Low to High' },
   { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'name-asc', label: 'Name: A–Z' },
+  { value: 'name-asc',   label: 'Name: A–Z' },
 ];
 
 const ALL_CATEGORIES = [
   'Jewelry',
   'Art & Paintings',
   'Clothing',
-  'Miniatures',
   'Pottery & Ceramics',
   'Crafts & Weaving',
   'Textiles & Fabrics',
   'Home Decor',
 ];
 
+const PRICE_MIN = 0;
+const PRICE_MAX = 10000;
+
+// ── Dual-handle range slider ──────────────────────────────────────────────────
+function RangeSlider({
+  min, max, low, high, accent,
+  onChange,
+}: {
+  min: number; max: number; low: number; high: number; accent: string;
+  onChange: (low: number, high: number) => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const pct = (v: number) => ((v - min) / (max - min)) * 100;
+
+  function clamp(v: number, lo: number, hi: number) { return Math.min(Math.max(v, lo), hi); }
+
+  function posToValue(clientX: number) {
+    const rect = trackRef.current!.getBoundingClientRect();
+    const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
+    return Math.round((ratio * (max - min) + min) / 100) * 100;
+  }
+
+  function startDrag(which: 'low' | 'high') {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const v = posToValue(clientX);
+      if (which === 'low')  onChange(clamp(v, min, high - 100), high);
+      else                  onChange(low, clamp(v, low + 100, max));
+    };
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+  }
+
+  return (
+    <div className="px-1 py-2 select-none">
+      {/* Track */}
+      <div ref={trackRef} className="relative h-2 rounded-full bg-gray-200 mx-2">
+        {/* Filled range */}
+        <div
+          className="absolute h-2 rounded-full"
+          style={{
+            left: `${pct(low)}%`,
+            width: `${pct(high) - pct(low)}%`,
+            backgroundColor: accent,
+          }}
+        />
+        {/* Low thumb */}
+        <button
+          onMouseDown={() => startDrag('low')}
+          onTouchStart={() => startDrag('low')}
+          className="absolute w-5 h-5 rounded-full border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform focus:outline-none"
+          style={{ left: `${pct(low)}%`, top: '50%', backgroundColor: accent, zIndex: 2 }}
+          aria-label={`Minimum price ₹${low}`}
+        />
+        {/* High thumb */}
+        <button
+          onMouseDown={() => startDrag('high')}
+          onTouchStart={() => startDrag('high')}
+          className="absolute w-5 h-5 rounded-full border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform focus:outline-none"
+          style={{ left: `${pct(high)}%`, top: '50%', backgroundColor: accent, zIndex: 2 }}
+          aria-label={`Maximum price ₹${high}`}
+        />
+      </div>
+      {/* Labels */}
+      <div className="flex justify-between mt-3 text-xs font-semibold" style={{ color: accent }}>
+        <span>₹{low.toLocaleString('en-IN')}</span>
+        <span>₹{high.toLocaleString('en-IN')}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function CategoryPage() {
   const { categoryName } = useParams<{ categoryName: string }>();
   const navigate = useNavigate();
   const decoded = decodeURIComponent(categoryName || '');
   const cfg = CATEGORY_ACCENTS[decoded] ?? { accent: 'var(--rust-red)', emoji: '🛍️', bg: '#F8F4EA' };
 
-  const [sort, setSort] = useState('default');
-  const [showSort, setShowSort] = useState(false);
+  // Sort + price filter state
+  const [sort, setSort]         = useState('default');
+  const [showFilter, setShowFilter] = useState(false);
+  const [priceLow, setPriceLow]   = useState(PRICE_MIN);
+  const [priceHigh, setPriceHigh] = useState(PRICE_MAX);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowFilter(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const categoryProducts = useMemo(() => {
-    const base = products.filter(p => p.category === decoded);
+    const base = products
+      .filter(p => p.category === decoded)
+      .filter(p => p.price >= priceLow && p.price <= priceHigh);
     switch (sort) {
       case 'price-asc':  return [...base].sort((a, b) => a.price - b.price);
       case 'price-desc': return [...base].sort((a, b) => b.price - a.price);
       case 'name-asc':   return [...base].sort((a, b) => a.name.localeCompare(b.name));
       default:           return base;
     }
-  }, [decoded, sort]);
+  }, [decoded, sort, priceLow, priceHigh]);
+
+  // Badge to show when filters are active
+  const filtersActive = sort !== 'default' || priceLow > PRICE_MIN || priceHigh < PRICE_MAX;
 
   if (!decoded) {
     return (
@@ -97,7 +198,7 @@ export default function CategoryPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Other categories quick jump */}
+        {/* Category quick-jump pills */}
         <div className="mb-8 flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
           {ALL_CATEGORIES.map(cat => (
             <Link
@@ -124,36 +225,110 @@ export default function CategoryPage() {
             </span>
           </div>
 
-          {/* Sort Dropdown */}
-          <div className="relative">
+          {/* ── Filter By dropdown ── */}
+          <div ref={dropdownRef} className="relative">
             <button
-              onClick={() => setShowSort(!showSort)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm hover:border-gray-300 transition-colors"
-              style={{ color: 'var(--dark-brown)' }}
+              id="filter-by-btn"
+              onClick={() => setShowFilter(v => !v)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border text-sm hover:border-gray-300 transition-colors"
+              style={{
+                color: 'var(--dark-brown)',
+                borderColor: filtersActive ? cfg.accent : '#E5E7EB',
+                boxShadow: filtersActive ? `0 0 0 2px ${cfg.accent}22` : undefined,
+              }}
             >
-              {SORT_OPTIONS.find(o => o.value === sort)?.label}
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <SlidersHorizontal className="w-4 h-4" style={{ color: filtersActive ? cfg.accent : '#9CA3AF' }} />
+              Filter By
+              {filtersActive && (
+                <span
+                  className="ml-1 w-2 h-2 rounded-full"
+                  style={{ backgroundColor: cfg.accent }}
+                />
+              )}
+              <ChevronDown
+                className="w-4 h-4 text-gray-400 transition-transform"
+                style={{ transform: showFilter ? 'rotate(180deg)' : 'none' }}
+              />
             </button>
-            {showSort && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowSort(false)} />
-                <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20">
-                  {SORT_OPTIONS.map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => { setSort(opt.value); setShowSort(false); }}
-                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors"
-                      style={{
-                        color: sort === opt.value ? cfg.accent : 'var(--dark-brown)',
-                        fontWeight: sort === opt.value ? 600 : 400,
-                        backgroundColor: sort === opt.value ? `${cfg.accent}10` : 'transparent',
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+
+            {showFilter && (
+              <div
+                className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-30"
+                style={{ minWidth: '288px' }}
+              >
+                {/* ── Sort section ── */}
+                <div className="px-4 pt-4 pb-2">
+                  <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: cfg.accent }}>
+                    Sort By
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {SORT_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setSort(opt.value)}
+                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors"
+                        style={{
+                          color: sort === opt.value ? cfg.accent : 'var(--dark-brown)',
+                          fontWeight: sort === opt.value ? 600 : 400,
+                          backgroundColor: sort === opt.value ? `${cfg.accent}12` : 'transparent',
+                        }}
+                      >
+                        {opt.label}
+                        {sort === opt.value && (
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: cfg.accent }}
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </>
+
+                {/* Divider */}
+                <div className="h-px mx-4" style={{ backgroundColor: `${cfg.accent}20` }} />
+
+                {/* ── Price range section ── */}
+                <div className="px-4 pt-3 pb-4">
+                  <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: cfg.accent }}>
+                    Price Range
+                  </p>
+                  <RangeSlider
+                    min={PRICE_MIN}
+                    max={PRICE_MAX}
+                    low={priceLow}
+                    high={priceHigh}
+                    accent={cfg.accent}
+                    onChange={(lo, hi) => { setPriceLow(lo); setPriceHigh(hi); }}
+                  />
+                  <div className="flex gap-2 mt-3">
+                    <div className="flex-1 text-center rounded-xl py-1.5 text-xs border" style={{ borderColor: `${cfg.accent}40`, color: '#7A6A5A' }}>
+                      Min: <strong style={{ color: cfg.accent }}>₹{priceLow.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div className="flex-1 text-center rounded-xl py-1.5 text-xs border" style={{ borderColor: `${cfg.accent}40`, color: '#7A6A5A' }}>
+                      Max: <strong style={{ color: cfg.accent }}>₹{priceHigh.toLocaleString('en-IN')}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px mx-4" style={{ backgroundColor: `${cfg.accent}20` }} />
+
+                {/* Reset */}
+                <div className="px-4 py-3">
+                  <button
+                    onClick={() => {
+                      setSort('default');
+                      setPriceLow(PRICE_MIN);
+                      setPriceHigh(PRICE_MAX);
+                    }}
+                    className="w-full py-2 rounded-xl text-sm font-semibold transition-colors hover:opacity-80"
+                    style={{ backgroundColor: `${cfg.accent}15`, color: cfg.accent }}
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -163,14 +338,14 @@ export default function CategoryPage() {
           <div className="py-24 text-center">
             <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <h3 className="mb-2" style={{ color: 'var(--dark-brown)' }}>No products found</h3>
-            <p className="text-gray-500 mb-6">We couldn't find any products in this category.</p>
-            <Link
-              to="/"
+            <p className="text-gray-500 mb-6">Try adjusting your price range or sort order.</p>
+            <button
+              onClick={() => { setPriceLow(PRICE_MIN); setPriceHigh(PRICE_MAX); setSort('default'); }}
               className="inline-flex items-center px-6 py-3 rounded-xl text-white hover:opacity-90 transition-opacity"
               style={{ backgroundColor: cfg.accent }}
             >
-              Back to Home
-            </Link>
+              Reset Filters
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
