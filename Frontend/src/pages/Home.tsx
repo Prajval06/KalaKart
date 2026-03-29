@@ -386,28 +386,6 @@ export default function Home() {
                     </Link>
                   ))}
                 </div>
-
-                    {/* "See all" end card */}
-                    <Link
-                      to={`/category/${encodeURIComponent(cat)}`}
-                      className="flex-none w-40 sm:w-44 rounded-2xl flex flex-col items-center justify-center gap-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-dashed"
-                      style={{ borderColor: `${cfg.accent}60`, minHeight: '200px', backgroundColor: `${cfg.accent}08` }}
-                    >
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: `${cfg.accent}20` }}
-                      >
-                        <ArrowRight className="w-5 h-5" style={{ color: cfg.accent }} />
-                      </div>
-                      <p className="text-xs text-center px-4" style={{ color: cfg.accent, fontWeight: 600 }}>
-                        See all {cfg.label}
-                      </p>
-                    </Link>
-                  </div>
-
-                  {/* Bottom border separator */}
-                  <div className="mt-2 h-px" style={{ background: `linear-gradient(to right, ${cfg.accent}40, transparent)` }} />
-                </div>
               </div>
             );
           })}
