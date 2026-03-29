@@ -6,7 +6,7 @@ import {
   ArrowLeft, CircleCheck, ShoppingBag, Truck,
 } from 'lucide-react';
 import { products } from '../data/products';
-import { useAppContext, type AddressData } from '../context/AppContext';
+import { useAppContext, type AddressData, type OrderItem } from '../context/AppContext';
 import { calculateShipping, calculatePlatformFee, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
 
 /* ─────────────────────────── Progress Stepper ───────────────────────────── */
@@ -187,7 +187,7 @@ function CheckoutInner({
   onClearCart: () => void;
 }) {
   const navigate = useNavigate();
-  const { cartItems } = useAppContext();
+  const { cartItems, placeOrder: savePlacedOrder } = useAppContext();
 
   /* ── Cart products with quantities ── */
   const cartProducts = cartItems.map(item => ({
@@ -257,7 +257,18 @@ function CheckoutInner({
     await new Promise(r => setTimeout(r, 1200)); // mock payment processing
     const num = `KK${Date.now().toString().slice(-8).toUpperCase()}`;
     setOrderNumber(num);
-    onClearCart();            // clear cart after successful order
+    // Persist order to history BEFORE clearing cart
+    const orderItems: OrderItem[] = cartProducts.map(p => ({
+      productId: p.id,
+      name: p.name,
+      image: p.image,
+      price: p.price,
+      quantity: p.quantity,
+      artisan: p.artisan,
+      category: p.category,
+    }));
+    savePlacedOrder(orderItems, subtotal + shipping + codExtra, num);
+    onClearCart();
     setStep('success');
     setPlacing(false);
   };

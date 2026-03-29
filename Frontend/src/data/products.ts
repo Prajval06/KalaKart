@@ -619,6 +619,5 @@ export const categories = [
   'Art & Paintings',
   'Home Decor',
   'Clothing',
-  'Miniatures',
   'Crafts & Weaving',
 ];
