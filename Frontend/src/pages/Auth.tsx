@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Eye, EyeOff, Flame, Key, Check, Loader2, ShoppingBag } from 'lucide-react';
-import logoImage from '../assets/6894975ff7bda70b68315fd77903bff02141295f.png';
 import { useAppContext } from '../context/AppContext';
+
+const logoImage = "https://raw.githubusercontent.com/Prajval06/KalaKart/refs/heads/main/Kalakart%20logo.png";
 
 const mandalaBg = "https://unsplash.com/photos/intricate-circular-floral-pattern-on-textured-background-NVd9dvwXWc4";
 
@@ -17,9 +18,8 @@ export default function Auth() {
   // Where to send the user after successful auth
   const redirectTo = searchParams.get('redirect') || '/';
 
-  // Default to 'signup' so new users can create an account first
   const [userType, setUserType]               = useState<UserType>('buyer');
-  const [formMode, setFormMode]               = useState<FormMode>('signup');
+  const [formMode, setFormMode]               = useState<FormMode>('login');
   const [showPassword, setShowPassword]       = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe]           = useState(false);
@@ -53,30 +53,26 @@ export default function Auth() {
     if (formMode === 'login') {
       const result = await login(email, password);
       setLoading(false);
-      if (result.error) {
-        // If the error mentions "sign up first", offer to switch to signup
-        setError(result.error);
-        return;
-      }
+      if (result.error) { setError(result.error); return; }
 
-      // Seller login always goes to dashboard; buyer goes to redirect target or home
+      // Seller login always goes to dashboard; buyer goes to redirect target
       if (userType === 'seller') {
         navigate('/seller-dashboard');
       } else {
-        navigate(redirectTo === '/checkout' ? redirectTo : '/');
+        navigate(redirectTo);
       }
     } else {
-      // signup — pass the chosen role
+      // signup
       const displayName = userType === 'seller' ? (businessName || name) : name;
-      const result = await signup(email, password, displayName, userType);
+      const result = await signup(email, password, displayName);
       setLoading(false);
       if (result.error) { setError(result.error); return; }
 
-      // Seller signup always goes to dashboard; buyer goes home (or checkout redirect)
+      // Seller signup always goes to dashboard
       if (userType === 'seller') {
         navigate('/seller-dashboard');
       } else {
-        navigate(redirectTo === '/checkout' ? redirectTo : '/');
+        navigate(redirectTo);
       }
     }
   };
@@ -117,7 +113,7 @@ export default function Auth() {
 
         {/* Logo */}
         <div className="mb-6 text-center">
-          <img src={logoImage} alt="Kalakart Logo" className="h-20 mx-auto mb-3 drop-shadow-md" />
+          <img src={logoImage} alt="KalaKart Logo" className="h-20 mx-auto mb-3 drop-shadow-md" />
           <h1
             className="font-bold text-3xl md:text-4xl text-[#8B2500]"
             style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.05em', textShadow: '2px 2px 4px rgba(255,255,255,0.8)' }}
@@ -168,30 +164,17 @@ export default function Auth() {
                       userType === t ? 'bg-[#8B2500] text-white shadow-md' : 'text-[#5D4037] hover:bg-[#DEB887]'
                     }`}
                   >
-                    {t === 'buyer' ? 'Buyer' : 'Artisan / Seller'}
+                    {t === 'buyer' ? 'Buyer' : 'Seller'}
                   </button>
                 ))}
               </div>
 
               {/* Error banner */}
               {error && (
-                <div className="mb-4 px-4 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'rgba(200,50,50,0.08)', color: '#C03030', border: '1px solid rgba(200,50,50,0.25)' }}>
-                  <div className="flex items-start gap-2">
-                    <span className="flex-shrink-0 mt-0.5">⚠</span>
-                    <span className="flex-1">{error}</span>
-                    <button type="button" className="ml-auto text-xs underline flex-shrink-0" onClick={() => setError('')}>✕</button>
-                  </div>
-                  {/* If the error says "sign up first", show a quick switch link */}
-                  {error.toLowerCase().includes('sign up') && formMode === 'login' && (
-                    <button
-                      type="button"
-                      className="mt-2 text-xs font-bold underline"
-                      style={{ color: '#8B2500' }}
-                      onClick={() => { setFormMode('signup'); setError(''); }}
-                    >
-                      → Switch to Sign Up
-                    </button>
-                  )}
+                <div className="mb-4 px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" style={{ backgroundColor: 'rgba(200,50,50,0.08)', color: '#C03030', border: '1px solid rgba(200,50,50,0.25)' }}>
+                  <span>⚠</span>
+                  <span>{error}</span>
+                  <button type="button" className="ml-auto text-xs underline" onClick={() => setError('')}>✕</button>
                 </div>
               )}
 
@@ -206,7 +189,7 @@ export default function Auth() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Business / Shop Name"
+                      placeholder="Business Name"
                       value={businessName}
                       onChange={e => setBusinessName(e.target.value)}
                       required
@@ -224,23 +207,6 @@ export default function Auth() {
                     <input
                       type="text"
                       placeholder="Full Name"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      required
-                      className="w-full pl-10 pr-4 py-3 bg-[#FFF8DC] border border-[#DEB887] rounded-lg focus:outline-none focus:border-[#8B2500] focus:ring-1 focus:ring-[#8B2500] transition-colors placeholder-[#8B4513]/50 text-[#4A2C2A]"
-                    />
-                  </div>
-                )}
-
-                {/* Seller signup: Full Name (alongside business name) */}
-                {formMode === 'signup' && userType === 'seller' && (
-                  <div className="relative group">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B2500]">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Your Full Name"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       required

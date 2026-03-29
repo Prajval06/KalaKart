@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import {
   ShoppingCart, Heart, MapPin, Award, ArrowRight,
-  Clock, User, CheckCircle, ChevronDown, ChevronUp,
+  Clock, User, ChevronDown, ChevronUp,
   Shield, Star, X, BadgeCheck, Sparkles, Truck,
 } from 'lucide-react';
 import { products } from '../data/products';
@@ -175,7 +175,8 @@ export default function ProductDetail() {
                   <img
                     src={artisan.image}
                     alt={`${artisan.name} — artisan at work`}
-                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 ring-2 ring-[var(--saffron)]"
+                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2"
+                    style={{ borderColor: 'var(--saffron)' }}
                   />
                   <div>
                     <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Proof of Craft — Artisan at Work</p>
@@ -373,100 +374,7 @@ export default function ProductDetail() {
         </div>
       </section>
 
-      {/* ══════════════ SECTION 3: Behind the Craft ═══════════════════════════ */}
-      <section className="py-14 px-4" style={{ backgroundColor: 'var(--cream-bg)' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-1 h-8 rounded-full" style={{ backgroundColor: 'var(--saffron)' }} />
-            <h2 style={{ color: 'var(--dark-brown)' }}>Behind the Craft</h2>
-            <p className="ml-2 text-sm hidden sm:block" style={{ color: 'var(--text-gray)' }}>
-              — How this was made, step by step
-            </p>
-          </div>
-
-          {/* Horizontal scroll container */}
-          <div
-            className="flex gap-5 overflow-x-auto pb-4"
-            style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
-          >
-            {story.craftSteps.map(step => (
-              <div
-                key={step.step}
-                className="flex-shrink-0 rounded-2xl overflow-hidden shadow-md"
-                style={{
-                  width: 280,
-                  scrollSnapAlign: 'start',
-                  backgroundColor: 'white',
-                  border: '1px solid var(--beige)',
-                }}
-              >
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={step.image}
-                    alt={step.labelEnglish}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Step number badge */}
-                  <div
-                    className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                    style={{ backgroundColor: 'var(--saffron)' }}
-                  >
-                    {step.step}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <p className="text-xs mb-1" style={{ color: 'var(--saffron)' }}>{step.labelHindi}</p>
-                  <p className="font-semibold mb-2 text-sm" style={{ color: 'var(--dark-brown)' }}>
-                    Step {step.step}: {step.labelEnglish}
-                  </p>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-gray)' }}>
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {/* Final card — the finished product */}
-            <div
-              className="flex-shrink-0 rounded-2xl overflow-hidden shadow-md"
-              style={{
-                width: 280,
-                scrollSnapAlign: 'start',
-                backgroundColor: 'white',
-                border: '2px solid var(--saffron)',
-              }}
-            >
-              <div className="relative h-44 overflow-hidden">
-                <img
-                  src={product.image}
-                  alt="Finished product"
-                  className="w-full h-full object-cover"
-                />
-                <div
-                  className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1"
-                  style={{ backgroundColor: 'var(--saffron)' }}
-                >
-                  <CheckCircle className="w-3 h-3" /> Complete
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="text-xs mb-1" style={{ color: 'var(--saffron)' }}>तैयार उत्पाद</p>
-                <p className="font-semibold mb-2 text-sm" style={{ color: 'var(--dark-brown)' }}>
-                  The Finished Piece
-                </p>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-gray)' }}>
-                  Ready to bring warmth and tradition into your home. Each piece is unique — yours will be one of a kind.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Scroll hint */}
-          <p className="text-xs mt-3 text-center" style={{ color: 'var(--text-gray)' }}>
-            ← Swipe to see every step →
-          </p>
-        </div>
-      </section>
+    
 
       {/* ══════════════ SECTION 4: Transparent Pricing ════════════════════════ */}
       <section
