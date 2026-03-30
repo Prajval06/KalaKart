@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 module.exports = {
   port: process.env.PORT || 5000,
@@ -10,4 +11,9 @@ module.exports = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
   nodeEnv: process.env.NODE_ENV || 'development',
+  // ── Google OAuth ────────────────────────────────────────────────────────────
+  googleClientId:     process.env.GOOGLE_CLIENT_ID?.trim(),
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET?.trim(),
+  googleCallbackUrl:  process.env.GOOGLE_CALLBACK_URL?.trim() || 'http://localhost:5000/api/v1/auth/google/callback',
+  frontendUrl:        process.env.FRONTEND_URL?.trim() || 'http://localhost:5173',
 };

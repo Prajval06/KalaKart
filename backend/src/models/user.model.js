@@ -2,11 +2,15 @@ const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  email:          { type: String, required: true, unique: true, lowercase: true, trim: true },
-  hashed_password:{ type: String, required: true, select: false }, // select:false = never returned by default
-  full_name:      { type: String, required: true, trim: true },
-  role:           { type: String, enum: ['customer', 'admin'], default: 'customer' },
-  is_active:      { type: Boolean, default: true },
+  email:           { type: String, required: true, unique: true, lowercase: true, trim: true },
+  hashed_password: { type: String, required: false, select: false }, // optional — Google OAuth users won't have one
+  full_name:       { type: String, required: true, trim: true },
+  role:            { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  is_active:       { type: Boolean, default: true },
+  // ── Google OAuth fields ──────────────────────────────────────────────────────
+  googleId:        { type: String, unique: true, sparse: true }, // sparse = null values are not indexed
+  profileImage:    { type: String },
+  authMethod:      { type: String, enum: ['email', 'google'], default: 'email' },
 }, { timestamps: true });
 
 // Hash password before save

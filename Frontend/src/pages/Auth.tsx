@@ -134,13 +134,12 @@ export default function Auth() {
     setSuccess(result.success || 'Reset email sent!');
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     setError(''); setSuccess('');
     setLoading(true);
-    const result = await loginWithGoogle(userType);
-    setLoading(false);
-    if (result.error) { setError(result.error); return; }
-    navigate(userType === 'seller' ? '/seller-dashboard' : redirectTo, { replace: true });
+    // loginWithGoogle now issues a browser redirect to Google OAuth.
+    // The page will navigate away — no async result to handle here.
+    loginWithGoogle(userType);
   };
 
   // ── Shared input class ───────────────────────────────────────────────────────

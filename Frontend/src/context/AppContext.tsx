@@ -62,10 +62,12 @@ interface AppContextType {
   // ── Auth ──
   isLoggedIn: boolean;
   currentUser: AuthUser | null;
+  authToken: string | null;
   login: (email: string, password: string, userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
   signup: (email: string, password: string, name: string, userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
   forgotPassword: (email: string) => Promise<{ error?: string; success?: string }>;
-  loginWithGoogle: (userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
+  loginWithGoogle: (userType?: 'buyer' | 'seller') => void;          // redirects browser — no return value
+  loginWithGoogleToken: (token: string, user: AuthUser) => void;    // called by AuthSuccess after redirect
   logout: () => void;
   // ── Saved Address ──
   savedAddress: AddressData | null;
@@ -85,6 +87,7 @@ export function useAppContext() {
 
 // ── LocalStorage keys ────────────────────────────────────────────────────────
 const LS_USER      = 'kk_user';
+const LS_TOKEN     = 'kk_token';      // JWT from backend (Google OAuth or email login)
 const LS_REGISTRY  = 'kk_registry';  // { [email]: StoredUserRecord }
 const LS_ADDRESS   = 'kk_address';
 const LS_ORDERS    = 'kk_orders';
@@ -135,6 +138,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ── Auth state ──
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(loadUser);
+  const [authToken, setAuthToken]     = useState<string | null>(() => localStorage.getItem(LS_TOKEN));
   const isLoggedIn = currentUser !== null;
 
   // ── Saved Address ──
@@ -273,43 +277,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * GOOGLE SIGN IN: simulates OAuth with a mock Google profile.
-   * In production, replace with Firebase/Auth0 Google provider.
+   * GOOGLE SIGN IN (real OAuth):
+   * Redirects the browser to the backend which redirects to Google.
+   * After Google auth, user lands on /auth-success where loginWithGoogleToken is called.
    */
-  const loginWithGoogle = async (userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
-    await mockDelay();
+  const loginWithGoogle = (_userType?: 'buyer' | 'seller'): void => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    window.location.href = `${apiUrl}/api/v1/auth/google`;
+  };
 
-    // Mock Google user — in production this comes from OAuth callback
-    const googleUser: AuthUser = {
-      email: 'google.user@gmail.com',
-      name: 'Google User',
-      photoURL: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
-      userType: userType ?? 'buyer',
-    };
-
-    const registry = loadRegistry();
-    const key = googleUser.email.toLowerCase();
-
-    // Auto-register Google user if first time
-    if (!registry[key]) {
-      registry[key] = {
-        email: googleUser.email,
-        name: googleUser.name,
-        password: '__google_oauth__',
-        photoURL: googleUser.photoURL,
-        userType: googleUser.userType,
-      };
-      saveRegistry(registry);
-    }
-
-    setCurrentUser(googleUser);
-    saveUser(googleUser);
-    return {};
+  /**
+   * GOOGLE TOKEN HANDLER:
+   * Called by AuthSuccess.tsx after the OAuth redirect brings back a JWT + user.
+   * Saves token to localStorage and updates React state so the app knows the user is logged in.
+   */
+  const loginWithGoogleToken = (token: string, user: AuthUser): void => {
+    localStorage.setItem(LS_TOKEN, token);
+    setAuthToken(token);
+    setCurrentUser(user);
+    saveUser(user);
   };
 
   const logout = () => {
     setCurrentUser(null);
+    setAuthToken(null);
     saveUser(null);
+    localStorage.removeItem(LS_TOKEN);
   };
 
   const setSavedAddress = (addr: AddressData) => {
@@ -333,7 +326,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         cartItems, wishlistItems, toasts,
         addToCart, updateQuantity, removeItem, clearCart, toggleWishlist, removeToast,
-        isLoggedIn, currentUser, login, signup, forgotPassword, loginWithGoogle, logout,
+        isLoggedIn, currentUser, authToken, login, signup, forgotPassword,
+        loginWithGoogle, loginWithGoogleToken, logout,
         savedAddress, setSavedAddress,
         orders, placeOrder,
       }}
