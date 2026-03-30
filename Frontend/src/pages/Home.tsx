@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { ArrowRight, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
-import { products } from '../data/products';
 import { useState, useEffect } from 'react';
+import { useAppContext } from '../context/AppContext';
 
 // ── Category config: display name, emoji, accent colour ──────────
 const CATEGORY_CONFIG: Record<string, { emoji: string; accent: string; label: string }> = {
@@ -27,10 +27,12 @@ const FEATURED_CATEGORIES = [
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { getAllProducts } = useAppContext();
+  const allProducts = getAllProducts();
 
   // Group products by category
-  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, typeof products>>((acc, cat) => {
-    acc[cat] = products.filter(p => p.category === cat);
+  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, any[]>>((acc, cat) => {
+    acc[cat] = allProducts.filter(p => p.category === cat);
     return acc;
   }, {});
 

@@ -2,14 +2,12 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import {
   ShoppingCart, Heart, MapPin, Award, ArrowRight,
-  Clock, User, ChevronDown, ChevronUp,
+  User, ChevronDown, ChevronUp,
   Shield, Star, X, BadgeCheck, Sparkles, Truck,
 } from 'lucide-react';
-import { products } from '../data/products';
 import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
-import { getProductStory } from '../data/productStories';
 import { calculateShipping, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
 
 /* ─────────────────────────── Verified Artisan Modal ─────────────────────── */
@@ -92,13 +90,14 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
 /* ─────────────────────────── Main Component ─────────────────────────────── */
 export default function ProductDetail() {
   const { id } = useParams();
-  const { addToCart, toggleWishlist, wishlistItems } = useAppContext();
+  const { addToCart, toggleWishlist, wishlistItems, getAllProducts } = useAppContext();
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [pricingOpen, setPricingOpen]             = useState(false);
   const [zone, setZone]                           = useState<DeliveryZone>('regional');
 
-  const product = products.find(p => p.id === id);
+  const allProducts = getAllProducts();
+  const product = allProducts.find(p => p.id === id);
   const artisan = product ? artisans.find(a => a.id === product.artisanId) : null;
 
   if (!product) {
@@ -117,8 +116,7 @@ export default function ProductDetail() {
   }
 
   const isWishlisted = wishlistItems.includes(product.id);
-  const story = getProductStory(product, artisan);
-  const relatedProducts = products
+  const relatedProducts = allProducts
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
@@ -242,7 +240,7 @@ export default function ProductDetail() {
                     <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Made by</p>
                     <p className="font-semibold truncate" style={{ color: 'var(--dark-brown)' }}>{artisan.name}</p>
                     <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
-                      {story.artisanCity} &nbsp;·&nbsp; {artisan.yearsOfExperience} years experience
+                      {product.state} &nbsp;·&nbsp; {artisan.yearsOfExperience} years experience
                     </p>
                   </div>
                   <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--saffron)' }} />
@@ -267,7 +265,7 @@ export default function ProductDetail() {
               >
                 <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--saffron)' }} />
                 <span className="text-sm" style={{ color: 'var(--dark-brown)' }}>
-                  Sourced directly from: <strong>{story.artisanCity}</strong>
+                  Sourced directly from: <strong>{product.state}</strong>
                 </span>
               </div>
 
@@ -298,81 +296,32 @@ export default function ProductDetail() {
         </div>
       </section>
 
-      {/* ══════════════ SECTION 2: Story Layer ════════════════════════════════ */}
-      <section
-        className="py-14 px-4"
-        style={{ background: 'linear-gradient(135deg, #FDF6EC 0%, #FFF9F2 60%, #F9F3E8 100%)' }}
-      >
-        <div className="max-w-5xl mx-auto">
-          {/* Decorative top element */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
-            <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-            <span className="text-sm tracking-widest uppercase" style={{ color: 'var(--saffron)' }}>The Story Behind This Piece</span>
-            <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-            <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
+      {/* ══════════════ SECTION 2: Description Layer ════════════════════════════════ */}
+      {product.description && (
+        <section
+          className="py-14 px-4"
+          style={{ background: 'linear-gradient(135deg, #FDF6EC 0%, #FFF9F2 60%, #F9F3E8 100%)' }}
+        >
+          <div className="max-w-5xl mx-auto">
+            {/* Decorative top element */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
+              <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
+              <span className="text-sm tracking-widest uppercase" style={{ color: 'var(--saffron)' }}>About This Product</span>
+              <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
+              <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
+            </div>
+
+            {/* Description */}
+            <p
+              className="text-center leading-relaxed"
+              style={{ color: 'var(--text-dark)', maxWidth: 680, margin: '0 auto', fontSize: '1.05rem' }}
+            >
+              {product.description}
+            </p>
           </div>
-
-          {/* Emotional Title */}
-          <h2
-            className="text-center mb-6 leading-snug"
-            style={{ color: 'var(--dark-brown)', maxWidth: 700, margin: '0 auto 1.5rem' }}
-          >
-            {story.emotionalTitle}
-          </h2>
-
-          {/* Narrative */}
-          <p
-            className="text-center leading-relaxed mb-10"
-            style={{ color: 'var(--text-dark)', maxWidth: 680, margin: '0 auto 2.5rem', fontSize: '1.05rem' }}
-          >
-            {story.narrative}
-          </p>
-
-          {/* Effort & Time Indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            {[
-              { icon: <Clock className="w-6 h-6" />, label: story.effortMetrics.timeToMake, sub: 'Time to Make' },
-              { icon: <User className="w-6 h-6" />, label: story.effortMetrics.generationsCrafted, sub: 'Heritage' },
-              { icon: <Award className="w-6 h-6" />, label: story.effortMetrics.technique, sub: 'Technique' },
-            ].map(item => (
-              <div
-                key={item.sub}
-                className="flex items-center gap-4 p-4 rounded-2xl"
-                style={{ backgroundColor: 'rgba(255,255,255,0.7)', border: '1.5px solid var(--beige)' }}
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(180,140,90,0.1)', color: 'var(--saffron)' }}
-                >
-                  {item.icon}
-                </div>
-                <div>
-                  <p className="font-semibold text-sm" style={{ color: 'var(--dark-brown)' }}>{item.label}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-gray)' }}>{item.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Cultural Context Tags */}
-          <div className="flex flex-wrap gap-3 justify-center">
-            {[
-              { emoji: '📍', label: `Origin: ${story.culturalTags.origin}` },
-              { emoji: '🪡', label: `Craft Type: ${story.culturalTags.craftType}` },
-              { emoji: '🎉', label: `Occasion: ${story.culturalTags.occasion}` },
-            ].map(tag => (
-              <span
-                key={tag.label}
-                className="px-4 py-2 rounded-full text-sm"
-                style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)', color: 'var(--dark-brown)' }}
-              >
-                {tag.emoji} {tag.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
     
 
@@ -408,8 +357,9 @@ export default function ProductDetail() {
           {pricingOpen && (() => {
             const shipping    = calculateShipping(product.category, product.price, zone);
             const total       = product.price + shipping;
-            const artisanPct  = Math.round((story.pricingBreakdown.artisanEarns / product.price) * 100);
-            const platformPct = 100 - artisanPct;
+            const artisanEarns = Math.round(product.price * 0.85); // Straight 85% to artisan
+            const platformFees = product.price - artisanEarns;
+            const artisanPct  = 85;
 
             return (
               <div
@@ -474,16 +424,16 @@ export default function ProductDetail() {
                     {
                       emoji: '🧑‍🎨',
                       label: 'Artisan Earnings',
-                      amount: story.pricingBreakdown.artisanEarns,
+                      amount: artisanEarns,
                       pct: artisanPct,
                       color: '#4A8C4A',
                       note: `Goes directly to ${product.artisan}`,
                     },
                     {
                       emoji: '🏪',
-                      label: 'Platform Fee (10%)',
-                      amount: story.pricingBreakdown.platformFee,
-                      pct: platformPct,
+                      label: 'Platform Fee (15%)',
+                      amount: platformFees,
+                      pct: 15,
                       color: 'var(--saffron)',
                       note: '10% platform fee helps us operate and support artisans',
                     },
