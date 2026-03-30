@@ -11,6 +11,7 @@ import About from "./pages/About";
 import Auth from "./pages/Auth";
 import AuthSuccess from "./pages/AuthSuccess";
 import SellerDashboard from "./pages/SellerDashboard";
+import SetupProfile from "./pages/SetupProfile";
 import CategoryPage from "./pages/CategoryPage";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "auth", element: <Auth /> },
       { path: "seller-dashboard", element: <SellerDashboard /> },
+      { path: "setup-profile", element: <SetupProfile /> },
       { path: "search", element: <SearchResults /> },
       { path: "category/:categoryName", element: <CategoryPage /> },
       { path: "checkout", element: <Checkout /> },

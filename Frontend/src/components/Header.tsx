@@ -5,7 +5,6 @@ import {
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { products } from '../data/products';
 import { artisans } from '../data/artisans';
 
 const logoImage =
@@ -29,13 +28,13 @@ interface Suggestion {
   type: 'product' | 'artisan';
 }
 
-function getSuggestions(query: string, limit = 6): Suggestion[] {
+function getSuggestions(query: string, allProducts: any[], limit = 6): Suggestion[] {
   const q = normalize(query.trim());
   if (!q) return [];
 
   const results: Suggestion[] = [];
 
-  for (const p of products) {
+  for (const p of allProducts) {
     const hay = normalize([p.name, p.category, p.artisan, p.state].join(' '));
     if (results.length >= limit) break;
     if (hay.includes(q)) {
@@ -85,11 +84,13 @@ function UserAvatar({ name, photoURL }: { name: string; photoURL?: string }) {
 
 // ── SearchBox ────────────────────────────────────────────────────────────────
 function SearchBox({ mobile = false }: { mobile?: boolean }) {
-  const navigate         = useNavigate();
-  const [searchParams]   = useSearchParams();
-  const [query, setQuery]         = useState(searchParams.get('q') ?? '');
-  const [focused, setFocused]     = useState(false);
-  const [activeIdx, setActiveIdx] = useState(-1);
+  const { getAllProducts }       = useAppContext();
+  const allProducts              = getAllProducts();
+  const navigate                 = useNavigate();
+  const [searchParams]           = useSearchParams();
+  const [query, setQuery]        = useState(searchParams.get('q') ?? '');
+  const [focused, setFocused]    = useState(false);
+  const [activeIdx, setActiveIdx]= useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef  = useRef<HTMLDivElement>(null);
 
@@ -98,7 +99,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
     setQuery(searchParams.get('q') ?? '');
   }, [searchParams]);
 
-  const suggestions = getSuggestions(query);
+  const suggestions = getSuggestions(query, allProducts);
   const showDropdown = focused && query.trim().length > 0 && suggestions.length > 0;
 
   const commitSearch = useCallback(

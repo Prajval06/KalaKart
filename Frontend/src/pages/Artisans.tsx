@@ -1,9 +1,29 @@
 import { Link } from 'react-router';
-import { MapPin, Award } from 'lucide-react';
+import { MapPin, Award, User } from 'lucide-react';
 import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { useAppContext } from '../context/AppContext';
+import type { ArtisanProfile } from '../context/AppContext';
 
 export default function Artisans() {
+  const { getCompletedArtisanProfiles } = useAppContext();
+
+  // Registered artisans who completed their profile
+  const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles();
+
+  const unifiedArtisans = [
+    ...registeredProfiles.map(p => ({
+      id: p.userId,
+      name: p.name,
+      image: p.profileImage || '',
+      specialization: 'Independent Artisan',
+      state: 'India',
+      yearsOfExperience: 1,
+      bio: p.description
+    })),
+    ...artisans
+  ];
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
       <Breadcrumb
@@ -23,21 +43,38 @@ export default function Artisans() {
             </p>
           </div>
 
-          {/* Artisans Grid */}
+          <div className="flex items-center gap-3 mb-6">
+            <span
+              className="text-xs text-white px-3 py-1 rounded-full font-bold"
+              style={{ backgroundColor: 'var(--saffron)' }}
+            >
+              Our Creators
+            </span>
+            <h2 className="text-lg" style={{ color: 'var(--dark-brown)' }}>
+              Traditional & Independent Craftspeople
+            </h2>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {artisans.map((artisan) => (
+            {unifiedArtisans.map((artisan) => (
               <Link
                 key={artisan.id}
                 to={`/artisan/${artisan.id}`}
                 className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <div className="relative aspect-[4/5] overflow-hidden">
-                  <img 
-                    src={artisan.image} 
-                    alt={artisan.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div 
+                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                  {artisan.image ? (
+                    <img
+                      src={artisan.image}
+                      alt={artisan.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-20 h-20 text-gray-300" />
+                    </div>
+                  )}
+                  <div
                     className="absolute inset-0"
                     style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
                   />
@@ -47,20 +84,22 @@ export default function Artisans() {
                       <MapPin className="w-4 h-4" />
                       <span className="text-sm">{artisan.state}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Award className="w-4 h-4" />
-                      <span className="text-sm">{artisan.yearsOfExperience} years of experience</span>
-                    </div>
+                    {artisan.yearsOfExperience > 1 && (
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4" />
+                        <span className="text-sm">{artisan.yearsOfExperience} years of experience</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="p-6">
-                  <p 
+                  <p
                     className="text-sm font-semibold mb-2"
                     style={{ color: 'var(--saffron)' }}
                   >
                     {artisan.specialization}
                   </p>
-                  <p 
+                  <p
                     className="text-sm line-clamp-3"
                     style={{ color: 'var(--text-gray)' }}
                   >
@@ -72,7 +111,7 @@ export default function Artisans() {
           </div>
 
           {/* Support Banner */}
-          <div 
+          <div
             className="mt-16 p-8 rounded-xl text-center"
             style={{ backgroundColor: 'var(--cream)' }}
           >

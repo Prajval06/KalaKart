@@ -1,13 +1,33 @@
 import { useParams, Link } from 'react-router';
 import { MapPin, Award } from 'lucide-react';
 import { artisans } from '../data/artisans';
-import { products } from '../data/products';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { useAppContext } from '../context/AppContext';
 
 export default function ArtisanDetail() {
   const { artisanId } = useParams();
-  const artisan = artisans.find(a => a.id === artisanId);
-  const artisanProducts = products.filter(p => p.artisanId === artisanId);
+  const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
+  
+  const allProducts = getAllProducts();
+  const artisanProducts = allProducts.filter(p => p.artisanId === artisanId);
+
+  let artisan = artisans.find(a => a.id === artisanId);
+
+  if (!artisan) {
+    const dynamicProfile = getCompletedArtisanProfiles().find(p => p.userId === artisanId);
+    if (dynamicProfile) {
+      artisan = {
+        id: dynamicProfile.userId,
+        name: dynamicProfile.name,
+        image: dynamicProfile.profileImage || '',
+        specialization: 'Independent Artisan',
+        bio: dynamicProfile.description,
+        state: 'India',
+        yearsOfExperience: 1,
+        craft: 'Handicrafts'
+      };
+    }
+  }
 
   if (!artisan) {
     return (

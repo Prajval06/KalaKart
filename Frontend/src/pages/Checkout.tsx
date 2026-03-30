@@ -5,7 +5,6 @@ import {
   Smartphone, Banknote, Loader2, ShieldCheck,
   ArrowLeft, CircleCheck, ShoppingBag, Truck,
 } from 'lucide-react';
-import { products } from '../data/products';
 import { useAppContext, type AddressData, type OrderItem } from '../context/AppContext';
 import { calculateShipping, calculatePlatformFee, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
 
@@ -187,13 +186,30 @@ function CheckoutInner({
   onClearCart: () => void;
 }) {
   const navigate = useNavigate();
-  const { cartItems, placeOrder: savePlacedOrder } = useAppContext();
+  const { cartItems, placeOrder: savePlacedOrder, getAllProducts } = useAppContext();
 
   /* ── Cart products with quantities ── */
+  const allProducts = getAllProducts();
   const cartProducts = cartItems.map(item => ({
-    ...products.find(p => p.id === item.productId)!,
+    ...allProducts.find(p => p.id === item.productId)!,
     quantity: item.quantity,
   })).filter(item => item.id);
+
+  if (cartProducts.length === 0) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--rust-red)' }}>Your checkout is empty</h2>
+        <p className="text-gray-600 mb-8 max-w-md text-center">It looks like your cart doesn't have any items yet. Add a few masterpieces before checking out!</p>
+        <button 
+          onClick={() => navigate('/shop')} 
+          className="px-8 py-3 rounded-full text-white font-medium hover:opacity-90 transition-opacity"
+          style={{ backgroundColor: 'var(--rust-red)' }}
+        >
+          Return to Shop
+        </button>
+      </div>
+    );
+  }
 
   /* ── Zone & pricing ── */
   const [zone, setZone] = useState<DeliveryZone>('regional');
