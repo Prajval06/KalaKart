@@ -19,7 +19,6 @@ const FEATURED_CATEGORIES = [
   'Jewelry',
   'Art & Paintings',
   'Clothing',
-  'Miniatures',
   'Pottery & Ceramics',
   'Crafts & Weaving',
   'Textiles & Fabrics',

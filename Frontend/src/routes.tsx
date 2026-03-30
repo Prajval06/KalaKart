@@ -9,14 +9,21 @@ import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
+import AuthSuccess from "./pages/AuthSuccess";
 import SellerDashboard from "./pages/SellerDashboard";
 import CategoryPage from "./pages/CategoryPage";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import SearchResults from "./pages/SearchResults";
 
 // Router is created ONCE so the history stack is never reset.
 // State is shared via AppContext (context/AppContext.tsx).
 export const router = createBrowserRouter([
+  {
+    // Auth-success is outside Root so it has no navbar/footer — it immediately redirects
+    path: "/auth-success",
+    element: <AuthSuccess />,
+  },
   {
     path: "/",
     element: <Root />,
@@ -31,6 +38,7 @@ export const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "auth", element: <Auth /> },
       { path: "seller-dashboard", element: <SellerDashboard /> },
+      { path: "search", element: <SearchResults /> },
       { path: "category/:categoryName", element: <CategoryPage /> },
       { path: "checkout", element: <Checkout /> },
       { path: "*", element: <NotFound /> },
