@@ -526,7 +526,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     saveUser(null);
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_REFRESH);
-    
+
     setCartItems([]);
     setWishlistItems([]);
     setArtisanProducts([]);
