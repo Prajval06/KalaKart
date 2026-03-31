@@ -138,20 +138,14 @@ export function useAppContext() {
   return ctx;
 }
 
-<<<<<<< HEAD
 // ── LocalStorage keys ────────────────────────────────────────────────────────
 const LS_USER      = 'kk_user';
-const LS_TOKEN     = 'kk_token';      // JWT from backend (Google OAuth or email login)
-const LS_REGISTRY  = 'kk_registry';  // { [email]: StoredUserRecord }
+const LS_TOKEN     = 'kk_token';
+const LS_REFRESH   = 'kk_refresh_token';
+const LS_REGISTRY  = 'kk_registry';
 const LS_ADDRESS   = 'kk_address';
 const LS_ORDERS    = 'kk_orders';
-=======
-// ── LocalStorage key helpers ─────────────────────────────────────────────────
-const LS_USER     = 'kk_user';
-const LS_REGISTRY = 'kk_registry';
-const LS_ADDRESS  = 'kk_address';
-const LS_ORDERS   = 'kk_orders';
->>>>>>> 4ac87b36b0da2db5776db23d48d2af4b3f3bd339
+const BASE_URL     = 'http://localhost:5000/api/v1';
 
 const cartKey            = (email: string) => `kk_cart_${email.toLowerCase().trim()}`;
 const wishlistKey        = (email: string) => `kk_wishlist_${email.toLowerCase().trim()}`;
@@ -209,7 +203,6 @@ function loadSavedAddress(): AddressData | null {
   return loadJSON<AddressData | null>(LS_ADDRESS, null);
 }
 
-const mockDelay = () => new Promise<void>(r => setTimeout(r, 800));
 
 // ── Provider ─────────────────────────────────────────────────────────────────
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -342,133 +335,101 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   // ── Auth actions ──
-  const login = async (
-    email: string,
-    password: string,
-    userType?: 'buyer' | 'seller'
-  ): Promise<{ error?: string }> => {
-    await mockDelay();
-    const registry = loadRegistry();
-    const key = email.toLowerCase().trim();
+  // ── Auth actions (Real API integration combined with local storage for frontend states) ──
+  const login = async (email: string, password: string, userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const json = await res.json();
+      
+      if (!res.ok || !json.success) {
+        return { error: json.message || 'Login failed' };
+      }
 
-    if (!registry[key]) return { error: 'This email is not registered. Please sign up first.' };
-    if (registry[key].password !== password) return { error: 'Incorrect password.' };
+      const { user, access_token, refresh_token } = json.data;
+      
+      localStorage.setItem(LS_TOKEN, access_token);
+      if (refresh_token) localStorage.setItem(LS_REFRESH, refresh_token);
+      
+      setAuthToken(access_token);
+      
+      // Map role to userType correctly for the UI
+      const mappedUserType = userType || (user.role === 'artisan' ? 'seller' : 'buyer');
+      const mappedUser: AuthUser = { email: user.email, name: user.full_name, userType: mappedUserType };
+      
+      setCurrentUser(mappedUser);
+      saveUser(mappedUser);
+      
+      // Restore buyer data
+      const key = mappedUser.email.toLowerCase().trim();
+      setCartItems(loadJSON<CartItem[]>(cartKey(key), []));
+      setWishlistItems(loadJSON<string[]>(wishlistKey(key), []));
+      setOrders(loadJSON<Order[]>(ordersKey(key), []));
 
-    const rec = registry[key];
-    const resolvedType = userType ?? rec.userType ?? 'buyer';
-    const user: AuthUser = { email: rec.email, name: rec.name, photoURL: rec.photoURL, userType: resolvedType };
+      // Restore artisan data (only if seller)
+      if (mappedUserType === 'seller') {
+        setArtisanProducts(loadJSON<ArtisanProduct[]>(sellerProductsKey(key), []));
+        setArtisanOrders(loadJSON<SellerOrder[]>(sellerOrdersKey(key), []));
+      } else {
+        setArtisanProducts([]);
+        setArtisanOrders([]);
+      }
 
-    setCurrentUser(user);
-    saveUser(user);
-
-    // Restore buyer data
-    setCartItems(loadJSON<CartItem[]>(cartKey(key), []));
-    setWishlistItems(loadJSON<string[]>(wishlistKey(key), []));
-    setOrders(loadJSON<Order[]>(ordersKey(key), []));
-
-    // Restore artisan data (only if seller)
-    if (resolvedType === 'seller') {
-      setArtisanProducts(loadJSON<ArtisanProduct[]>(sellerProductsKey(key), []));
-      setArtisanOrders(loadJSON<SellerOrder[]>(sellerOrdersKey(key), []));
-    } else {
-      setArtisanProducts([]);
-      setArtisanOrders([]);
+      return {};
+    } catch (err: any) {
+      return { error: err.message || 'Network error' };
     }
-
-    return {};
   };
 
-  const signup = async (
-    email: string,
-    password: string,
-    name: string,
-    userType?: 'buyer' | 'seller'
-  ): Promise<{ error?: string }> => {
-    await mockDelay();
-    const registry = loadRegistry();
-    const key = email.toLowerCase().trim();
+  const signup = async (email: string, password: string, name: string, userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, full_name: name })
+      });
+      const json = await res.json();
+      
+      if (!res.ok || !json.success) {
+        return { error: json.message || 'Signup failed' };
+      }
 
-    if (registry[key]) return { error: 'An account with this email already exists. Please log in.' };
+      // Optional: Since frontend branch depends on LS_REGISTRY for getAllProducts, 
+      // we'll inject into LS_REGISTRY temporarily for mock visibility until we do full API queries.
+      const registry = loadRegistry();
+      const key = email.toLowerCase().trim();
+      if (!registry[key]) {
+        registry[key] = { email, name: name.trim(), password: '__backend_auth__', userType: userType ?? 'buyer' };
+        saveRegistry(registry);
+      }
 
-    const record: StoredUserRecord = { email, name: name.trim(), password, userType: userType ?? 'buyer' };
-    registry[key] = record;
-    saveRegistry(registry);
-    return {};
+      return {};
+    } catch (err: any) {
+      return { error: err.message || 'Network error' };
+    }
   };
 
-  const forgotPassword = async (
-    email: string
-  ): Promise<{ error?: string; success?: string }> => {
-    await mockDelay();
-    const registry = loadRegistry();
-    const key = email.toLowerCase().trim();
-    if (!registry[key]) return { error: 'No account found with this email.' };
+  const forgotPassword = async (_email: string): Promise<{ error?: string; success?: string }> => {
     return { success: 'Password reset email sent. Please check your inbox.' };
   };
 
-<<<<<<< HEAD
   /**
    * GOOGLE SIGN IN (real OAuth):
    * Redirects the browser to the backend which redirects to Google.
    * After Google auth, user lands on /auth-success where loginWithGoogleToken is called.
    */
   const loginWithGoogle = (_userType?: 'buyer' | 'seller'): void => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    window.location.href = `${apiUrl}/api/v1/auth/google`;
+    window.location.href = `${BASE_URL}/auth/google`;
   };
 
-  /**
-   * GOOGLE TOKEN HANDLER:
-   * Called by AuthSuccess.tsx after the OAuth redirect brings back a JWT + user.
-   * Saves token to localStorage and updates React state so the app knows the user is logged in.
-   */
   const loginWithGoogleToken = (token: string, user: AuthUser): void => {
     localStorage.setItem(LS_TOKEN, token);
     setAuthToken(token);
     setCurrentUser(user);
     saveUser(user);
-=======
-  const loginWithGoogle = async (userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
-    await mockDelay();
-
-    const googleUser: AuthUser = {
-      email: 'google.user@gmail.com',
-      name: 'Google User',
-      photoURL: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
-      userType: userType ?? 'buyer',
-    };
-
-    const registry = loadRegistry();
-    const key = googleUser.email.toLowerCase();
-
-    if (!registry[key]) {
-      registry[key] = {
-        email: googleUser.email,
-        name: googleUser.name,
-        password: '__google_oauth__',
-        photoURL: googleUser.photoURL,
-        userType: googleUser.userType,
-      };
-      saveRegistry(registry);
-    }
-
-    setCurrentUser(googleUser);
-    saveUser(googleUser);
-
-    setCartItems(loadJSON<CartItem[]>(cartKey(key), []));
-    setWishlistItems(loadJSON<string[]>(wishlistKey(key), []));
-    setOrders(loadJSON<Order[]>(ordersKey(key), []));
-
-    if ((userType ?? 'buyer') === 'seller') {
-      setArtisanProducts(loadJSON<ArtisanProduct[]>(sellerProductsKey(key), []));
-      setArtisanOrders(loadJSON<SellerOrder[]>(sellerOrdersKey(key), []));
-    } else {
-      setArtisanProducts([]);
-      setArtisanOrders([]);
-    }
-
-    return {};
->>>>>>> 4ac87b36b0da2db5776db23d48d2af4b3f3bd339
   };
 
   const logout = () => {
@@ -484,9 +445,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
     setAuthToken(null);
     saveUser(null);
-<<<<<<< HEAD
     localStorage.removeItem(LS_TOKEN);
-=======
+    localStorage.removeItem(LS_REFRESH);
+
     setCartItems([]);
     setWishlistItems([]);
     setArtisanProducts([]);
@@ -516,7 +477,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getCompletedArtisanProfiles = (): ArtisanProfile[] => {
     const all = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
     return Object.values(all).filter(p => p.isComplete);
->>>>>>> 4ac87b36b0da2db5776db23d48d2af4b3f3bd339
   };
 
   const setSavedAddress = (addr: AddressData) => {
