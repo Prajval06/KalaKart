@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Trash2, Plus, Minus, ShoppingBag, Truck, LogIn, ClipboardList, X, Package, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, LogIn, ClipboardList, X, Package, ChevronRight } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
-import { calculateShipping, calculatePlatformFee, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
+import { calculateShipping, calculatePlatformFee } from '../utils/shipping';
 
 // ── Status badge colours ──────────────────────────────────────────────────────
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -164,7 +164,6 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
 export default function Cart() {
   const { cartItems, updateQuantity, removeItem, isLoggedIn, orders, getAllProducts } = useAppContext();
   const navigate = useNavigate();
-  const [zone, setZone] = useState<DeliveryZone>('regional');
   const [ordersOpen, setOrdersOpen] = useState(false);
 
   const allProducts = getAllProducts();
@@ -174,7 +173,7 @@ export default function Cart() {
   })).filter(item => item.id);
 
   const subtotal = cartProducts.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping  = cartProducts.reduce((sum, item) => sum + calculateShipping(item.category, item.price, zone), 0);
+  const shipping  = cartProducts.reduce((sum, item) => sum + calculateShipping(item.category, item.price), 0);
   const total = subtotal + shipping;
 
   const handleProceedToCheckout = () => {
@@ -282,7 +281,7 @@ export default function Cart() {
                         ₹{item.price.toLocaleString('en-IN')}
                       </p>
                       <p className="text-xs" style={{ color: 'var(--text-gray)' }}>
-                        🚚 Shipping: ₹{calculateShipping(item.category, item.price, zone).toLocaleString('en-IN')}
+                        🚚 Shipping: ₹{calculateShipping(item.category, item.price).toLocaleString('en-IN')}
                       </p>
                     </div>
 
@@ -319,32 +318,7 @@ export default function Cart() {
                 <div className="bg-white p-6 rounded-xl sticky top-24" style={{ border: '2px solid var(--beige)' }}>
                   <h3 className="mb-5">Order Summary</h3>
 
-                  {/* Zone Selector */}
-                  <div className="mb-5">
-                    <p className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--dark-brown)' }}>
-                      <Truck className="w-4 h-4" style={{ color: 'var(--saffron)' }} />
-                      Delivery Location
-                    </p>
-                    <div className="flex flex-col gap-1.5">
-                      {(Object.keys(ZONE_LABELS) as DeliveryZone[]).map(z => (
-                        <button
-                          key={z}
-                          onClick={() => setZone(z)}
-                          className="px-3 py-2 rounded-lg text-sm text-left transition-all"
-                          style={
-                            zone === z
-                              ? { backgroundColor: 'var(--saffron)', color: 'white', fontWeight: 600 }
-                              : { backgroundColor: 'var(--beige)', color: 'var(--dark-brown)' }
-                          }
-                        >
-                          {ZONE_LABELS[z]}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-xs mt-2" style={{ color: 'var(--text-gray)' }}>
-                      Shipping cost varies based on product type and delivery location
-                    </p>
-                  </div>
+
 
                   {/* Price Breakdown */}
                   <div className="space-y-3 mb-6">

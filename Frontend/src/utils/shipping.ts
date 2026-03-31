@@ -7,13 +7,7 @@
  *  • Platform fee is ALWAYS 10% of base price, never included in shipping
  */
 
-export type DeliveryZone = 'local' | 'regional' | 'national';
 
-export const ZONE_LABELS: Record<DeliveryZone, string> = {
-  local:    'Local (same state)',
-  regional: 'Regional (nearby states)',
-  national: 'Pan-India',
-};
 
 /** Base shipping midpoint per product category */
 const CATEGORY_BASE: Record<string, number> = {
@@ -52,24 +46,14 @@ function weightAdjustment(price: number): number {
   return 30;
 }
 
-/** Zone multiplier: local orders are cheaper, pan-India costs more. */
-function zoneMultiplier(zone: DeliveryZone): number {
-  switch (zone) {
-    case 'local':    return 0.80;
-    case 'regional': return 1.00;
-    case 'national': return 1.30;
-  }
-}
-
 /**
- * Final Shipping = (base + weightAdj) × zoneMultiplier  — rounded to ₹5
+ * Final Shipping = base + weightAdj — rounded to ₹5
  */
 export function calculateShipping(
   category: string,
-  price:    number,
-  zone:     DeliveryZone = 'regional',
+  price:    number
 ): number {
-  const raw = (getBaseShipping(category) + weightAdjustment(price)) * zoneMultiplier(zone);
+  const raw = getBaseShipping(category) + weightAdjustment(price);
   return Math.round(raw / 5) * 5; // round to nearest ₹5 for clean display
 }
 

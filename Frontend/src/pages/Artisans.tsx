@@ -11,18 +11,25 @@ export default function Artisans() {
   // Registered artisans who completed their profile
   const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles();
 
-  const unifiedArtisans = [
-    ...registeredProfiles.map(p => ({
+  // Deduplicate by name to guarantee the UI never shows the same artisan twice
+  const uniqueProfiles = registeredProfiles.reduce((acc, current) => {
+    const exists = acc.find(p => p.name === current.name);
+    if (!exists) acc.push(current);
+    return acc;
+  }, [] as ArtisanProfile[]);
+
+  const unifiedArtisans = uniqueProfiles.map(p => {
+    const original = artisans.find(a => a.name === p.name);
+    return {
       id: p.userId,
       name: p.name,
-      image: p.profileImage || '',
-      specialization: 'Independent Artisan',
-      state: 'India',
-      yearsOfExperience: 1,
-      bio: p.description
-    })),
-    ...artisans
-  ];
+      image: p.profileImage || original?.image || '',
+      specialization: original?.specialization || 'Independent Artisan',
+      state: original?.state || 'India',
+      yearsOfExperience: original?.yearsOfExperience || 1,
+      bio: p.description || original?.bio || ''
+    };
+  });
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
