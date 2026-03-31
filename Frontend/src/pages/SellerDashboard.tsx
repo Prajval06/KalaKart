@@ -1,111 +1,23 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import {
-  Home, Package, ShoppingBag, IndianRupee, Search, Bell, User, Plus,
+  Home, Package, ShoppingBag, IndianRupee, Search, Bell, Plus,
   CheckCircle, XCircle, Clock, TrendingUp, AlertTriangle, Edit2, Trash2,
-  Lightbulb, ChevronRight, Menu, X, Truck, Star, ImageIcon, Save
+  Lightbulb, ChevronRight, Menu, X, Truck, Star, ImageIcon, Save,
+  Sparkles, ArrowRight, BookOpen, User,
 } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import type { ArtisanProduct, SellerOrderStatus, SellerOrder } from '../context/AppContext';
 
-// ─── Types ────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────
 type Section = 'home' | 'products' | 'orders' | 'earnings';
-type OrderStatus = 'new' | 'processing' | 'completed';
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-  image: string;
-  category: string;
-  description: string;
-  status: 'active' | 'draft';
-}
-
-interface Order {
-  id: string;
-  product: string;
-  productImage: string;
-  customer: string;
-  amount: number;
-  date: string;
-  status: OrderStatus;
-}
-
-interface Transaction {
-  date: string;
-  orderId: string;
-  amount: number;
-}
-
-interface Notification {
-  id: string;
-  message: string;
-  type: 'order' | 'stock' | 'payment';
-  time: string;
-}
-
-// ─── Mock Data ────────────────────────────────────────────────
-const PRODUCTS: Product[] = [
-  { id: 'P001', name: 'Madhubani Painting', price: 2500, stock: 3, image: 'https://images.unsplash.com/photo-1580974852861-f5a47f2d95cd?w=200', category: 'Paintings', description: 'Traditional Madhubani art on handmade paper', status: 'active' },
-  { id: 'P002', name: 'Blue Pottery Vase', price: 1600, stock: 8, image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200', category: 'Pottery', description: 'Jaipur blue pottery vase', status: 'active' },
-  { id: 'P003', name: 'Pashmina Shawl', price: 8900, stock: 2, image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200', category: 'Textiles', description: 'Pure Kashmiri Pashmina', status: 'active' },
-  { id: 'P004', name: 'Silver Jhumka Earrings', price: 3200, stock: 0, image: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200', category: 'Jewelry', description: 'Handcrafted oxidized silver', status: 'active' },
-  { id: 'P005', name: 'Wooden Elephant Carving', price: 4500, stock: 5, image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200', category: 'Woodwork', description: 'Sandalwood carved elephant', status: 'active' },
-  { id: 'P006', name: 'Ceramic Bowl Set', price: 1200, stock: 12, image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=200', category: 'Pottery', description: 'Hand-painted serving bowls', status: 'active' },
-  { id: 'P007', name: 'Embroidered Cushion Cover', price: 950, stock: 1, image: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200', category: 'Textiles', description: 'Kutch embroidery cushion', status: 'draft' },
-];
-
-const ORDERS: Order[] = [
-  { id: 'ORD-101', product: 'Madhubani Painting', productImage: 'https://images.unsplash.com/photo-1580974852861-f5a47f2d95cd?w=200', customer: 'Priya Sharma', amount: 2500, date: '2026-03-18', status: 'new' },
-  { id: 'ORD-102', product: 'Blue Pottery Vase', productImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200', customer: 'Rajesh Kumar', amount: 3200, date: '2026-03-17', status: 'new' },
-  { id: 'ORD-103', product: 'Pashmina Shawl', productImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200', customer: 'Meera Iyer', amount: 8900, date: '2026-03-17', status: 'new' },
-  { id: 'ORD-109', product: 'Wooden Elephant Carving', productImage: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200', customer: 'Arjun Nair', amount: 4500, date: '2026-03-18', status: 'new' },
-  { id: 'ORD-110', product: 'Silver Jhumka Earrings', productImage: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200', customer: 'Sunita Rao', amount: 3200, date: '2026-03-18', status: 'new' },
-  { id: 'ORD-111', product: 'Ceramic Bowl Set', productImage: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=200', customer: 'Deepak Verma', amount: 1200, date: '2026-03-17', status: 'new' },
-  { id: 'ORD-112', product: 'Embroidered Cushion Cover', productImage: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200', customer: 'Lakshmi Pillai', amount: 950, date: '2026-03-17', status: 'new' },
-  { id: 'ORD-113', product: 'Madhubani Painting', productImage: 'https://images.unsplash.com/photo-1580974852861-f5a47f2d95cd?w=200', customer: 'Harish Gupta', amount: 2500, date: '2026-03-16', status: 'new' },
-  { id: 'ORD-114', product: 'Blue Pottery Vase', productImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200', customer: 'Pooja Bhatt', amount: 1600, date: '2026-03-16', status: 'new' },
-  { id: 'ORD-115', product: 'Pashmina Shawl', productImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200', customer: 'Rohit Sinha', amount: 8900, date: '2026-03-16', status: 'new' },
-  { id: 'ORD-116', product: 'Wooden Elephant Carving', productImage: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200', customer: 'Ananya Krishnan', amount: 4500, date: '2026-03-15', status: 'new' },
-  { id: 'ORD-117', product: 'Silver Jhumka Earrings', productImage: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200', customer: 'Nikhil Joshi', amount: 3200, date: '2026-03-15', status: 'new' },
-  { id: 'ORD-118', product: 'Ceramic Bowl Set', productImage: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=200', customer: 'Geeta Malhotra', amount: 1200, date: '2026-03-15', status: 'new' },
-  { id: 'ORD-104', product: 'Wooden Elephant', productImage: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200', customer: 'Vikram Patel', amount: 4500, date: '2026-03-16', status: 'processing' },
-  { id: 'ORD-105', product: 'Ceramic Bowl Set', productImage: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=200', customer: 'Anita Desai', amount: 1200, date: '2026-03-15', status: 'processing' },
-  { id: 'ORD-106', product: 'Embroidered Cushion', productImage: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200', customer: 'Kavita Singh', amount: 950, date: '2026-03-12', status: 'completed' },
-  { id: 'ORD-107', product: 'Silver Jhumka Earrings', productImage: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=200', customer: 'Sanjay Reddy', amount: 3200, date: '2026-03-10', status: 'completed' },
-  { id: 'ORD-108', product: 'Blue Pottery Vase', productImage: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200', customer: 'Ritu Mehra', amount: 1600, date: '2026-03-08', status: 'completed' },
-];
-
-const TRANSACTIONS: Transaction[] = [
-  { date: '2026-03-15', orderId: 'ORD-106', amount: 950 },
-  { date: '2026-03-12', orderId: 'ORD-107', amount: 3200 },
-  { date: '2026-03-10', orderId: 'ORD-108', amount: 1600 },
-  { date: '2026-03-07', orderId: 'ORD-095', amount: 2500 },
-  { date: '2026-03-04', orderId: 'ORD-091', amount: 4500 },
-  { date: '2026-03-01', orderId: 'ORD-088', amount: 8900 },
-];
-
-const NOTIFICATIONS: Notification[] = [
-  { id: 'n1', message: 'New order from Priya Sharma!', type: 'order', time: '2 min ago' },
-  { id: 'n2', message: 'Silver Jhumka Earrings is out of stock', type: 'stock', time: '1 hour ago' },
-  { id: 'n3', message: '₹950 payment received for ORD-106', type: 'payment', time: '3 hours ago' },
-  { id: 'n4', message: 'New order from Rajesh Kumar!', type: 'order', time: '5 hours ago' },
-  { id: 'n5', message: 'Embroidered Cushion Cover stock is low (1 left)', type: 'stock', time: '1 day ago' },
-];
-
-const SMART_MESSAGES = [
-  { text: 'You have 3 new orders to ship today', icon: ShoppingBag },
-  { text: 'Silver Jhumka Earrings is out of stock — restock soon!', icon: AlertTriangle },
-  { text: 'Add more images to Embroidered Cushion Cover to improve sales', icon: ImageIcon },
-  { text: 'Your sales increased 20% this week — great work!', icon: TrendingUp },
-  { text: 'Pashmina Shawl is your top selling product this month', icon: Star },
-];
-
-// ─── Product Modal (defined OUTSIDE SellerDashboard to prevent remount loops) ─
+// ─── Product Modal ────────────────────────────────────────────────
 interface ProductModalProps {
-  editingProduct: Product | null;
+  editingProduct: ArtisanProduct | null;
   onClose: () => void;
-  onSave: (product: Product) => void;
-  onCreate: (data: { name: string; price: number; stock: number; category: string; description: string }) => void;
+  onSave: (product: ArtisanProduct) => void;
+  onCreate: (data: Omit<ArtisanProduct, 'id'>) => void;
 }
 
 function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModalProps) {
@@ -116,30 +28,67 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
     stock: editingProduct?.stock?.toString() || '',
     category: editingProduct?.category || '',
     description: editingProduct?.description || '',
+    status: editingProduct?.status || 'active',
   });
+
+  // ── Image state ──
+  const [images, setImages] = useState<string[]>(editingProduct?.images || []);
+  const [dragOver, setDragOver] = useState(false);
 
   const suggestions: string[] = [];
   if (!form.name) suggestions.push('Give your product a clear name');
   if (Number(form.price) > 5000) suggestions.push('Your price is higher than similar products');
   if (!form.description || form.description.length < 20) suggestions.push('Add a detailed description to attract buyers');
   if (!form.category) suggestions.push('Select a category so buyers can find your product');
+  if (images.length === 0) suggestions.push('Add at least one photo — products with images sell 5× more');
+
+  // Convert selected File objects → base64 strings and merge into state
+  const addFiles = (files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const result = e.target?.result as string;
+        setImages(prev => (prev.includes(result) ? prev : [...prev, result]));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (idx: number) => setImages(prev => prev.filter((_, i) => i !== idx));
+
+  const setCover = (idx: number) =>
+    setImages(prev => [prev[idx], ...prev.filter((_, i) => i !== idx)]);
+
+  const FALLBACK = 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400';
 
   const handleSubmit = () => {
+    if (!form.name || !form.price || !form.category) return;
+    const primaryImage = images[0] || FALLBACK;
+    const base = {
+      name: form.name,
+      price: Number(form.price),
+      stock: Number(form.stock) || 0,
+      category: form.category,
+      description: form.description,
+      image: primaryImage,
+      images,
+      status: form.status as 'active' | 'draft',
+    };
     if (isEdit && editingProduct) {
-      onSave({ ...editingProduct, name: form.name, price: Number(form.price), stock: Number(form.stock), category: form.category, description: form.description });
+      onSave({ ...editingProduct, ...base });
     } else {
-      onCreate({ name: form.name, price: Number(form.price), stock: Number(form.stock), category: form.category, description: form.description });
+      onCreate(base);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 style={{ color: 'var(--dark-brown)' }}>{isEdit ? 'Edit Product' : 'Add New Product'}</h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100">
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100"><X className="w-5 h-5" /></button>
         </div>
 
         {suggestions.length > 0 && (
@@ -148,15 +97,14 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               <Lightbulb className="w-4 h-4" />
               <span className="text-sm" style={{ fontWeight: 600 }}>Smart Suggestions</span>
             </div>
-            {suggestions.map((s, i) => (
-              <p key={i} className="text-sm text-gray-600 ml-6">• {s}</p>
-            ))}
+            {suggestions.map((s, i) => <p key={i} className="text-sm text-gray-600 ml-6">• {s}</p>)}
           </div>
         )}
 
         <div className="space-y-4">
+          {/* Product Name */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Product Name</label>
+            <label className="block text-sm text-gray-600 mb-1">Product Name *</label>
             <input
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
               value={form.name}
@@ -164,9 +112,11 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               placeholder="e.g. Handpainted Ceramic Vase"
             />
           </div>
+
+          {/* Price & Stock */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Price (₹)</label>
+              <label className="block text-sm text-gray-600 mb-1">Price (₹) *</label>
               <input
                 type="number"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -186,19 +136,32 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               />
             </div>
           </div>
+
+          {/* Category */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Category</label>
+            <label className="block text-sm text-gray-600 mb-1">Category *</label>
             <select
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 bg-white"
               value={form.category}
               onChange={e => setForm({ ...form, category: e.target.value })}
             >
               <option value="">Select category</option>
-              {['Paintings', 'Pottery', 'Textiles', 'Jewelry', 'Woodwork', 'Other'].map(c => (
+              {[
+                'Art & Paintings',
+                'Pottery & Ceramics',
+                'Textiles & Fabrics',
+                'Jewelry',
+                'Home Decor',
+                'Clothing',
+                'Crafts & Weaving',
+                'Miniatures',
+              ].map(c => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
+
+          {/* Description */}
           <div>
             <label className="block text-sm text-gray-600 mb-1">Description</label>
             <textarea
@@ -209,27 +172,147 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               placeholder="Describe your product..."
             />
           </div>
+
+          {/* Status */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Images</label>
-            <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-gray-400 transition-colors">
-              <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-              <p className="text-sm text-gray-500">Click to upload images</p>
-              <p className="text-xs text-gray-400 mt-1">Add at least 2 images for better sales</p>
+            <label className="block text-sm text-gray-600 mb-1">Status</label>
+            <select
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 bg-white"
+              value={form.status}
+              onChange={e => setForm({ ...form, status: e.target.value as 'active' | 'draft' })}
+            >
+              <option value="active">Active (Visible to buyers)</option>
+              <option value="draft">Draft (Hidden)</option>
+            </select>
+          </div>
+
+          {/* ── Image Upload ── */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm text-gray-600">
+                Product Photos
+                {images.length > 0 && (
+                  <span className="ml-2 text-xs text-gray-400">({images.length} added · first is cover)</span>
+                )}
+              </label>
             </div>
+
+            {/* Hidden file input */}
+            <input
+              id="img-gallery"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={e => addFiles(e.target.files)}
+            />
+
+            {/* Upload button */}
+            <div className="mb-3">
+              <label
+                htmlFor="img-gallery"
+                className="flex items-center justify-center gap-2 py-3 rounded-xl border-2 cursor-pointer transition-all hover:opacity-80 text-sm"
+                style={{
+                  borderColor: 'var(--sage-green)',
+                  color: 'var(--sage-green)',
+                  backgroundColor: '#F0FFF4',
+                }}
+              >
+                <span className="text-base">🖼️</span>
+                Add from Photos
+              </label>
+            </div>
+
+            {/* Drop zone (shows when no images yet) */}
+            {images.length === 0 && (
+              <div
+                className="rounded-xl border-2 border-dashed p-8 text-center transition-all"
+                style={{
+                  borderColor: dragOver ? 'var(--sage-green)' : '#e5e7eb',
+                  backgroundColor: dragOver ? '#F0FFF4' : '#fafafa',
+                }}
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={e => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  addFiles(e.dataTransfer.files);
+                }}
+              >
+                <ImageIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm text-gray-400">or drag & drop photos here</p>
+                <p className="text-xs text-gray-300 mt-1">JPG, PNG, WEBP — up to 10 photos</p>
+              </div>
+            )}
+
+            {/* Preview grid */}
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {images.map((src, idx) => (
+                  <div
+                    key={idx}
+                    className="relative rounded-xl overflow-hidden group"
+                    style={{ aspectRatio: '1', border: idx === 0 ? '2px solid var(--sage-green)' : '2px solid transparent' }}
+                  >
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+
+                    {/* Cover badge */}
+                    {idx === 0 && (
+                      <span
+                        className="absolute top-1 left-1 text-white text-xs px-1.5 py-0.5 rounded-full"
+                        style={{ backgroundColor: 'var(--sage-green)', fontSize: 9, fontWeight: 700 }}
+                      >
+                        COVER
+                      </span>
+                    )}
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+                      {idx !== 0 && (
+                        <button
+                          onClick={() => setCover(idx)}
+                          className="text-white text-xs px-2 py-1 rounded-lg"
+                          style={{ backgroundColor: 'var(--sage-green)', fontSize: 10, fontWeight: 600 }}
+                          title="Set as cover photo"
+                        >
+                          Cover
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeImage(idx)}
+                        className="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                        title="Remove"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add more tile */}
+                {images.length < 10 && (
+                  <label
+                    htmlFor="img-gallery"
+                    className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-gray-400 transition-colors text-gray-300"
+                    style={{ aspectRatio: '1' }}
+                  >
+                    <Plus className="w-6 h-6" />
+                    <span className="text-xs mt-1">Add more</span>
+                  </label>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
-          >
+          <button onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             className="flex-1 px-4 py-3 rounded-xl text-white transition-colors hover:opacity-90"
-            style={{ backgroundColor: 'var(--sage-green)' }}
+            style={{ backgroundColor: form.name && form.price && form.category ? 'var(--sage-green)' : '#9ca3af' }}
           >
             {isEdit ? 'Save Changes' : 'Add Product'}
           </button>
@@ -239,28 +322,189 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
   );
 }
 
-// ─── Home Section ──────────────────────────────────────────────
-interface HomeSectionProps {
-  orders: Order[];
-  products: Product[];
-  newOrders: Order[];
-  lowStockProducts: Product[];
-  outOfStockProducts: Product[];
+// ─── NEW ARTISAN: Onboarding / Empty-state ─────────────────────────────────
+
+interface NewArtisanHomeProps {
+  userName: string;
+  onAddProduct: () => void;
+  onGoToProfile: () => void;
+}
+
+function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHomeProps) {
+  const firstName = userName.split(' ')[0];
+
+  const steps = [
+    {
+      icon: Package,
+      color: 'var(--sage-green)',
+      bg: '#F0FFF4',
+      title: 'Add Your First Product',
+      desc: 'List your handcrafted items so buyers across India can discover them.',
+      cta: 'Add Product',
+      action: onAddProduct,
+    },
+    {
+      icon: BookOpen,
+      color: 'var(--rust-red)',
+      bg: '#FFF0F0',
+      title: 'Set Up Your Profile',
+      desc: 'Add your photo and story — appear on the "Meet Our Artisans" page and build buyer trust.',
+      cta: 'Set Up Your Profile',
+      action: onGoToProfile,
+    },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Welcome Banner */}
+      <div
+        className="rounded-3xl p-8 relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, var(--dark-brown) 0%, #5C3A1E 100%)',
+        }}
+      >
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-5 h-5 text-yellow-300" />
+            <span className="text-sm text-yellow-200" style={{ fontWeight: 500 }}>Welcome to KalaKart!</span>
+          </div>
+          <h1 className="text-white text-2xl sm:text-3xl mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
+            Namaste, {firstName}! 🙏
+          </h1>
+          <p className="text-white/70 text-sm sm:text-base max-w-md leading-relaxed">
+            Your artisan store is ready. Complete these 2 steps to start selling your crafts to buyers across India.
+          </p>
+        </div>
+        {/* Decorative circles */}
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-10 bg-white" />
+        <div className="absolute top-4 right-16 w-20 h-20 rounded-full opacity-10 bg-white" />
+      </div>
+
+      {/* Zero-state KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Earnings', value: '₹0', icon: IndianRupee, color: 'var(--sage-green)' },
+          { label: 'Orders', value: '0', icon: ShoppingBag, color: 'var(--peach-pink)' },
+          { label: 'Products', value: '0', icon: Package, color: 'var(--dark-brown)' },
+          { label: 'Alerts', value: '—', icon: AlertTriangle, color: 'var(--rust-red)' },
+        ].map(kpi => {
+          const KIcon = kpi.icon;
+          return (
+            <div
+              key={kpi.label}
+              className="bg-white rounded-2xl p-5 shadow-sm opacity-60"
+              title="Data will appear once you start selling"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: kpi.color }}>
+                  <KIcon className="w-5 h-5" />
+                </div>
+                <span className="text-sm text-gray-500">{kpi.label}</span>
+              </div>
+              <p className="text-2xl" style={{ color: 'var(--dark-brown)', fontWeight: 700 }}>{kpi.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Onboarding cards */}
+      <div>
+        <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>Get Started — 2 Simple Steps</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {steps.map((step, i) => {
+            const SIcon = step.icon;
+            return (
+              <div
+                key={step.title}
+                className="bg-white rounded-2xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow"
+                style={{ borderTop: `3px solid ${step.color}` }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: step.bg }}
+                  >
+                    <SIcon className="w-5 h-5" style={{ color: step.color }} />
+                  </div>
+                  <span
+                    className="text-xs font-bold rounded-full px-2 py-0.5 text-white"
+                    style={{ backgroundColor: step.color }}
+                  >
+                    Step {i + 1}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="mb-1" style={{ color: 'var(--dark-brown)', fontWeight: 700, fontSize: '0.95rem' }}>
+                    {step.title}
+                  </h4>
+                  <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
+                </div>
+                <button
+                  onClick={step.action}
+                  className="mt-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-white hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: step.color }}
+                >
+                  {step.cta} <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tips */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Lightbulb className="w-5 h-5" style={{ color: 'var(--rust-red)' }} />
+          <h3 style={{ color: 'var(--dark-brown)' }}>Quick Tips for New Artisans</h3>
+        </div>
+        <div className="space-y-3">
+          {[
+            'Use natural lighting for product photos — it increases sales by up to 40%',
+            'Write detailed descriptions mentioning the craft tradition and materials used',
+            'Price competitively at first, then increase as you build reviews',
+            'Respond to orders within 24 hours to earn the "Fast Seller" badge',
+          ].map((tip, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span
+                className="w-5 h-5 rounded-full text-white text-xs flex items-center justify-center shrink-0 mt-0.5"
+                style={{ backgroundColor: 'var(--sage-green)', fontSize: 10, fontWeight: 700 }}
+              >
+                {i + 1}
+              </span>
+              <p className="text-sm text-gray-600">{tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── EXISTING ARTISAN: Home Section ───────────────────────────────
+interface ExistingArtisanHomeProps {
+  products: ArtisanProduct[];
+  orders: SellerOrder[];
   totalEarnings: number;
   onAcceptOrder: (id: string) => void;
   onAddProduct: () => void;
   onViewOrders: () => void;
   storeStory: string;
-  onSaveStory: (story: string) => void;
+  onSaveStory: (s: string) => void;
 }
 
-function HomeSection({
-  orders, products, newOrders, lowStockProducts, outOfStockProducts,
-  totalEarnings, onAcceptOrder, onAddProduct, onViewOrders,
+function ExistingArtisanHome({
+  products, orders, totalEarnings,
+  onAcceptOrder, onAddProduct, onViewOrders,
   storeStory, onSaveStory,
-}: HomeSectionProps) {
+}: ExistingArtisanHomeProps) {
   const [editingStory, setEditingStory] = useState(false);
-  const [storeStoryDraft, setStoreStoryDraft] = useState(storeStory);
+  const [draft, setDraft] = useState(storeStory);
+
+  const newOrders = orders.filter(o => o.status === 'new');
+  const lowStock = products.filter(p => p.stock > 0 && p.stock <= 3);
+  const outOfStock = products.filter(p => p.stock === 0);
+  const alerts = lowStock.length + outOfStock.length;
 
   return (
     <div className="space-y-6">
@@ -270,7 +514,7 @@ function HomeSection({
           { label: 'Total Earnings', value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: IndianRupee, color: 'var(--sage-green)' },
           { label: 'Orders', value: orders.length.toString(), icon: ShoppingBag, color: 'var(--peach-pink)' },
           { label: 'Products', value: products.length.toString(), icon: Package, color: 'var(--dark-brown)' },
-          { label: 'Alerts', value: (lowStockProducts.length + outOfStockProducts.length).toString(), icon: AlertTriangle, color: 'var(--rust-red)' },
+          { label: 'Alerts', value: alerts.toString(), icon: AlertTriangle, color: 'var(--rust-red)' },
         ].map(kpi => {
           const KIcon = kpi.icon;
           return (
@@ -287,7 +531,7 @@ function HomeSection({
         })}
       </div>
 
-      {/* Quick Action Buttons */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={onAddProduct}
@@ -305,12 +549,14 @@ function HomeSection({
         </button>
       </div>
 
-      {/* New Orders Highlight */}
+      {/* New Orders */}
       {newOrders.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #f0ebe0' }}>
             <h3 style={{ color: 'var(--dark-brown)' }}>New Orders</h3>
-            <span className="px-3 py-1 rounded-full text-xs text-white" style={{ backgroundColor: 'var(--rust-red)' }}>{newOrders.length} new</span>
+            <span className="px-3 py-1 rounded-full text-xs text-white" style={{ backgroundColor: 'var(--rust-red)' }}>
+              {newOrders.length} new
+            </span>
           </div>
           {newOrders.map(order => (
             <div key={order.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid #f5f0e5' }}>
@@ -336,24 +582,32 @@ function HomeSection({
       {/* Recent Activity */}
       <div className="bg-white rounded-2xl shadow-sm p-5">
         <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>Recent Activity</h3>
-        <div className="space-y-3">
-          {outOfStockProducts.map(p => (
-            <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#FEF2F2' }}>
-              <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
-              <p className="text-sm text-gray-700"><span style={{ fontWeight: 600 }}>{p.name}</span> is <span className="text-red-600" style={{ fontWeight: 600 }}>Out of Stock</span></p>
-            </div>
-          ))}
-          {lowStockProducts.map(p => (
-            <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#FFF8E1' }}>
-              <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-              <p className="text-sm text-gray-700"><span style={{ fontWeight: 600 }}>{p.name}</span> — <span className="text-amber-600" style={{ fontWeight: 600 }}>Low Stock</span> ({p.stock} left)</p>
-            </div>
-          ))}
-          <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F0FFF4' }}>
-            <TrendingUp className="w-4 h-4 text-green-600 shrink-0" />
-            <p className="text-sm text-gray-700"><span style={{ fontWeight: 600 }}>Pashmina Shawl</span> is <span className="text-green-600" style={{ fontWeight: 600 }}>Selling Fast</span></p>
+        {outOfStock.length === 0 && lowStock.length === 0 && orders.filter(o => o.status === 'completed').length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">No recent activity yet</p>
+        ) : (
+          <div className="space-y-3">
+            {outOfStock.map(p => (
+              <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#FEF2F2' }}>
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                <p className="text-sm text-gray-700"><span style={{ fontWeight: 600 }}>{p.name}</span> is <span className="text-red-600" style={{ fontWeight: 600 }}>Out of Stock</span></p>
+              </div>
+            ))}
+            {lowStock.map(p => (
+              <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#FFF8E1' }}>
+                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                <p className="text-sm text-gray-700"><span style={{ fontWeight: 600 }}>{p.name}</span> — <span className="text-amber-600" style={{ fontWeight: 600 }}>Low Stock</span> ({p.stock} left)</p>
+              </div>
+            ))}
+            {orders.filter(o => o.status === 'completed').slice(0, 2).map(o => (
+              <div key={o.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F0FFF4' }}>
+                <TrendingUp className="w-4 h-4 text-green-600 shrink-0" />
+                <p className="text-sm text-gray-700">
+                  Order <span style={{ fontWeight: 600 }}>#{o.id}</span> for <span style={{ fontWeight: 600 }}>{o.product}</span> completed — ₹{o.amount.toLocaleString('en-IN')}
+                </p>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Store Story */}
@@ -361,12 +615,12 @@ function HomeSection({
         <div className="flex items-center justify-between mb-3">
           <h3 style={{ color: 'var(--dark-brown)' }}>Your Store Story</h3>
           {!editingStory ? (
-            <button onClick={() => { setEditingStory(true); setStoreStoryDraft(storeStory); }} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <button onClick={() => { setEditingStory(true); setDraft(storeStory); }} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
               <Edit2 className="w-4 h-4 text-gray-500" />
             </button>
           ) : (
             <button
-              onClick={() => { onSaveStory(storeStoryDraft); setEditingStory(false); }}
+              onClick={() => { onSaveStory(draft); setEditingStory(false); }}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm text-white hover:opacity-90 transition-colors"
               style={{ backgroundColor: 'var(--sage-green)' }}
             >
@@ -378,8 +632,9 @@ function HomeSection({
           <textarea
             className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 resize-none text-sm text-gray-700"
             rows={3}
-            value={storeStoryDraft}
-            onChange={e => setStoreStoryDraft(e.target.value)}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            placeholder="Tell buyers your craft story..."
           />
         ) : (
           <p className="text-sm text-gray-600 leading-relaxed italic">"{storeStory}"</p>
@@ -389,11 +644,11 @@ function HomeSection({
   );
 }
 
-// ─── Products Section ──────────────────────────────────────────
+// ─── Products Section ──────────────────────────────────────────────
 interface ProductsSectionProps {
-  products: Product[];
+  products: ArtisanProduct[];
   search: string;
-  onEdit: (p: Product) => void;
+  onEdit: (p: ArtisanProduct) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
 }
@@ -412,75 +667,85 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
           <Plus className="w-4 h-4" /> Add Product
         </button>
       </div>
+
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
-                {['Product', 'Price', 'Stock', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(p => (
-                <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                      <div>
-                        <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>{p.name}</p>
-                        <p className="text-xs text-gray-500">{p.category}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>₹{p.price.toLocaleString('en-IN')}</td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`text-sm ${p.stock === 0 ? 'text-red-600' : p.stock <= 3 ? 'text-amber-600' : 'text-gray-700'}`}
-                      style={{ fontWeight: p.stock <= 3 ? 600 : 400 }}
-                    >
-                      {p.stock === 0 ? 'Out of Stock' : p.stock <= 3 ? `Low Stock (${p.stock})` : p.stock}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-xs ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
-                      style={{ fontWeight: 500 }}
-                    >
-                      {p.status === 'active' ? 'Active' : 'Draft'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => onEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <Edit2 className="w-4 h-4 text-gray-500" />
-                      </button>
-                      <button onClick={() => onDelete(p.id)} className="p-2 rounded-lg hover:bg-red-50 transition-colors">
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </td>
+        {filtered.length === 0 ? (
+          <div className="p-16 text-center">
+            <Package className="w-14 h-14 mx-auto mb-4 text-gray-200" />
+            <p className="text-gray-500 mb-1" style={{ fontWeight: 600 }}>No products yet</p>
+            <p className="text-sm text-gray-400 mb-5">Your listings will appear here once you add them</p>
+            <button
+              onClick={onAdd}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: 'var(--sage-green)' }}
+            >
+              <Plus className="w-4 h-4" /> Add Your First Product
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
+                  {['Product', 'Price', 'Stock', 'Status', 'Actions'].map(h => (
+                    <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map(p => (
+                  <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                        <div>
+                          <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>{p.name}</p>
+                          <p className="text-xs text-gray-500">{p.category}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>₹{p.price.toLocaleString('en-IN')}</td>
+                    <td className="px-5 py-4">
+                      <span className={`text-sm ${p.stock === 0 ? 'text-red-600' : p.stock <= 3 ? 'text-amber-600' : 'text-gray-700'}`} style={{ fontWeight: p.stock <= 3 ? 600 : 400 }}>
+                        {p.stock === 0 ? 'Out of Stock' : p.stock <= 3 ? `Low (${p.stock})` : p.stock}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`} style={{ fontWeight: 500 }}>
+                        {p.status === 'active' ? 'Active' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => onEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                          <Edit2 className="w-4 h-4 text-gray-500" />
+                        </button>
+                        <button onClick={() => onDelete(p.id)} className="p-2 rounded-lg hover:bg-red-50 transition-colors">
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ─── Orders Section ────────────────────────────────────────────
+// ─── Orders Section ────────────────────────────────────────────────
 interface OrdersSectionProps {
-  orders: Order[];
-  orderTab: OrderStatus;
-  setOrderTab: (tab: OrderStatus) => void;
-  onOrderAction: (id: string, status: OrderStatus) => void;
+  orders: SellerOrder[];
+  orderTab: SellerOrderStatus;
+  setOrderTab: (tab: SellerOrderStatus) => void;
+  onOrderAction: (id: string, status: SellerOrderStatus) => void;
 }
 
 function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersSectionProps) {
-  const tabs: { key: OrderStatus; label: string }[] = [
+  const tabs: { key: SellerOrderStatus; label: string }[] = [
     { key: 'new', label: 'New' },
     { key: 'processing', label: 'Processing' },
     { key: 'completed', label: 'Completed' },
@@ -516,16 +781,17 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-12 text-center">
-            <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-500 text-sm">No {orderTab} orders</p>
+          <div className="p-14 text-center">
+            <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-gray-200" />
+            <p className="text-gray-500 text-sm" style={{ fontWeight: 500 }}>No {orderTab} orders</p>
+            {orderTab === 'new' && <p className="text-gray-400 text-xs mt-1">New orders will appear here when buyers purchase your products</p>}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
-                  {['Order ID', 'Product', 'Amount', 'Date', 'Actions'].map(h => (
+                  {['Order ID', 'Product', 'Customer', 'Amount', 'Date', 'Actions'].map(h => (
                     <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
                   ))}
                 </tr>
@@ -537,12 +803,10 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <img src={o.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                        <div>
-                          <p className="text-sm" style={{ fontWeight: 500 }}>{o.product}</p>
-                          <p className="text-xs text-gray-500">{o.customer}</p>
-                        </div>
+                        <span className="text-sm" style={{ fontWeight: 500 }}>{o.product}</span>
                       </div>
                     </td>
+                    <td className="px-5 py-4 text-sm text-gray-600">{o.customer}</td>
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600, color: 'var(--rust-red)' }}>₹{o.amount.toLocaleString('en-IN')}</td>
                     <td className="px-5 py-4 text-sm text-gray-600">
                       {new Date(o.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
@@ -550,28 +814,16 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
                     <td className="px-5 py-4">
                       {o.status === 'new' && (
                         <div className="flex gap-2">
-                          <button
-                            onClick={() => onOrderAction(o.id, 'processing')}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90 transition-colors"
-                            style={{ backgroundColor: 'var(--sage-green)' }}
-                          >
+                          <button onClick={() => onOrderAction(o.id, 'processing')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90" style={{ backgroundColor: 'var(--sage-green)' }}>
                             <CheckCircle className="w-3.5 h-3.5" /> Accept
                           </button>
-                          <button
-                            onClick={() => onOrderAction(o.id, 'completed')}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90 transition-colors"
-                            style={{ backgroundColor: 'var(--rust-red)' }}
-                          >
+                          <button onClick={() => onOrderAction(o.id, 'completed')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90" style={{ backgroundColor: 'var(--rust-red)' }}>
                             <XCircle className="w-3.5 h-3.5" /> Decline
                           </button>
                         </div>
                       )}
                       {o.status === 'processing' && (
-                        <button
-                          onClick={() => onOrderAction(o.id, 'completed')}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90 transition-colors"
-                          style={{ backgroundColor: 'var(--dark-brown)' }}
-                        >
+                        <button onClick={() => onOrderAction(o.id, 'completed')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90" style={{ backgroundColor: 'var(--dark-brown)' }}>
                           <Truck className="w-3.5 h-3.5" /> Mark Shipped
                         </button>
                       )}
@@ -590,13 +842,41 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
   );
 }
 
-// ─── Earnings Section ──────────────────────────────────────────
+// ─── Earnings Section ──────────────────────────────────────────────
 interface EarningsSectionProps {
-  totalEarnings: number;
-  availableBalance: number;
+  orders: SellerOrder[];
 }
 
-function EarningsSection({ totalEarnings, availableBalance }: EarningsSectionProps) {
+function EarningsSection({ orders }: EarningsSectionProps) {
+  const completed = orders.filter(o => o.status === 'completed');
+  const totalEarnings = completed.reduce((sum, o) => sum + o.amount, 0);
+  // Simulate platform fee: 8%
+  const availableBalance = Math.round(totalEarnings * 0.92);
+
+  if (completed.length === 0) {
+    return (
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            { label: 'Total Earned', value: '₹0', sub: 'Complete orders to see earnings', color: 'var(--dark-brown)' },
+            { label: 'Available Balance', value: '₹0', sub: 'Withdrawals enabled after first sale', color: 'var(--sage-green)' },
+          ].map(c => (
+            <div key={c.label} className="bg-white rounded-2xl p-5 shadow-sm opacity-60">
+              <p className="text-sm text-gray-500 mb-1">{c.label}</p>
+              <p className="text-3xl" style={{ color: c.color, fontWeight: 700 }}>{c.value}</p>
+              <p className="text-xs mt-2 text-gray-400">{c.sub}</p>
+            </div>
+          ))}
+        </div>
+        <div className="bg-white rounded-2xl p-10 shadow-sm text-center">
+          <IndianRupee className="w-12 h-12 mx-auto mb-3 text-gray-200" />
+          <p className="text-gray-500" style={{ fontWeight: 600 }}>No transactions yet</p>
+          <p className="text-sm text-gray-400 mt-1">Your earnings will appear here as orders are completed</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -604,39 +884,40 @@ function EarningsSection({ totalEarnings, availableBalance }: EarningsSectionPro
           <p className="text-sm text-gray-500 mb-1">Total Earned</p>
           <p className="text-3xl" style={{ color: 'var(--dark-brown)', fontWeight: 700 }}>₹{totalEarnings.toLocaleString('en-IN')}</p>
           <p className="text-xs mt-2 text-green-600 flex items-center gap-1" style={{ fontWeight: 500 }}>
-            <TrendingUp className="w-3.5 h-3.5" /> You earned 20% more this week
+            <TrendingUp className="w-3.5 h-3.5" /> {completed.length} completed order{completed.length !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">Available Balance</p>
           <p className="text-3xl" style={{ color: 'var(--sage-green)', fontWeight: 700 }}>₹{availableBalance.toLocaleString('en-IN')}</p>
-          <p className="text-xs mt-2 text-gray-500 flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-500" /> Top earning: Pashmina Shawl
+          <p className="text-xs mt-2 text-gray-400 flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 text-amber-500" /> After 8% platform fee
           </p>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="px-5 py-4" style={{ borderBottom: '1px solid #f0ebe0' }}>
-          <h3 style={{ color: 'var(--dark-brown)' }}>Recent Transactions</h3>
+          <h3 style={{ color: 'var(--dark-brown)' }}>Transaction History</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
-                {['Date', 'Order ID', 'Amount'].map(h => (
+                {['Date', 'Order ID', 'Product', 'Amount'].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {TRANSACTIONS.map(t => (
-                <tr key={t.orderId} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+              {completed.map(o => (
+                <tr key={o.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4 text-sm text-gray-600">
-                    {new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(o.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
-                  <td className="px-5 py-4 text-sm" style={{ fontWeight: 500 }}>{t.orderId}</td>
-                  <td className="px-5 py-4 text-sm" style={{ fontWeight: 600, color: 'var(--sage-green)' }}>+ ₹{t.amount.toLocaleString('en-IN')}</td>
+                  <td className="px-5 py-4 text-sm" style={{ fontWeight: 500 }}>{o.id}</td>
+                  <td className="px-5 py-4 text-sm text-gray-600">{o.product}</td>
+                  <td className="px-5 py-4 text-sm" style={{ fontWeight: 600, color: 'var(--sage-green)' }}>+ ₹{o.amount.toLocaleString('en-IN')}</td>
                 </tr>
               ))}
             </tbody>
@@ -647,58 +928,67 @@ function EarningsSection({ totalEarnings, availableBalance }: EarningsSectionPro
   );
 }
 
-// ─── Main Dashboard Component ──────────────────────────────────
+// ─── Smart Assistant Messages ──────────────────────────────────────
+const NEW_ARTISAN_TIPS = [
+  { text: 'Add your first product to get discovered by buyers!', icon: Package },
+  { text: 'Complete your store story to build buyer trust', icon: BookOpen },
+  { text: 'Using 3+ product photos increases sales by 40%', icon: ImageIcon },
+  { text: 'Artisans with complete profiles get 3× more views', icon: Star },
+];
+
+const EXISTING_ARTISAN_TIPS = [
+  { text: 'Respond to new orders quickly to boost your rating!', icon: ShoppingBag },
+  { text: 'Low-stock items sell out fast — restock soon!', icon: AlertTriangle },
+  { text: 'Add more images to your listings to improve sales', icon: ImageIcon },
+  { text: 'Check your earnings regularly to track growth', icon: TrendingUp },
+];
+
+// ─── Main Dashboard ────────────────────────────────────────────────
 export default function SellerDashboard() {
+  const navigate = useNavigate();
+  const {
+    currentUser,
+    artisanProducts, artisanOrders, isNewArtisan,
+    addArtisanProduct, updateArtisanProduct, deleteArtisanProduct, updateArtisanOrder,
+  } = useAppContext();
+
   const [section, setSection] = useState<Section>('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
-  const [orders, setOrders] = useState<Order[]>(ORDERS);
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [smartIdx, setSmartIdx] = useState(0);
-  const [orderTab, setOrderTab] = useState<OrderStatus>('new');
+  const [orderTab, setOrderTab] = useState<SellerOrderStatus>('new');
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [storeStory, setStoreStory] = useState("We are a family of artisans from Rajasthan, keeping alive the centuries-old tradition of blue pottery and hand-block printing. Every piece tells a story of our heritage.");
+  const [editingProduct, setEditingProduct] = useState<ArtisanProduct | null>(null);
+  const [storeStory, setStoreStory] = useState(
+    () => localStorage.getItem(`kk_story_${currentUser?.email}`) || ''
+  );
 
-  // Rotate smart messages
+  // Guard: redirect if not logged in or not a seller
   useEffect(() => {
-    const t = setInterval(() => setSmartIdx(i => (i + 1) % SMART_MESSAGES.length), 5000);
+    if (!currentUser) { navigate('/auth'); return; }
+    if (currentUser.userType !== 'seller') { navigate('/'); }
+  }, [currentUser, navigate]);
+
+  // Rotate smart tips
+  const tips = isNewArtisan ? NEW_ARTISAN_TIPS : EXISTING_ARTISAN_TIPS;
+  useEffect(() => {
+    const t = setInterval(() => setSmartIdx(i => (i + 1) % tips.length), 5000);
     return () => clearInterval(t);
-  }, []);
+  }, [tips.length]);
 
-  const totalEarnings = 45850;
-  const availableBalance = 21650;
-  const newOrders = orders.filter(o => o.status === 'new');
-  const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 3);
-  const outOfStockProducts = products.filter(p => p.stock === 0);
+  const totalEarnings = artisanOrders
+    .filter(o => o.status === 'completed')
+    .reduce((sum, o) => sum + o.amount, 0);
 
-  const handleOrderAction = (id: string, newStatus: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
+  const newOrdersCount = artisanOrders.filter(o => o.status === 'new').length;
+
+  const handleSaveStory = (s: string) => {
+    setStoreStory(s);
+    if (currentUser?.email) localStorage.setItem(`kk_story_${currentUser.email}`, s);
   };
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-  };
-
-  const handleSaveProduct = (updated: Product) => {
-    setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
-    setShowAddProduct(false);
-    setEditingProduct(null);
-  };
-
-  const handleCreateProduct = (data: { name: string; price: number; stock: number; category: string; description: string }) => {
-    setProducts(prev => [...prev, {
-      id: `P${String(prev.length + 1).padStart(3, '0')}`,
-      ...data,
-      image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=200',
-      status: 'active',
-    }]);
-    setShowAddProduct(false);
-    setEditingProduct(null);
-  };
-
-  const currentMsg = SMART_MESSAGES[smartIdx];
+  const currentMsg = tips[smartIdx];
   const SmartIcon = currentMsg.icon;
 
   const navItems: { key: Section; label: string; icon: typeof Home }[] = [
@@ -708,9 +998,15 @@ export default function SellerDashboard() {
     { key: 'earnings', label: 'Earnings', icon: IndianRupee },
   ];
 
+  // User initials for avatar
+  const name = currentUser?.name || 'Artisan';
+  const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+
+  if (!currentUser) return null;
+
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: '#F8F4EA' }}>
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -746,9 +1042,9 @@ export default function SellerDashboard() {
               >
                 <NIcon className="w-5 h-5" />
                 <span className="text-sm" style={{ fontWeight: active ? 600 : 400 }}>{item.label}</span>
-                {item.key === 'orders' && newOrders.length > 0 && (
+                {item.key === 'orders' && newOrdersCount > 0 && (
                   <span className="ml-auto w-5 h-5 flex items-center justify-center rounded-full text-xs text-white" style={{ backgroundColor: 'var(--rust-red)', fontSize: 10 }}>
-                    {newOrders.length}
+                    {newOrdersCount}
                   </span>
                 )}
               </button>
@@ -756,13 +1052,19 @@ export default function SellerDashboard() {
           })}
         </nav>
 
-        {/* Artisan Profile Stub */}
+        {/* Real user profile */}
         <div className="mt-auto pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm text-white" style={{ backgroundColor: 'var(--sage-green)', fontWeight: 600 }}>RS</div>
-            <div>
-              <p className="text-sm text-white" style={{ fontWeight: 500 }}>Ravi Shankar</p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Jaipur, Rajasthan</p>
+            {currentUser.photoURL ? (
+              <img src={currentUser.photoURL} alt="" className="w-9 h-9 rounded-full object-cover" />
+            ) : (
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm text-white" style={{ backgroundColor: 'var(--sage-green)', fontWeight: 600 }}>
+                {initials}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-sm text-white truncate" style={{ fontWeight: 500 }}>{name}</p>
+              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.5)' }}>{currentUser.email}</p>
             </div>
           </div>
         </div>
@@ -776,7 +1078,6 @@ export default function SellerDashboard() {
             <Menu className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
           </button>
 
-          {/* Search */}
           <div className="flex-1 max-w-md relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -788,14 +1089,16 @@ export default function SellerDashboard() {
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
-            {/* Notification Bell */}
+            {/* Notifications */}
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
               >
                 <Bell className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--rust-red)' }} />
+                {newOrdersCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--rust-red)' }} />
+                )}
               </button>
 
               {showNotifications && (
@@ -803,22 +1106,31 @@ export default function SellerDashboard() {
                   <div className="px-4 py-3" style={{ borderBottom: '1px solid #f0ebe0' }}>
                     <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>Notifications</p>
                   </div>
-                  {NOTIFICATIONS.map(n => (
-                    <div key={n.id} className="px-4 py-3 hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid #f9f5eb' }}>
-                      <p className="text-sm text-gray-700">{n.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{n.time}</p>
+                  {newOrdersCount > 0 ? (
+                    artisanOrders.filter(o => o.status === 'new').slice(0, 5).map(o => (
+                      <div key={o.id} className="px-4 py-3 hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid #f9f5eb' }}>
+                        <p className="text-sm text-gray-700">New order from <strong>{o.customer}</strong> for {o.product}</p>
+                        <p className="text-xs text-gray-400 mt-1">₹{o.amount.toLocaleString('en-IN')}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-8 text-center">
+                      <Bell className="w-8 h-8 mx-auto mb-2 text-gray-200" />
+                      <p className="text-sm text-gray-400">No new notifications</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Profile */}
-            <button className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors">
+            <button
+              onClick={() => navigate('/setup-profile')}
+              title="Setup Profile"
+              className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
+            >
               <User className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
             </button>
 
-            {/* Add Product CTA */}
             <button
               onClick={() => setShowAddProduct(true)}
               className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-white transition-colors hover:opacity-90"
@@ -829,7 +1141,7 @@ export default function SellerDashboard() {
           </div>
         </header>
 
-        {/* Smart Assistant Bar */}
+        {/* Smart Tip Bar */}
         <div className="px-4 sm:px-6 py-3" style={{ backgroundColor: '#FFF9EB' }}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--peach-pink)' }}>
@@ -840,7 +1152,7 @@ export default function SellerDashboard() {
               <p className="text-sm text-gray-700 truncate">{currentMsg.text}</p>
             </div>
             <button
-              onClick={() => setSmartIdx(i => (i + 1) % SMART_MESSAGES.length)}
+              onClick={() => setSmartIdx(i => (i + 1) % tips.length)}
               className="ml-auto shrink-0 p-1 rounded hover:bg-white/60 transition-colors"
             >
               <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -851,39 +1163,44 @@ export default function SellerDashboard() {
         {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
           {section === 'home' && (
-            <HomeSection
-              orders={orders}
-              products={products}
-              newOrders={newOrders}
-              lowStockProducts={lowStockProducts}
-              outOfStockProducts={outOfStockProducts}
-              totalEarnings={totalEarnings}
-              onAcceptOrder={id => handleOrderAction(id, 'processing')}
-              onAddProduct={() => setShowAddProduct(true)}
-              onViewOrders={() => { setSection('orders'); setOrderTab('new'); }}
-              storeStory={storeStory}
-              onSaveStory={setStoreStory}
-            />
+            isNewArtisan ? (
+              <NewArtisanHome
+                userName={name}
+                onAddProduct={() => { setShowAddProduct(true); }}
+                onGoToProfile={() => { navigate('/setup-profile'); }}
+              />
+            ) : (
+              <ExistingArtisanHome
+                products={artisanProducts}
+                orders={artisanOrders}
+                totalEarnings={totalEarnings}
+                onAcceptOrder={id => updateArtisanOrder(id, 'processing')}
+                onAddProduct={() => setShowAddProduct(true)}
+                onViewOrders={() => { setSection('orders'); setOrderTab('new'); }}
+                storeStory={storeStory}
+                onSaveStory={handleSaveStory}
+              />
+            )
           )}
           {section === 'products' && (
             <ProductsSection
-              products={products}
+              products={artisanProducts}
               search={search}
               onEdit={p => { setEditingProduct(p); setShowAddProduct(true); }}
-              onDelete={handleDeleteProduct}
+              onDelete={deleteArtisanProduct}
               onAdd={() => setShowAddProduct(true)}
             />
           )}
           {section === 'orders' && (
             <OrdersSection
-              orders={orders}
+              orders={artisanOrders}
               orderTab={orderTab}
               setOrderTab={setOrderTab}
-              onOrderAction={handleOrderAction}
+              onOrderAction={updateArtisanOrder}
             />
           )}
           {section === 'earnings' && (
-            <EarningsSection totalEarnings={totalEarnings} availableBalance={availableBalance} />
+            <EarningsSection orders={artisanOrders} />
           )}
         </main>
       </div>
@@ -893,8 +1210,8 @@ export default function SellerDashboard() {
         <ProductModal
           editingProduct={editingProduct}
           onClose={() => { setShowAddProduct(false); setEditingProduct(null); }}
-          onSave={handleSaveProduct}
-          onCreate={handleCreateProduct}
+          onSave={p => { updateArtisanProduct(p); setShowAddProduct(false); setEditingProduct(null); }}
+          onCreate={data => { addArtisanProduct(data); setShowAddProduct(false); }}
         />
       )}
 

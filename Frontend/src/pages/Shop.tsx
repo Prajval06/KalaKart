@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Heart, Filter } from 'lucide-react';
-import { products, categories } from '../data/products';
+import { categories } from '../data/products';
+import { useAppContext } from '../context/AppContext';
 
 export default function Shop() {
+  const { getAllProducts } = useAppContext();
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const filteredProducts = selectedCategory === 'All' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  const allProducts = getAllProducts();
+  const filteredProducts = selectedCategory === 'All'
+    ? allProducts
+    : allProducts.filter(p => p.category === selectedCategory);
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -59,18 +62,18 @@ export default function Shop() {
               className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
               <div className="relative aspect-square overflow-hidden">
-                <img 
-                  src={product.image} 
+                <img
+                  src={product.image}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
-                <button 
+                <button
                   className="absolute top-3 right-3 p-2 bg-white rounded-full hover:scale-110 transition-transform"
                   onClick={(e) => e.preventDefault()}
                 >
                   <Heart className="w-4 h-4" style={{ color: 'var(--text-gray)' }} />
                 </button>
-                <div 
+                <div
                   className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs text-white"
                   style={{ backgroundColor: 'var(--saffron)' }}
                 >

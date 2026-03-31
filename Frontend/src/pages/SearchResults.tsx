@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { SearchX, Package, Users } from 'lucide-react';
-import { products } from '../data/products';
 import { artisans } from '../data/artisans';
+import { useAppContext } from '../context/AppContext';
 
 // ── Search helpers ────────────────────────────────────────────────────────────
 function normalize(s: string) {
   return s.toLowerCase().replace(/[&]/g, 'and');
 }
 
-function matchesProduct(q: string, p: (typeof products)[0]) {
+function matchesProduct(q: string, p: any) {
   const hay = normalize(
     [p.name, p.category, p.description, p.artisan, p.state].join(' ')
   );
@@ -44,7 +44,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 }
 
 // ── Product card ──────────────────────────────────────────────────────────────
-function ProductCard({ product, query }: { product: (typeof products)[0]; query: string }) {
+function ProductCard({ product, query }: { product: any; query: string }) {
   return (
     <Link
       to={`/product/${product.id}`}
@@ -110,13 +110,15 @@ function ArtisanCard({ artisan, query }: { artisan: (typeof artisans)[0]; query:
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function SearchResults() {
+  const { getAllProducts } = useAppContext();
+  const allProducts = getAllProducts();
   const [searchParams] = useSearchParams();
   const rawQuery = searchParams.get('q') ?? '';
   const q = normalize(rawQuery.trim());
 
   const matchedProducts = useMemo(
-    () => (q ? products.filter(p => matchesProduct(q, p)) : []),
-    [q]
+    () => (q ? allProducts.filter(p => matchesProduct(q, p)) : []),
+    [q, allProducts]
   );
 
   const matchedArtisans = useMemo(
