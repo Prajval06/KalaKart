@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Trash2, Plus, Minus, ShoppingBag, Truck, LogIn, ClipboardList, X, Package, ChevronRight } from 'lucide-react';
-import { products } from '../data/products';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { calculateShipping, calculatePlatformFee, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
@@ -163,13 +162,14 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
 
 // ── Main Cart page ────────────────────────────────────────────────────────────
 export default function Cart() {
-  const { cartItems, updateQuantity, removeItem, isLoggedIn, orders } = useAppContext();
+  const { cartItems, updateQuantity, removeItem, isLoggedIn, orders, getAllProducts } = useAppContext();
   const navigate = useNavigate();
   const [zone, setZone] = useState<DeliveryZone>('regional');
   const [ordersOpen, setOrdersOpen] = useState(false);
 
+  const allProducts = getAllProducts();
   const cartProducts = cartItems.map(item => ({
-    ...products.find(p => p.id === item.productId)!,
+    ...allProducts.find(p => p.id === item.productId)!,
     quantity: item.quantity,
   })).filter(item => item.id);
 
@@ -373,7 +373,8 @@ export default function Cart() {
                   {/* Checkout CTA */}
                   <button
                     onClick={handleProceedToCheckout}
-                    className="w-full px-6 py-4 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity mb-3 flex items-center justify-center gap-2"
+                    disabled={cartProducts.length === 0}
+                    className="w-full px-6 py-4 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity mb-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ backgroundColor: 'var(--saffron)' }}
                   >
                     {!isLoggedIn && <LogIn className="w-4 h-4" />}

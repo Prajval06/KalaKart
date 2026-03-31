@@ -1,8 +1,8 @@
 import { useParams, Link, useNavigate } from 'react-router';
 import { ShoppingBag, SlidersHorizontal, ChevronDown, ArrowLeft } from 'lucide-react';
-import { products } from '../data/products';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { useAppContext } from '../context/AppContext';
 
 const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: string }> = {
   'Jewelry':            { accent: '#B5851A', emoji: '💎', bg: '#FDF6E3' },
@@ -116,6 +116,7 @@ function RangeSlider({
 export default function CategoryPage() {
   const { categoryName } = useParams<{ categoryName: string }>();
   const navigate = useNavigate();
+  const { getAllProducts } = useAppContext();
   const decoded = decodeURIComponent(categoryName || '');
   const cfg = CATEGORY_ACCENTS[decoded] ?? { accent: 'var(--rust-red)', emoji: '🛍️', bg: '#F8F4EA' };
 
@@ -139,7 +140,8 @@ export default function CategoryPage() {
   }, []);
 
   const categoryProducts = useMemo(() => {
-    const base = products
+    const allProducts = getAllProducts();
+    const base = allProducts
       .filter(p => p.category === decoded)
       .filter(p => p.price >= priceLow && p.price <= priceHigh);
     switch (sort) {
@@ -148,7 +150,7 @@ export default function CategoryPage() {
       case 'name-asc':   return [...base].sort((a, b) => a.name.localeCompare(b.name));
       default:           return base;
     }
-  }, [decoded, sort, priceLow, priceHigh]);
+  }, [decoded, sort, priceLow, priceHigh, getAllProducts]);
 
   // Badge to show when filters are active
   const filtersActive = sort !== 'default' || priceLow > PRICE_MIN || priceHigh < PRICE_MAX;

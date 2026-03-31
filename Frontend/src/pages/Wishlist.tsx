@@ -1,12 +1,13 @@
 import { Link } from 'react-router';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
-import { products } from '../data/products';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 
 export default function Wishlist() {
-  const { wishlistItems, toggleWishlist, addToCart } = useAppContext();
-  const wishlistProducts = products.filter((product) =>
+  const { wishlistItems, toggleWishlist, addToCart, getAllProducts } = useAppContext();
+  
+  const allProducts = getAllProducts();
+  const wishlistProducts = allProducts.filter((product) =>
     wishlistItems.includes(product.id)
   );
 
