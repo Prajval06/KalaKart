@@ -357,7 +357,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAuthToken(access_token);
       
       // Map role to userType correctly for the UI
-      const mappedUserType = userType || (user.role === 'artisan' ? 'seller' : 'buyer');
+      // Backend uses 'admin' or 'artisan' for sellers, and 'customer' for buyers.
+      const mappedUserType = userType || (['admin', 'artisan'].includes(user.role) ? 'seller' : 'buyer');
       const mappedUser: AuthUser = { email: user.email, name: user.full_name, userType: mappedUserType };
       
       setCurrentUser(mappedUser);

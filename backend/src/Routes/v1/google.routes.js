@@ -84,26 +84,26 @@ router.get('/google/callback', async (req, res) => {
     let user = await User.findOne({ googleId });
 
     if (user) {
-      // Returning Google user — refresh their profile image and assign new role if requested
+      // Returning Google user — refresh image and upgrade to admin if they are signing in as seller
       user.profileImage = profileImage;
       if (state === 'seller' && user.role !== 'admin') {
-        user.role = 'admin'; // upgrade to seller
+        user.role = 'admin';
       }
       await user.save();
     } else {
-      // Check if someone already signed up with the same email via email/password
+      // Check if email already exists via email/password sign-up
       user = await User.findOne({ email: email.toLowerCase() });
       if (user) {
-        // Link the Google account to the existing email account
+        // Link Google account to existing email account
         user.googleId     = googleId;
         user.profileImage = user.profileImage || profileImage;
         user.authMethod   = 'google';
         if (state === 'seller' && user.role !== 'admin') {
-          user.role = 'admin'; // upgrade to seller
+          user.role = 'admin';
         }
         await user.save();
       } else {
-        // Brand new user — create account
+        // Create new account
         user = await User.create({
           googleId,
           email,
@@ -111,7 +111,6 @@ router.get('/google/callback', async (req, res) => {
           profileImage,
           authMethod:  'google',
           role:        state === 'seller' ? 'admin' : 'customer',
-          // hashed_password intentionally omitted — Google users don't need one
         });
       }
     }
@@ -131,17 +130,23 @@ router.get('/google/callback', async (req, res) => {
     );
 
     // ── Step 5: Send user data + token to frontend via redirect ───────────────
+    // Determine the initial landing page (userType) based on user's INTENT (state)
+    // but fall back to their DB role if state is missing.
+    const redirectUserType = state || (user.role === 'admin' ? 'seller' : 'buyer');
+
     const userData = JSON.stringify({
       id:           user._id,
       name:         user.full_name,
       email:        user.email,
       photoURL:     user.profileImage,
-      userType:     user.role === 'admin' ? 'seller' : 'buyer',
+      userType:     redirectUserType,
     });
 
     const redirectUrl = `${config.frontendUrl}/auth-success` +
       `?token=${session_token}` +
       `&user=${encodeURIComponent(userData)}`;
+
+    console.log(`--- OAUTH SUCCESS: User ${email} (Role: ${user.role}) redirected as ${redirectUserType} ---`);
 
     return res.redirect(redirectUrl);
 
