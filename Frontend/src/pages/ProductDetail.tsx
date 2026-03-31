@@ -3,12 +3,12 @@ import { useParams, Link } from 'react-router';
 import {
   ShoppingCart, Heart, MapPin, Award, ArrowRight,
   User, ChevronDown, ChevronUp,
-  Shield, Star, X, BadgeCheck, Sparkles, Truck,
+  Shield, Star, X, BadgeCheck, Sparkles,
 } from 'lucide-react';
 import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
-import { calculateShipping, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
+import { calculateShipping } from '../utils/shipping';
 
 /* ─────────────────────────── Verified Artisan Modal ─────────────────────── */
 function VerifiedModal({ onClose }: { onClose: () => void }) {
@@ -94,7 +94,6 @@ export default function ProductDetail() {
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [pricingOpen, setPricingOpen]             = useState(false);
-  const [zone, setZone]                           = useState<DeliveryZone>('regional');
 
   const allProducts = getAllProducts();
   const product = allProducts.find(p => p.id === id);
@@ -355,7 +354,7 @@ export default function ProductDetail() {
           </button>
 
           {pricingOpen && (() => {
-            const shipping    = calculateShipping(product.category, product.price, zone);
+            const shipping    = calculateShipping(product.category, product.price);
             const total       = product.price + shipping;
             const artisanEarns = Math.round(product.price * 0.85); // Straight 85% to artisan
             const platformFees = product.price - artisanEarns;
@@ -366,32 +365,7 @@ export default function ProductDetail() {
                 className="mt-2 p-6 rounded-2xl"
                 style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}
               >
-                {/* ── Zone Selector ── */}
-                <div className="mb-6">
-                  <p className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--dark-brown)' }}>
-                    <Truck className="w-4 h-4" style={{ color: 'var(--saffron)' }} />
-                    Delivery Location
-                  </p>
-                  <div className="flex gap-2 flex-wrap">
-                    {(Object.keys(ZONE_LABELS) as DeliveryZone[]).map(z => (
-                      <button
-                        key={z}
-                        onClick={() => setZone(z)}
-                        className="px-3 py-1.5 rounded-full text-sm transition-all"
-                        style={
-                          zone === z
-                            ? { backgroundColor: 'var(--saffron)', color: 'white', fontWeight: 600 }
-                            : { backgroundColor: 'var(--beige)', color: 'var(--dark-brown)', border: '1px solid transparent' }
-                        }
-                      >
-                        {ZONE_LABELS[z]}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs mt-2" style={{ color: 'var(--text-gray)' }}>
-                    Shipping cost varies based on product type and delivery location
-                  </p>
-                </div>
+
 
                 {/* ── Price Summary ── */}
                 <div
@@ -403,7 +377,7 @@ export default function ProductDetail() {
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{product.price.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping ({ZONE_LABELS[zone]})</span>
+                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping</span>
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{shipping.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="h-px" style={{ backgroundColor: 'var(--beige)' }} />
@@ -443,7 +417,7 @@ export default function ProductDetail() {
                       amount: shipping,
                       pct: null,     // shipping is separate — no bar
                       color: 'var(--rust-red)',
-                      note: `Calculated for ${ZONE_LABELS[zone]} delivery`,
+                      note: `Estimated standard shipping`,
                     },
                   ].map(row => (
                     <div key={row.label}>
