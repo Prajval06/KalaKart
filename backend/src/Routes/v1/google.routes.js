@@ -23,6 +23,8 @@ const config  = require('../../config/config');
 // GET /google  →  Redirect to Google consent screen
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/google', (req, res) => {
+  const { state } = req.query; // e.g. 'seller' or 'buyer'
+
   const params = new URLSearchParams({
     client_id:     config.googleClientId,
     redirect_uri:  config.googleCallbackUrl,
@@ -31,9 +33,15 @@ router.get('/google', (req, res) => {
     access_type:   'offline',
     prompt:        'consent',
   });
+  
+  if (state) {
+    params.append('state', state);
+  }
+
   const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   console.log('--- GOOGLE REDIRECT DEBUG ---');
   console.log('Client ID loaded:', config.googleClientId);
+  console.log('Requested state:', state);
   console.log('Redirecting to:', redirectUrl);
   console.log('-----------------------------');
   res.redirect(redirectUrl);
@@ -43,7 +51,7 @@ router.get('/google', (req, res) => {
 // GET /google/callback  →  Exchange code → token → user info → JWT → redirect
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/google/callback', async (req, res) => {
-  const { code, error: oauthError } = req.query;
+  const { code, state, error: oauthError } = req.query;
 
   // Google returned an error (e.g. user denied consent)
   if (oauthError || !code) {
@@ -76,8 +84,11 @@ router.get('/google/callback', async (req, res) => {
     let user = await User.findOne({ googleId });
 
     if (user) {
-      // Returning Google user — refresh their profile image
+      // Returning Google user — refresh their profile image and assign new role if requested
       user.profileImage = profileImage;
+      if (state === 'seller' && user.role !== 'admin') {
+        user.role = 'admin'; // upgrade to seller
+      }
       await user.save();
     } else {
       // Check if someone already signed up with the same email via email/password
@@ -87,6 +98,9 @@ router.get('/google/callback', async (req, res) => {
         user.googleId     = googleId;
         user.profileImage = user.profileImage || profileImage;
         user.authMethod   = 'google';
+        if (state === 'seller' && user.role !== 'admin') {
+          user.role = 'admin'; // upgrade to seller
+        }
         await user.save();
       } else {
         // Brand new user — create account
@@ -96,6 +110,7 @@ router.get('/google/callback', async (req, res) => {
           full_name:   name,
           profileImage,
           authMethod:  'google',
+          role:        state === 'seller' ? 'admin' : 'customer',
           // hashed_password intentionally omitted — Google users don't need one
         });
       }
