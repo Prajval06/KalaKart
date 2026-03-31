@@ -440,7 +440,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAuthToken(access_token);
       
       // Map role to userType correctly for the UI
-      const mappedUserType = userType || (user.role === 'artisan' ? 'seller' : 'buyer');
+      // Backend uses 'admin' or 'artisan' for sellers, and 'customer' for buyers.
+      const mappedUserType = userType || (['admin', 'artisan'].includes(user.role) ? 'seller' : 'buyer');
       const mappedUser: AuthUser = { email: user.email, name: user.full_name, userType: mappedUserType };
       
       setCurrentUser(mappedUser);
@@ -499,13 +500,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return { success: 'Password reset email sent. Please check your inbox.' };
   };
 
-  /**
-   * GOOGLE SIGN IN (real OAuth):
-   * Redirects the browser to the backend which redirects to Google.
-   * After Google auth, user lands on /auth-success where loginWithGoogleToken is called.
-   */
-  const loginWithGoogle = (_userType?: 'buyer' | 'seller'): void => {
-    window.location.href = `${BASE_URL}/auth/google`;
+  const loginWithGoogle = (userType?: 'buyer' | 'seller'): void => {
+    window.location.href = `${BASE_URL}/auth/google${userType ? `?state=${userType}` : ''}`;
   };
 
   const loginWithGoogleToken = (token: string, user: AuthUser): void => {

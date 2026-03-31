@@ -23,6 +23,8 @@ const config  = require('../../config/config');
 // GET /google  →  Redirect to Google consent screen
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/google', (req, res) => {
+  const { state } = req.query; // e.g. 'seller' or 'buyer'
+
   const params = new URLSearchParams({
     client_id:     config.googleClientId,
     redirect_uri:  config.googleCallbackUrl,
@@ -31,9 +33,15 @@ router.get('/google', (req, res) => {
     access_type:   'offline',
     prompt:        'consent',
   });
+  
+  if (state) {
+    params.append('state', state);
+  }
+
   const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   console.log('--- GOOGLE REDIRECT DEBUG ---');
   console.log('Client ID loaded:', config.googleClientId);
+  console.log('Requested state:', state);
   console.log('Redirecting to:', redirectUrl);
   console.log('-----------------------------');
   res.redirect(redirectUrl);
@@ -43,7 +51,7 @@ router.get('/google', (req, res) => {
 // GET /google/callback  →  Exchange code → token → user info → JWT → redirect
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/google/callback', async (req, res) => {
-  const { code, error: oauthError } = req.query;
+  const { code, state, error: oauthError } = req.query;
 
   // Google returned an error (e.g. user denied consent)
   if (oauthError || !code) {
@@ -76,27 +84,33 @@ router.get('/google/callback', async (req, res) => {
     let user = await User.findOne({ googleId });
 
     if (user) {
-      // Returning Google user — refresh their profile image
+      // Returning Google user — refresh image and upgrade to admin if they are signing in as seller
       user.profileImage = profileImage;
+      if (state === 'seller' && user.role !== 'admin') {
+        user.role = 'admin';
+      }
       await user.save();
     } else {
-      // Check if someone already signed up with the same email via email/password
+      // Check if email already exists via email/password sign-up
       user = await User.findOne({ email: email.toLowerCase() });
       if (user) {
-        // Link the Google account to the existing email account
+        // Link Google account to existing email account
         user.googleId     = googleId;
         user.profileImage = user.profileImage || profileImage;
         user.authMethod   = 'google';
+        if (state === 'seller' && user.role !== 'admin') {
+          user.role = 'admin';
+        }
         await user.save();
       } else {
-        // Brand new user — create account
+        // Create new account
         user = await User.create({
           googleId,
           email,
           full_name:   name,
           profileImage,
           authMethod:  'google',
-          // hashed_password intentionally omitted — Google users don't need one
+          role:        state === 'seller' ? 'admin' : 'customer',
         });
       }
     }
@@ -116,17 +130,23 @@ router.get('/google/callback', async (req, res) => {
     );
 
     // ── Step 5: Send user data + token to frontend via redirect ───────────────
+    // Determine the initial landing page (userType) based on user's INTENT (state)
+    // but fall back to their DB role if state is missing.
+    const redirectUserType = state || (user.role === 'admin' ? 'seller' : 'buyer');
+
     const userData = JSON.stringify({
       id:           user._id,
       name:         user.full_name,
       email:        user.email,
       photoURL:     user.profileImage,
-      userType:     user.role === 'admin' ? 'seller' : 'buyer',
+      userType:     redirectUserType,
     });
 
     const redirectUrl = `${config.frontendUrl}/auth-success` +
       `?token=${session_token}` +
       `&user=${encodeURIComponent(userData)}`;
+
+    console.log(`--- OAUTH SUCCESS: User ${email} (Role: ${user.role}) redirected as ${redirectUserType} ---`);
 
     return res.redirect(redirectUrl);
 
