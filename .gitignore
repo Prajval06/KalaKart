@@ -1,7 +1,5 @@
-<<<<<<< HEAD
+
 \.venv
-=======
-<<<<<<< HEAD
 # dependencies
 node_modules
 Frontend/node_modules
@@ -30,14 +28,15 @@ yarn-error.log*
 
 \venv1
 
->>>>>>> main
-<<<<<<< HEAD
-=======
-\.venv
->>>>>>> origin/backend
-\node_modules
-=======
-.venv
->>>>>>> abhay
 
-\utills
+\.venv
+
+\node_modules
+
+.venv
+
+\
+
+.env
+.env.*
+!.env.example

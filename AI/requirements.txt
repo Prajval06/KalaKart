@@ -1,0 +1,49 @@
+# Core
+numpy
+pandas
+scikit-learn
+scipy
+matplotlib
+seaborn
+
+# Deep Learning
+torch
+torchvision
+torchaudio
+transformers
+datasets
+accelerate
+sentence-transformers
+peft
+bitsandbytes
+
+# LLM / API / Orchestration
+openai
+anthropic
+google-generativeai
+langchain
+langchain-community
+llama-index
+tiktoken
+
+# RAG / Vector DB
+faiss-cpu
+chromadb
+pymongo
+
+# Backend / App
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+requests
+httpx
+
+# Notebook / Experimentation
+jupyterlab
+ipykernel
+notebook
+
+# Utilities
+tqdm
+python-multipart
