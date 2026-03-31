@@ -3,10 +3,10 @@ import { Link, useNavigate } from 'react-router';
 import {
   CheckCircle, ChevronRight, MapPin, CreditCard,
   Smartphone, Banknote, Loader2, ShieldCheck,
-  ArrowLeft, CircleCheck, ShoppingBag, Truck,
+  ArrowLeft, CircleCheck, ShoppingBag,
 } from 'lucide-react';
 import { useAppContext, type AddressData, type OrderItem } from '../context/AppContext';
-import { calculateShipping, calculatePlatformFee, type DeliveryZone, ZONE_LABELS } from '../utils/shipping';
+import { calculateShipping, calculatePlatformFee } from '../utils/shipping';
 
 /* ─────────────────────────── Progress Stepper ───────────────────────────── */
 const PROGRESS_STEPS = ['Cart', 'Login', 'Address', 'Payment'];
@@ -212,10 +212,8 @@ function CheckoutInner({
   }
 
   /* ── Zone & pricing ── */
-  const [zone, setZone] = useState<DeliveryZone>('regional');
-
   const subtotal = cartProducts.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping  = cartProducts.reduce((sum, item) => sum + calculateShipping(item.category, item.price, zone), 0);
+  const shipping  = cartProducts.reduce((sum, item) => sum + calculateShipping(item.category, item.price), 0);
   const platformFee = cartProducts.reduce((sum, item) => sum + calculatePlatformFee(item.price) * item.quantity, 0);
 
   /* ── Steps ── */
@@ -452,29 +450,7 @@ function CheckoutInner({
                     </span>
                   </label>
 
-                  {/* Zone selector for shipping estimate */}
-                  <div className="mt-5 pt-5" style={{ borderTop: '1px solid var(--beige)' }}>
-                    <p className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--dark-brown)' }}>
-                      <Truck className="w-4 h-4" style={{ color: 'var(--saffron)' }} />
-                      Delivery Zone (for shipping estimate)
-                    </p>
-                    <div className="flex gap-2 flex-wrap">
-                      {(Object.keys(ZONE_LABELS) as DeliveryZone[]).map(z => (
-                        <button
-                          key={z}
-                          onClick={() => setZone(z)}
-                          className="px-3 py-1.5 rounded-full text-sm transition-all"
-                          style={
-                            zone === z
-                              ? { backgroundColor: 'var(--saffron)', color: 'white', fontWeight: 600 }
-                              : { backgroundColor: 'var(--beige)', color: 'var(--dark-brown)' }
-                          }
-                        >
-                          {ZONE_LABELS[z]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+
 
                   <button
                     onClick={handleAddressContinue}
@@ -514,14 +490,15 @@ function CheckoutInner({
                   {/* Method Selector */}
                   <div className="space-y-3 mb-6">
                     {[
-                      { id: 'upi' as PaymentMethod, icon: <Smartphone className="w-5 h-5" />, label: 'UPI', sub: 'Pay via any UPI app — GPay, PhonePe, Paytm' },
-                      { id: 'card' as PaymentMethod, icon: <CreditCard className="w-5 h-5" />, label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay accepted' },
-                      { id: 'cod' as PaymentMethod, icon: <Banknote className="w-5 h-5" />, label: 'Cash on Delivery', sub: 'Pay when your order arrives (₹25 extra charge)' },
+                      { id: 'upi' as PaymentMethod, icon: <Smartphone className="w-5 h-5" />, label: 'UPI', sub: 'Pay via any UPI app — GPay, PhonePe, Paytm', disabled: false },
+                      { id: 'card' as PaymentMethod, icon: <CreditCard className="w-5 h-5" />, label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay accepted', disabled: false },
+                      { id: 'cod' as PaymentMethod, icon: <Banknote className="w-5 h-5" />, label: 'Cash on Delivery', sub: 'Cash on delivery option coming soon', disabled: true },
                     ].map(method => (
                       <button
                         key={method.id}
+                        disabled={method.disabled}
                         onClick={() => setPaymentMethod(method.id)}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all"
+                        className={`w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all ${method.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                         style={{
                           border: paymentMethod === method.id
                             ? '2px solid var(--saffron)'
@@ -691,7 +668,7 @@ function CheckoutInner({
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping ({ZONE_LABELS[zone]})</span>
+                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping</span>
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{shipping.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>

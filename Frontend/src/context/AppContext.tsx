@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { ToastProps } from '../components/Toast';
 import { products as staticProducts } from '../data/products';
 import type { Product } from '../data/products';
+import { artisans } from '../data/artisans';
 
 // ── Buyer types ──────────────────────────────────────────────────────────────
 export interface CartItem {
@@ -199,6 +200,88 @@ function loadSavedAddress(): AddressData | null {
 }
 
 const mockDelay = () => new Promise<void>(r => setTimeout(r, 800));
+
+// ── Seed Default Artisans ────────────────────────────────────────────────────
+function seedInitialState() {
+  try {
+    const registry = loadRegistry();
+    const allProfiles = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
+    let modified = false;
+
+    // Prune old legacy duplicate accounts (from the earlier script version)
+    Object.keys(registry).forEach(key => {
+      if (key.endsWith('@kalakart.com') || key.endsWith('@google.com')) {
+        delete registry[key];
+        delete allProfiles[key];
+        localStorage.removeItem(`kk_seller_products_${key}`);
+        modified = true;
+      }
+    });
+
+    artisans.forEach((artisan) => {
+      const firstName = artisan.name.split(' ')[0].toLowerCase();
+      const lastName = artisan.name.split(' ')[1]?.toLowerCase() || '123';
+      const email = `${firstName}@gmail.com`;
+      const customPassword = `${firstName}${lastName}`;
+      
+      // Forcefully ensure the test users exist and have the correct credentials
+      if (!registry[email] || registry[email].password !== customPassword) {
+        registry[email] = {
+          email,
+          name: artisan.name,
+          password: customPassword,
+          userType: 'seller',
+        };
+        modified = true;
+      }
+
+      if (!allProfiles[email]) {
+        allProfiles[email] = {
+          userId: email,
+          name: artisan.name,
+          profileImage: artisan.image,
+          description: artisan.bio,
+          isComplete: true,
+        };
+        modified = true;
+      }
+
+      const prodsKey = sellerProductsKey(email);
+      const existingProds = loadJSON<ArtisanProduct[]>(prodsKey, []);
+      if (existingProds.length === 0) {
+        const artisanProds = staticProducts
+          .filter(p => p.artisan === artisan.name)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            stock: 10,
+            image: p.image,
+            images: [p.image],
+            // Map canonical category back to standard dashboard category if possible
+            category: Object.keys(CATEGORY_MAP).find(k => CATEGORY_MAP[k] === p.category) || p.category,
+            description: p.description || '',
+            status: 'active' as const
+          }));
+        if (artisanProds.length > 0) {
+          saveJSON(prodsKey, artisanProds);
+          modified = true;
+        }
+      }
+    });
+
+    if (modified) {
+      saveRegistry(registry);
+      saveJSON(LS_PROFILES, allProfiles);
+    }
+  } catch (err) {
+    console.error('Failed to seed state:', err);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  seedInitialState();
+}
 
 // ── Provider ─────────────────────────────────────────────────────────────────
 export function AppProvider({ children }: { children: ReactNode }) {

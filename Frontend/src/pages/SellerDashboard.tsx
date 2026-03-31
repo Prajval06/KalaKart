@@ -360,7 +360,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
       <div
         className="rounded-3xl p-8 relative overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, var(--dark-brown) 0%, #5C3A1E 100%)',
+          backgroundColor: '#9B2335',
         }}
       >
         <div className="relative z-10">
@@ -1014,7 +1014,7 @@ export default function SellerDashboard() {
       {/* Sidebar */}
       <aside
         className={`fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-64 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ backgroundColor: 'var(--dark-brown)' }}
+        style={{ backgroundColor: '#4B8B6F' }}
       >
         <div className="flex items-center justify-between mb-10">
           <div>
