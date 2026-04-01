@@ -1,6 +1,13 @@
 
 
 services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
 
   backend:
     build:
@@ -41,3 +48,4 @@ services:
 
 volumes:
   ml_models:
+  mongodb_data:
