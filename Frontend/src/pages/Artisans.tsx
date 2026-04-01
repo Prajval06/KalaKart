@@ -3,7 +3,7 @@ import { MapPin, Award, User } from 'lucide-react';
 import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
-import type { ArtisanProfile } from '../context/AppContext';
+import type { ArtisanProfile } from '../context/types';
 
 export default function Artisans() {
   const { getCompletedArtisanProfiles } = useAppContext();
@@ -12,21 +12,21 @@ export default function Artisans() {
   const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles();
 
   // Deduplicate by name to guarantee the UI never shows the same artisan twice
-  const uniqueProfiles = registeredProfiles.reduce((acc, current) => {
+  const uniqueProfiles = registeredProfiles.reduce((acc: ArtisanProfile[], current: ArtisanProfile) => {
     const exists = acc.find(p => p.name === current.name);
     if (!exists) acc.push(current);
     return acc;
   }, [] as ArtisanProfile[]);
 
-  const unifiedArtisans = uniqueProfiles.map(p => {
+  const unifiedArtisans = uniqueProfiles.map((p: ArtisanProfile) => {
     const original = artisans.find(a => a.name === p.name);
     return {
       id: p.userId,
       name: p.name,
       image: p.profileImage || original?.image || '',
-      specialization: original?.specialization || 'Independent Artisan',
-      state: original?.state || 'India',
-      yearsOfExperience: original?.yearsOfExperience || 1,
+      specialization: p.specialty || original?.specialization || 'Independent Artisan',
+      state: p.location || original?.state || 'India',
+      yearsOfExperience: p.yearsOfExperience || original?.yearsOfExperience || 1,
       bio: p.description || original?.bio || ''
     };
   });
@@ -63,7 +63,7 @@ export default function Artisans() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {unifiedArtisans.map((artisan) => (
+            {unifiedArtisans.map((artisan: any) => (
               <Link
                 key={artisan.id}
                 to={`/artisan/${artisan.id}`}

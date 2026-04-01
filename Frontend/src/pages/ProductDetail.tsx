@@ -96,8 +96,8 @@ export default function ProductDetail() {
   const [pricingOpen, setPricingOpen]             = useState(false);
 
   const allProducts = getAllProducts();
-  const product = allProducts.find(p => p.id === id);
-  const artisan = product ? artisans.find(a => a.id === product.artisanId) : null;
+  const product = allProducts.find(p => p.id === id) as any;
+  const artisan = product?.artisan_id || (product ? artisans.find(a => a.id === product.artisanId) : null);
 
   if (!product) {
     return (
@@ -164,22 +164,22 @@ export default function ProductDetail() {
               </div>
 
               {/* Proof-of-craft artisan thumbnail strip */}
-              {artisan && (
-                <div
-                  className="mt-4 p-4 rounded-xl flex items-center gap-4"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid var(--beige)' }}
-                >
-                  <img
-                    src={artisan.image}
-                    alt={`${artisan.name} — artisan at work`}
-                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2"
-                    style={{ borderColor: 'var(--saffron)' }}
-                  />
-                  <div>
-                    <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Proof of Craft — Artisan at Work</p>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--dark-brown)' }}>{artisan.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--saffron)' }}>{artisan.specialization}</p>
-                  </div>
+                  {artisan && (
+                    <div
+                      className="mt-4 p-4 rounded-xl flex items-center gap-4"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.85)', border: '1px solid var(--beige)' }}
+                    >
+                      <img
+                        src={artisan.profileImage || artisan.image}
+                        alt={`${artisan.full_name || artisan.name} — artisan at work`}
+                        className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2"
+                        style={{ borderColor: 'var(--saffron)' }}
+                      />
+                      <div>
+                        <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Proof of Craft — Artisan at Work</p>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--dark-brown)' }}>{artisan.full_name || artisan.name}</p>
+                        <p className="text-xs" style={{ color: 'var(--saffron)' }}>{artisan.specialty || artisan.specialization}</p>
+                      </div>
                   <div className="ml-auto flex-shrink-0">
                     <span
                       className="text-xs px-2 py-1 rounded-full"
@@ -225,21 +225,21 @@ export default function ProductDetail() {
               {/* ── Artisan Identity Card ── */}
               {artisan ? (
                 <Link
-                  to={`/artisan/${artisan.id}`}
+                  to={`/artisan/${artisan.id || artisan._id}`}
                   className="flex items-center gap-4 p-4 rounded-xl mb-6 hover:shadow-md transition-shadow"
                   style={{ backgroundColor: '#FFFDF8', border: '1.5px solid var(--beige)' }}
                 >
                   <img
-                    src={artisan.image}
-                    alt={artisan.name}
+                    src={artisan.profileImage || artisan.image}
+                    alt={artisan.full_name || artisan.name}
                     className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                     style={{ outline: '2px solid var(--saffron)', outlineOffset: 2 }}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs mb-0.5" style={{ color: 'var(--text-gray)' }}>Made by</p>
-                    <p className="font-semibold truncate" style={{ color: 'var(--dark-brown)' }}>{artisan.name}</p>
+                    <p className="font-semibold truncate" style={{ color: 'var(--dark-brown)' }}>{artisan.full_name || artisan.name}</p>
                     <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
-                      {product.state} &nbsp;·&nbsp; {artisan.yearsOfExperience} years experience
+                      {product.state || artisan.location || artisan.state} &nbsp;·&nbsp; {artisan.yearsOfExperience} years experience
                     </p>
                   </div>
                   <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--saffron)' }} />
