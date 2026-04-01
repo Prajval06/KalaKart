@@ -205,6 +205,17 @@ function loadSavedAddress(): AddressData | null {
 }
 
 
+// ── Artisan email mapping (name → @kalakart.com login email) ─────────────────
+const ARTISAN_EMAIL_MAP: Record<string, string> = {
+  'Ramesh Kumar':   'ramesh@kalakart.com',
+  'Meera Devi':     'meera@kalakart.com',
+  'Anjali Patel':   'anjali@kalakart.com',
+  'Vikram Joshi':   'vikram@kalakart.com',
+  'Priya Singh':    'priya@kalakart.com',
+  'Arjun Sharma':   'arjun@kalakart.com',
+  'Lakshmi Nair':   'lakshmi@kalakart.com',
+};
+
 // ── Seed Default Artisans ────────────────────────────────────────────────────
 function seedInitialState() {
   try {
@@ -212,33 +223,24 @@ function seedInitialState() {
     const allProfiles = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
     let modified = false;
 
-    // Prune old legacy duplicate accounts (from the earlier script version)
-    Object.keys(registry).forEach(key => {
-      if (key.endsWith('@kalakart.com') || key.endsWith('@google.com')) {
-        delete registry[key];
-        delete allProfiles[key];
-        localStorage.removeItem(`kk_seller_products_${key}`);
-        modified = true;
-      }
-    });
-
     artisans.forEach((artisan) => {
-      const firstName = artisan.name.split(' ')[0].toLowerCase();
-      const lastName = artisan.name.split(' ')[1]?.toLowerCase() || '123';
-      const email = `${firstName}@gmail.com`;
-      const customPassword = `${firstName}${lastName}`;
-      
-      // Forcefully ensure the test users exist and have the correct credentials
-      if (!registry[email] || registry[email].password !== customPassword) {
+      // Use @kalakart.com email if the artisan is one of the registered KalaKart artisans,
+      // otherwise fall back to the old firstName@gmail.com format.
+      const email = ARTISAN_EMAIL_MAP[artisan.name]
+        ?? `${artisan.name.split(' ')[0].toLowerCase()}@gmail.com`;
+
+      // Ensure the registry contains this artisan as a seller
+      if (!registry[email]) {
         registry[email] = {
           email,
           name: artisan.name,
-          password: customPassword,
+          password: 'Password@123',
           userType: 'seller',
         };
         modified = true;
       }
 
+      // Ensure the artisan has a completed public profile
       if (!allProfiles[email]) {
         allProfiles[email] = {
           userId: email,
@@ -250,6 +252,7 @@ function seedInitialState() {
         modified = true;
       }
 
+      // Seed products only if not already saved under this email key
       const prodsKey = sellerProductsKey(email);
       const existingProds = loadJSON<ArtisanProduct[]>(prodsKey, []);
       if (existingProds.length === 0) {
@@ -262,15 +265,22 @@ function seedInitialState() {
             stock: 10,
             image: p.image,
             images: [p.image],
-            // Map canonical category back to standard dashboard category if possible
             category: Object.keys(CATEGORY_MAP).find(k => CATEGORY_MAP[k] === p.category) || p.category,
             description: p.description || '',
-            status: 'active' as const
+            status: 'active' as const,
           }));
         if (artisanProds.length > 0) {
           saveJSON(prodsKey, artisanProds);
           modified = true;
         }
+      }
+
+      // Also save a per-user profile so the seller's profile is accessible
+      const profileKey = sellerProfileKey(email);
+      const existingProfile = loadJSON<ArtisanProfile | null>(profileKey, null);
+      if (!existingProfile) {
+        saveJSON(profileKey, allProfiles[email]);
+        modified = true;
       }
     });
 
@@ -417,7 +427,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // ── Auth actions ──
   // ── Auth actions (Real API integration combined with local storage for frontend states) ──
   const login = async (email: string, password: string, userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
     try {
@@ -440,7 +449,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAuthToken(access_token);
       
       // Map role to userType correctly for the UI
-      const mappedUserType = userType || (user.role === 'artisan' ? 'seller' : 'buyer');
+      // artisan role = seller in the UI; admin also counts as seller
+      const isSeller = user.role === 'artisan' || user.role === 'admin';
+      const mappedUserType: 'buyer' | 'seller' = userType || (isSeller ? 'seller' : 'buyer');
       const mappedUser: AuthUser = { email: user.email, name: user.full_name, userType: mappedUserType };
       
       setCurrentUser(mappedUser);
@@ -454,8 +465,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Restore artisan data (only if seller)
       if (mappedUserType === 'seller') {
-        setArtisanProducts(loadJSON<ArtisanProduct[]>(sellerProductsKey(key), []));
+        // Load products: try localStorage first, then sync from API in background
+        const localProds = loadJSON<ArtisanProduct[]>(sellerProductsKey(key), []);
+        setArtisanProducts(localProds);
         setArtisanOrders(loadJSON<SellerOrder[]>(sellerOrdersKey(key), []));
+
+        // Sync products from MongoDB via API (async, non-blocking)
+        fetch(`${BASE_URL}/artisans/me/products`, {
+          headers: { Authorization: `Bearer ${access_token}` }
+        }).then(r => r.json()).then(j => {
+          if (j.success && Array.isArray(j.data?.products) && j.data.products.length > 0) {
+            const apiProds: ArtisanProduct[] = j.data.products.map((p: any) => ({
+              id: p.id || p._id?.toString() || `P${Date.now()}`,
+              name: p.name, price: p.price, stock: p.stock || 0,
+              image: p.image || p.images?.[0] || '',
+              images: p.images || [],
+              category: p.category || 'Other',
+              description: p.description || '',
+              status: p.status || 'active',
+            }));
+            setArtisanProducts(apiProds);
+            saveJSON(sellerProductsKey(key), apiProds);
+          }
+        }).catch(() => {});
+
+        // Load profile from localStorage first (fast), then sync from API
+        const localProfile = loadJSON<ArtisanProfile | null>(sellerProfileKey(key), null);
+        if (localProfile) setArtisanProfile(localProfile);
+
+        fetch(`${BASE_URL}/artisans/${user.id || user._id}`, {
+          headers: { Authorization: `Bearer ${access_token}` }
+        }).then(r => r.json()).then(j => {
+          if (j.success && j.data?.artisan) {
+            const a = j.data.artisan;
+            const profile: ArtisanProfile = {
+              userId: key,
+              name: a.name,
+              profileImage: a.profileImage || '',
+              description: a.bio || '',
+              isComplete: a.isComplete || false,
+            };
+            setArtisanProfile(profile);
+            saveJSON(sellerProfileKey(key), profile);
+            // Update global profiles registry
+            const all = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
+            all[key] = profile;
+            saveJSON(LS_PROFILES, all);
+          }
+        }).catch(() => {});
       } else {
         setArtisanProducts([]);
         setArtisanOrders([]);
@@ -469,10 +526,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const signup = async (email: string, password: string, name: string, userType?: 'buyer' | 'seller'): Promise<{ error?: string }> => {
     try {
+      // Map frontend userType to backend role
+      const role = userType === 'seller' ? 'artisan' : 'customer';
+
       const res = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, full_name: name })
+        body: JSON.stringify({ email, password, full_name: name, role })
       });
       const json = await res.json();
       
@@ -480,13 +540,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { error: json.message || 'Signup failed' };
       }
 
-      // Optional: Since frontend branch depends on LS_REGISTRY for getAllProducts, 
-      // we'll inject into LS_REGISTRY temporarily for mock visibility until we do full API queries.
-      const registry = loadRegistry();
       const key = email.toLowerCase().trim();
+
+      // Inject into LS_REGISTRY for local product catalog visibility
+      const registry = loadRegistry();
       if (!registry[key]) {
         registry[key] = { email, name: name.trim(), password: '__backend_auth__', userType: userType ?? 'buyer' };
         saveRegistry(registry);
+      }
+
+      // If signing up as a seller, initialise an incomplete artisan profile locally
+      if (userType === 'seller') {
+        const allProfiles = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
+        if (!allProfiles[key]) {
+          const newProfile: ArtisanProfile = {
+            userId: key,
+            name: name.trim(),
+            profileImage: '',
+            description: '',
+            isComplete: false,
+          };
+          allProfiles[key] = newProfile;
+          saveJSON(LS_PROFILES, allProfiles);
+          saveJSON(sellerProfileKey(key), newProfile);
+        }
       }
 
       return {};
@@ -508,6 +585,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAuthToken(token);
     setCurrentUser(user);
     saveUser(user);
+
+    const key = user.email.toLowerCase().trim();
+
+    // Restore buyer data
+    setCartItems(loadJSON<CartItem[]>(cartKey(key), []));
+    setWishlistItems(loadJSON<string[]>(wishlistKey(key), []));
+    setOrders(loadJSON<Order[]>(ordersKey(key), []));
+
+    // Restore artisan data if a seller (Google or otherwise)
+    if (user.userType === 'seller') {
+      const prods = loadJSON<ArtisanProduct[]>(sellerProductsKey(key), []);
+      setArtisanProducts(prods);
+      setArtisanOrders(loadJSON<SellerOrder[]>(sellerOrdersKey(key), []));
+
+      // Load or initialise the artisan's public profile
+      let profile = loadJSON<ArtisanProfile | null>(sellerProfileKey(key), null);
+      if (!profile) {
+        // Auto-create a minimal profile so the artisan appears in "Meet Our Artisans"
+        profile = {
+          userId: key,
+          name: user.name,
+          profileImage: user.photoURL || '',
+          description: '',
+          isComplete: !!(user.photoURL), // incomplete if no photo yet
+        };
+        saveJSON(sellerProfileKey(key), profile);
+        // Register into the global profiles store
+        const allProfiles = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
+        if (!allProfiles[key]) {
+          allProfiles[key] = profile;
+          saveJSON(LS_PROFILES, allProfiles);
+        }
+      }
+      setArtisanProfile(profile);
+    } else {
+      setArtisanProducts([]);
+      setArtisanOrders([]);
+    }
   };
 
   const logout = () => {
@@ -544,12 +659,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isComplete: true,
     };
     setArtisanProfile(profile);
-    // Save to user's own key
+    // Save locally
     saveJSON(sellerProfileKey(currentUser.email), profile);
-    // Also update the global profiles registry so Artisans page can read it
+    // Update global profiles registry
     const all = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
     all[currentUser.email.toLowerCase()] = profile;
     saveJSON(LS_PROFILES, all);
+
+    // Sync to MongoDB in background (non-blocking)
+    const token = localStorage.getItem(LS_TOKEN);
+    if (token) {
+      fetch(`${BASE_URL}/artisans/me/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ profileImage, bio: description }),
+      }).catch(() => {});
+    }
   };
 
   const getCompletedArtisanProfiles = (): ArtisanProfile[] => {
@@ -573,20 +698,51 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOrders(prev => [newOrder, ...prev]);
   };
 
-  // ── Artisan / Seller actions ──
+  // ── Artisan / Seller actions (local + API sync) ──
   const addArtisanProduct = (data: Omit<ArtisanProduct, 'id'>) => {
-    setArtisanProducts(prev => {
-      const id = `P${String(Date.now()).slice(-6)}`;
-      return [...prev, { id, ...data }];
-    });
+    const id = `P${String(Date.now()).slice(-6)}`;
+    const newProd: ArtisanProduct = { id, ...data };
+    setArtisanProducts(prev => [...prev, newProd]);
+
+    // Sync to MongoDB in background
+    const token = localStorage.getItem(LS_TOKEN);
+    if (token) {
+      fetch(`${BASE_URL}/artisans/me/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...data, id }),
+      }).then(r => r.json()).then(j => {
+        // If backend assigned a different id, swap it
+        if (j.success && j.data?.product?.id && j.data.product.id !== id) {
+          setArtisanProducts(prev => prev.map(p => p.id === id ? { ...p, id: j.data.product.id } : p));
+        }
+      }).catch(() => {});
+    }
   };
 
   const updateArtisanProduct = (updated: ArtisanProduct) => {
     setArtisanProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
+
+    const token = localStorage.getItem(LS_TOKEN);
+    if (token) {
+      fetch(`${BASE_URL}/artisans/me/products/${updated.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(updated),
+      }).catch(() => {});
+    }
   };
 
   const deleteArtisanProduct = (id: string) => {
     setArtisanProducts(prev => prev.filter(p => p.id !== id));
+
+    const token = localStorage.getItem(LS_TOKEN);
+    if (token) {
+      fetch(`${BASE_URL}/artisans/me/products/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
   };
 
   const updateArtisanOrder = (id: string, status: SellerOrderStatus) => {

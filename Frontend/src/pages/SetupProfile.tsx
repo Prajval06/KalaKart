@@ -40,13 +40,22 @@ export default function SetupProfile() {
   const handleSave = async () => {
     if (!validate()) return;
     setSaving(true);
-    // Simulate brief async (localStorage is sync but UX feels better)
     await new Promise(r => setTimeout(r, 600));
     saveArtisanProfile(profileImage, description.trim());
+    // Update the in-memory user photoURL so the sidebar avatar updates immediately
+    // (AppContext.currentUser is read-only here, but localStorage will reflect on next load)
+    try {
+      const stored = JSON.parse(localStorage.getItem('kk_user') || 'null');
+      if (stored) {
+        stored.photoURL = profileImage;
+        localStorage.setItem('kk_user', JSON.stringify(stored));
+      }
+    } catch { /* ignore */ }
     setSaving(false);
     setSaved(true);
     setTimeout(() => navigate('/seller-dashboard'), 1200);
   };
+
 
   const descLen = description.trim().length;
   const descValid = descLen >= 20;

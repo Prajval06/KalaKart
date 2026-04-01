@@ -1,35 +1,66 @@
 import { Link } from 'react-router';
 import { MapPin, Award, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import type { ArtisanProfile } from '../context/AppContext';
 
+const BASE_URL = 'http://localhost:5000/api/v1';
+
 export default function Artisans() {
   const { getCompletedArtisanProfiles } = useAppContext();
+  const [apiArtisans, setApiArtisans] = useState<any[]>([]);
 
-  // Registered artisans who completed their profile
+  // Fetch artisans who have completed profiles from MongoDB
+  useEffect(() => {
+    fetch(`${BASE_URL}/artisans`)
+      .then(r => r.json())
+      .then(j => { if (j.success && Array.isArray(j.data?.artisans)) setApiArtisans(j.data.artisans); })
+      .catch(() => {});
+  }, []);
+
+  // Registered artisans from localStorage (includes static seeded artisans)
   const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles();
 
-  // Deduplicate by name to guarantee the UI never shows the same artisan twice
-  const uniqueProfiles = registeredProfiles.reduce((acc, current) => {
-    const exists = acc.find(p => p.name === current.name);
-    if (!exists) acc.push(current);
-    return acc;
-  }, [] as ArtisanProfile[]);
+  // Merge API artisans with localStorage profiles — API takes precedence
+  // Build a unified list keyed by name to prevent duplicates
+  const nameMap = new Map<string, {
+    id: string; name: string; image: string; specialization: string;
+    state: string; yearsOfExperience: number; bio: string;
+  }>();
 
-  const unifiedArtisans = uniqueProfiles.map(p => {
+  // 1. Add API artisans first (most up-to-date)
+  apiArtisans.forEach(a => {
+    const original = artisans.find(x => x.name === a.name);
+    nameMap.set(a.name, {
+      id: a.id,
+      name: a.name,
+      image: a.profileImage || original?.image || '',
+      specialization: original?.specialization || 'Independent Artisan',
+      state: a.state || original?.state || 'India',
+      yearsOfExperience: original?.yearsOfExperience || 1,
+      bio: a.bio || original?.bio || '',
+    });
+  });
+
+  // 2. Add localStorage artisans not already in the API set
+  registeredProfiles.forEach(p => {
+    if (nameMap.has(p.name)) return;
     const original = artisans.find(a => a.name === p.name);
-    return {
+    nameMap.set(p.name, {
       id: p.userId,
       name: p.name,
       image: p.profileImage || original?.image || '',
       specialization: original?.specialization || 'Independent Artisan',
       state: original?.state || 'India',
       yearsOfExperience: original?.yearsOfExperience || 1,
-      bio: p.description || original?.bio || ''
-    };
+      bio: p.description || original?.bio || '',
+    });
   });
+
+  const unifiedArtisans = Array.from(nameMap.values());
+
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
