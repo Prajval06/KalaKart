@@ -8,7 +8,6 @@ const categorySchema = new mongoose.Schema({
   is_active:     { type: Boolean, default: true },
 }, { timestamps: true });
 
-categorySchema.index({ slug: 1 }, { unique: true });
 categorySchema.index({ display_order: 1 });
 
 categorySchema.set('toJSON', {

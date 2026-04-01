@@ -33,7 +33,9 @@ const getProducts = async ({ page = 1, per_page = 20, category, search, min_pric
   const limit = Math.min(parseInt(per_page), 100);
 
   const [products, total] = await Promise.all([
-    Product.find(filter).sort(sortOption).skip(skip).limit(limit).lean(),
+    Product.find(filter).sort(sortOption).skip(skip).limit(limit)
+      .populate('artisan_id', 'full_name profileImage email specialty')
+      .lean(),
     Product.countDocuments(filter),
   ]);
 
@@ -57,7 +59,9 @@ const getProducts = async ({ page = 1, per_page = 20, category, search, min_pric
 };
 
 const getProductById = async (id) => {
-  const product = await Product.findOne({ _id: id, isAvailable: true }).lean();
+  const product = await Product.findOne({ _id: id, isAvailable: true })
+    .populate('artisan_id', 'full_name profileImage email specialty')
+    .lean();
   if (!product) throw AppError.create('PRODUCT_NOT_FOUND');
 
   return {
