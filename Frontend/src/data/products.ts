@@ -8,6 +8,9 @@ export interface Product {
   image: string;
   description: string;
   state: string;
+  rating?: number;
+  numReviews?: number;
+  isAvailable?: boolean;
 }
 
 export const products: Product[] = [
