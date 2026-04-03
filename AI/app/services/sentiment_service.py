@@ -1,9 +1,11 @@
 import joblib
 import os
 import asyncio
+import warnings
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.exceptions import InconsistentVersionWarning
 from app.config import settings
 from app.database import get_db
 
@@ -77,12 +79,27 @@ class SentimentService:
         """Load saved model or train in background thread."""
         try:
             if os.path.exists(MODEL_FILE):
-                # Load is fast — do it in thread anyway to be safe
                 loop = asyncio.get_event_loop()
-                cls._pipeline = await loop.run_in_executor(
-                    None, joblib.load, MODEL_FILE
+
+                def _load_model_with_warning_check():
+                    with warnings.catch_warnings(record=True) as caught:
+                        warnings.simplefilter("always", InconsistentVersionWarning)
+                        loaded = joblib.load(MODEL_FILE)
+                    version_warning = any(
+                        issubclass(w.category, InconsistentVersionWarning) for w in caught
+                    )
+                    return loaded, version_warning
+
+                # If the sklearn artifact version is stale, retrain to avoid risky inference.
+                loaded_pipeline, has_version_mismatch = await loop.run_in_executor(
+                    None, _load_model_with_warning_check
                 )
-                print(f"Sentiment model loaded from disk")
+                if has_version_mismatch:
+                    print("Sentiment model version mismatch detected — retraining model")
+                    cls._pipeline = await loop.run_in_executor(None, _train_sync)
+                else:
+                    cls._pipeline = loaded_pipeline
+                    print("Sentiment model loaded from disk")
             else:
                 print(f"No saved model found — training in background thread...")
                 # Run blocking sklearn training in thread pool

@@ -3,7 +3,7 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 module.exports = {
   port: process.env.PORT || 5000,
-  mongoUrl: process.env.MONGO_URI || 'mongodb://localhost:27017/kalakart',
+  mongoUrl: process.env.MONGODB_URL || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/kalakart',
   jwtSecret: process.env.JWT_SECRET || 'kalakart_secret',
   jwtExpireMinutes: 60,
   refreshExpireDays: 7,

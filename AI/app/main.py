@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.database import connect_db, close_db
+from app.database import connect_db, close_db, get_db_status
 from app.routers import recommendations, sentiment, forecast
 from app.services.recommendation_service import RecommendationService
 from app.services.sentiment_service import SentimentService
@@ -50,9 +50,11 @@ app.include_router(forecast.router,        prefix="/forecast",   tags=["Forecast
 
 @app.get("/health")
 async def health():
+    db_status = get_db_status()
     return {
-        "status":  "ok",
+        "status":  "ok" if db_status["ready"] else "degraded",
         "service": "ml-backend",
+        "database": db_status,
         "models": {
             "sentiment":       SentimentService._pipeline is not None,
             "recommender":     RecommendationService._similarity_matrix is not None,
