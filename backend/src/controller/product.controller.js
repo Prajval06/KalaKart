@@ -42,7 +42,15 @@ const deleteProduct = asyncHandler(async (req, res) => {
   await productService.deleteProduct(req.params.productId);
   return success(res, { message: 'Product deactivated successfully' });
 });
+// In product.controller.js — getProductBySlug
+const mlClient = require('../utils/mlclient');
 
+const getProductBySlug = asyncHandler(async (req, res) => {
+  const product      = await productService.getProductBySlug(req.params.slug);
+  const recommended  = await mlClient.getRecommendations(product.id);
+
+  return success(res, { product, recommended_product_ids: recommended });
+});
 module.exports = {
   getProducts,
   getProductById,

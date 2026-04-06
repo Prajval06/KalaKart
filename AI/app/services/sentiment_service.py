@@ -76,41 +76,19 @@ class SentimentService:
 
     @classmethod
     async def load_or_train(cls):
-        """Load saved model or train in background thread."""
         try:
+            os.makedirs(os.path.dirname(MODEL_FILE), exist_ok=True)
             if os.path.exists(MODEL_FILE):
-                loop = asyncio.get_event_loop()
-
-                def _load_model_with_warning_check():
-                    with warnings.catch_warnings(record=True) as caught:
-                        warnings.simplefilter("always", InconsistentVersionWarning)
-                        loaded = joblib.load(MODEL_FILE)
-                    version_warning = any(
-                        issubclass(w.category, InconsistentVersionWarning) for w in caught
-                    )
-                    return loaded, version_warning
-
-                # If the sklearn artifact version is stale, retrain to avoid risky inference.
-                loaded_pipeline, has_version_mismatch = await loop.run_in_executor(
-                    None, _load_model_with_warning_check
-                )
-                if has_version_mismatch:
-                    print("Sentiment model version mismatch detected — retraining model")
-                    cls._pipeline = await loop.run_in_executor(None, _train_sync)
-                else:
-                    cls._pipeline = loaded_pipeline
-                    print("Sentiment model loaded from disk")
+                cls._pipeline = joblib.load(MODEL_FILE)
+                print(f"Sentiment model loaded from disk")
             else:
-                print(f"No saved model found — training in background thread...")
-                # Run blocking sklearn training in thread pool
-                loop = asyncio.get_event_loop()
-                cls._pipeline = await loop.run_in_executor(None, _train_sync)
-                print("Sentiment model ready")
+                print(f"Training sentiment model from scratch...")
+                await cls.train()
         except Exception as e:
             import traceback
             print(f"SENTIMENT ERROR: {type(e).__name__}: {e}")
             traceback.print_exc()
-
+            raise
     @classmethod
     def predict(cls, text: str) -> dict:
         # If model not loaded yet — train synchronously right now
