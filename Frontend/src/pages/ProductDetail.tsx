@@ -137,18 +137,39 @@ export default function ProductDetail() {
 
   useEffect(() => {
     const run = async () => {
-      if (!id) return;
+      const rawIdentifier = id || '';
+      const identifier = decodeURIComponent(rawIdentifier).trim();
+
+      if (!identifier) {
+        setError('Product not found');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError('');
 
         // 1) detail fetch
-        const detailRes = await productService.getProductByIdentifier(id);
-        const detailRaw = detailRes?.data?.product ?? detailRes?.product ?? detailRes?.data ?? detailRes;
+        const detailRes = await productService.getProductByIdentifier(identifier);
+        const detailRaw =
+          detailRes?.data?.product ??
+          detailRes?.data?.data?.product ??
+          detailRes?.product ??
+          detailRes?.data ??
+          detailRes;
+
         const normalized = normalizeProduct(detailRaw);
+
+        if (!normalized?.id) {
+          setError('Product not found');
+          setProduct(null);
+          return;
+        }
+
         setProduct(normalized);
 
-        // 2) related fetch (simple list fetch + client filter)
+        // 2) related fetch
         const listRes = await productService.getProducts({ per_page: 20 });
         const list = listRes?.data?.products ?? listRes?.products ?? [];
         const normalizedList = list.map(normalizeProduct);
@@ -161,6 +182,7 @@ export default function ProductDetail() {
       } catch (e: any) {
         if (e?.response?.status === 404) setError('Product not found');
         else setError('Failed to load product. Please try again.');
+        setProduct(null);
       } finally {
         setLoading(false);
       }

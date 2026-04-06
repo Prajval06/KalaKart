@@ -7,7 +7,8 @@ export const productService = {
   },
 
   async getProductByIdentifier(identifier: string) {
-    const res = await api.get(`/products/${identifier}`);
-    return res.data;
-  },
+  const safe = encodeURIComponent(identifier);
+  const res = await api.get(`/products/${safe}`);
+  return res.data;
+}
 };
