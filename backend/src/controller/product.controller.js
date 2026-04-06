@@ -1,4 +1,4 @@
-const productService         = require('../services/product.services');
+const productService         = require('../services/product.service');
 const asyncHandler           = require('../utils/asyncHandler');
 const { success }            = require('../utils/response');
 const { getRecommendations } = require('../utils/mlclient');
@@ -11,9 +11,12 @@ const getProducts = asyncHandler(async (req, res) => {
   return success(res, { products: result.products }, 200, result.meta);
 });
 
-const getProductById = asyncHandler(async (req, res) => {
-  const product     = await productService.getProductById(req.params.id);
+const getProductByIdentifier = asyncHandler(async (req, res) => {
+  const product = await productService.getProductByIdentifier(req.params.identifier);
+
+  // keep recommendation call as-is using your existing product.id contract
   const recommended = await getRecommendations(product.id);
+
   return success(res, {
     product,
     recommended_product_ids: recommended,
@@ -42,18 +45,10 @@ const deleteProduct = asyncHandler(async (req, res) => {
   await productService.deleteProduct(req.params.productId);
   return success(res, { message: 'Product deactivated successfully' });
 });
-// In product.controller.js — getProductBySlug
-const mlClient = require('../utils/mlclient');
 
-const getProductBySlug = asyncHandler(async (req, res) => {
-  const product      = await productService.getProductBySlug(req.params.slug);
-  const recommended  = await mlClient.getRecommendations(product.id);
-
-  return success(res, { product, recommended_product_ids: recommended });
-});
 module.exports = {
   getProducts,
-  getProductById,
+  getProductByIdentifier,
   getCategories,
   createProduct,
   updateProduct,

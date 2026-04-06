@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Product  = require('../models/product.model');
 const Category = require('../models/category.model');
 const AppError = require('../utils/AppError');
@@ -56,8 +57,28 @@ const getProducts = async ({ page = 1, per_page = 20, category, search, min_pric
   };
 };
 
-const getProductById = async (id) => {
-  const product = await Product.findOne({ _id: id, isAvailable: true }).lean();
+/**
+ * Flexible product lookup:
+ * 1) slug
+ * 2) _id (only when identifier is valid ObjectId)
+ * 3) legacy id string (temporary compatibility)
+ */
+const getProductByIdentifier = async (identifier) => {
+  let product = null;
+
+  // 1) slug lookup
+  product = await Product.findOne({ slug: identifier, isAvailable: true }).lean();
+
+  // 2) _id lookup only if valid ObjectId
+  if (!product && mongoose.Types.ObjectId.isValid(identifier)) {
+    product = await Product.findOne({ _id: identifier, isAvailable: true }).lean();
+  }
+
+  // 3) legacy id fallback (if you still store old mock ids in `id`)
+  if (!product) {
+    product = await Product.findOne({ id: identifier, isAvailable: true }).lean();
+  }
+
   if (!product) throw AppError.create('PRODUCT_NOT_FOUND');
 
   return {
@@ -98,10 +119,9 @@ const deleteProduct = async (productId) => {
   return product;
 };
 
-
 module.exports = {
   getProducts,
-  getProductById,
+  getProductByIdentifier,
   getCategories,
   createProduct,
   updateProduct,
