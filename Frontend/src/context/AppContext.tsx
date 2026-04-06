@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { ToastProps } from '../components/Toast';
 import { products as staticProducts } from '../data/products';
 import type { Product } from '../data/products';
-import { artisans } from '../data/artisans';
 
 import type {
   CartItem, OrderItem, Order, ArtisanProduct, SellerOrderStatus, SellerOrder,
@@ -17,7 +16,7 @@ const LS_PRODUCTS   = 'kk_artisan_products';
 const LS_PROFILES   = 'kk_artisan_profiles';
 
 import {
-  authAPI, productsAPI, cartAPI, wishlistAPI, ordersAPI, usersAPI, getErrorMessage
+  authAPI, productsAPI, cartAPI, wishlistAPI, usersAPI, getErrorMessage, API_BASE_URL
 } from '../utils/api';
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -26,19 +25,6 @@ export function useAppContext() {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error('useAppContext must be used within AppProvider');
   return ctx;
-}
-
-// ── Types for Backend sync (internal only) ──────────────────────────────────
-interface BackendCart {
-  items: Array<{
-    id: string;
-    product_id: string;
-    quantity: number;
-    name: string;
-    price: number;
-    image_url?: string;
-  }>;
-  total_amount: number;
 }
 
 // ── LocalStorage helpers ─────────────────────────────────────────────────────
@@ -309,7 +295,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ── Auth actions ──
-  const login = async (email: string, password: string, userType?: 'buyer' | 'seller') => {
+  const login = async (email: string, password: string) => {
     try {
       const res = await authAPI.login({ email, password });
       const data = res.data;
@@ -381,8 +367,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const loginWithGoogle = (userType?: 'buyer' | 'seller') => {
     // 1. Store userType preference for post-google-auth
     if (userType) localStorage.setItem('kk_pending_user_type', userType);
-    // 2. Redirect to backend auth
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    
+    // 2. Build the URL with state=buyer/seller so the backend knows the intent
+    const url = new URL(`${API_BASE_URL}/auth/google`);
+    if (userType) url.searchParams.append('state', userType);
+    
+    // 3. Redirect to backend auth
+    window.location.href = url.toString();
   };
 
   const loginWithGoogleToken = (token: string, user: AuthUser) => {
@@ -462,8 +453,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         description: ap.description,
         category: ap.category,
         image: ap.image,
-        images: ap.images,
         artisan: currentUser?.name || 'Local Artisan',
+        artisanId: currentUser?.email || 'local',
+        state: 'Local',
         rating: 0,
         numReviews: 0,
         isAvailable: ap.status === 'active'
