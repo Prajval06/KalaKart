@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import {
-  ShoppingCart, Heart, MapPin, Award, ArrowRight,
+  ShoppingCart, Heart, MapPin, Award,
   User, ChevronDown, ChevronUp,
   Shield, Star, X, BadgeCheck, Sparkles,
 } from 'lucide-react';
@@ -9,6 +9,7 @@ import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { calculateShipping } from '../utils/shipping';
 import { productService } from '../services/product.service';
+import { useAutoRedirectOnNotFound } from '../hooks/useAutoRedirectOnNotFound';
 
 /* ─────────────────────────── Verified Artisan Modal ─────────────────────── */
 function VerifiedModal({ onClose }: { onClose: () => void }) {
@@ -21,7 +22,7 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
       <div
         className="relative w-full max-w-md rounded-2xl p-7 shadow-2xl"
         style={{ backgroundColor: '#FFFDF8', border: '2px solid var(--beige)' }}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
@@ -39,7 +40,9 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <h3 style={{ color: 'var(--dark-brown)' }}>Verified Artisan</h3>
-            <p className="text-sm" style={{ color: 'var(--text-gray)' }}>KalaKart Authenticity Programme</p>
+            <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
+              KalaKart Authenticity Programme
+            </p>
           </div>
         </div>
 
@@ -65,7 +68,7 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
               title: 'Quality Review',
               desc: 'Each batch inspected for finish, cultural accuracy, and fair pricing.',
             },
-          ].map(item => (
+          ].map((item) => (
             <div key={item.title} className="flex gap-3">
               <div className="mt-0.5 flex-shrink-0">{item.icon}</div>
               <div>
@@ -80,7 +83,7 @@ function VerifiedModal({ onClose }: { onClose: () => void }) {
           className="mt-6 p-3 rounded-xl text-center text-sm"
           style={{ backgroundColor: 'rgba(74,140,74,0.08)', color: '#4A8C4A' }}
         >
-          This artisan's products carry the KalaKart Seal of Authenticity
+          This artisan&apos;s products carry the KalaKart Seal of Authenticity
         </div>
       </div>
     </div>
@@ -117,18 +120,24 @@ function normalizeProduct(raw: any): UiProduct {
   };
 }
 
-/* ─────────────────────────── Main Component ─────────────────────────────── */
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart, toggleWishlist, wishlistItems } = useAppContext();
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
-  const [pricingOpen, setPricingOpen]             = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   const [product, setProduct] = useState<UiProduct | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<UiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const { isNotFound } = useAutoRedirectOnNotFound({
+    error,
+    notFoundMessage: 'Product not found',
+    redirectTo: '/shop',
+    delayMs: 2000,
+  });
 
   const isWishlisted = useMemo(
     () => (product ? wishlistItems.includes(product.id) : false),
@@ -142,6 +151,7 @@ export default function ProductDetail() {
 
       if (!identifier) {
         setError('Product not found');
+        setProduct(null);
         setLoading(false);
         return;
       }
@@ -150,18 +160,18 @@ export default function ProductDetail() {
         setLoading(true);
         setError('');
 
-        // 1) detail fetch
         const detailRes = await productService.getProductByIdentifier(identifier);
-        const detailRaw =
-          detailRes?.data?.product ??
-          detailRes?.data?.data?.product ??
-          detailRes?.product ??
-          detailRes?.data ??
-          detailRes;
+        const detailRaw = detailRes?.data?.product ?? detailRes?.product ?? null;
+
+        if (!detailRaw) {
+          setError('Product not found');
+          setProduct(null);
+          return;
+        }
 
         const normalized = normalizeProduct(detailRaw);
 
-        if (!normalized?.id) {
+        if (!normalized.id) {
           setError('Product not found');
           setProduct(null);
           return;
@@ -169,7 +179,6 @@ export default function ProductDetail() {
 
         setProduct(normalized);
 
-        // 2) related fetch
         const listRes = await productService.getProducts({ per_page: 20 });
         const list = listRes?.data?.products ?? listRes?.products ?? [];
         const normalizedList = list.map(normalizeProduct);
@@ -180,8 +189,15 @@ export default function ProductDetail() {
 
         setRelatedProducts(related);
       } catch (e: any) {
-        if (e?.response?.status === 404) setError('Product not found');
-        else setError('Failed to load product. Please try again.');
+        const status = e?.response?.status;
+        const code = e?.response?.data?.code;
+
+        if (status === 404 || code === 'PRODUCT_NOT_FOUND') {
+          setError('Product not found');
+        } else {
+          setError('Failed to load product. Please try again.');
+        }
+
         setProduct(null);
       } finally {
         setLoading(false);
@@ -202,13 +218,20 @@ export default function ProductDetail() {
   if (error || !product) {
     return (
       <div className="min-h-screen py-16 px-4 text-center">
-        <h2 className="mb-4">{error || 'Product not found'}</h2>
+        <h2 className="mb-3">{error || 'Product not found'}</h2>
+
+        {isNotFound && (
+          <p className="mb-5" style={{ color: 'var(--text-gray)' }}>
+            Redirecting you to Shop in 2 seconds...
+          </p>
+        )}
+
         <Link
-          to="/"
+          to="/shop"
           className="inline-flex items-center font-semibold hover:opacity-70 transition-opacity"
           style={{ color: 'var(--saffron)' }}
         >
-          Back to Home
+          Go to Shop
         </Link>
       </div>
     );
@@ -227,14 +250,9 @@ export default function ProductDetail() {
       <section className="py-10 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
             <div className="relative">
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                 <button
                   onClick={() => toggleWishlist(product.id, product.name)}
                   className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
@@ -338,13 +356,10 @@ export default function ProductDetail() {
         </section>
       )}
 
-      <section
-        className="py-10 px-4"
-        style={{ background: 'linear-gradient(135deg, #FDF6EC, #FFF9F2)' }}
-      >
+      <section className="py-10 px-4" style={{ background: 'linear-gradient(135deg, #FDF6EC, #FFF9F2)' }}>
         <div className="max-w-2xl mx-auto">
           <button
-            onClick={() => setPricingOpen(v => !v)}
+            onClick={() => setPricingOpen((v) => !v)}
             className="w-full flex items-center justify-between p-5 rounded-2xl hover:shadow-md transition-shadow"
             style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}
           >
@@ -362,8 +377,7 @@ export default function ProductDetail() {
             </div>
             {pricingOpen
               ? <ChevronUp className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-              : <ChevronDown className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-            }
+              : <ChevronDown className="w-5 h-5" style={{ color: 'var(--saffron)' }} />}
           </button>
 
           {pricingOpen && (() => {
@@ -373,14 +387,8 @@ export default function ProductDetail() {
             const platformFees = product.price - artisanEarns;
 
             return (
-              <div
-                className="mt-2 p-6 rounded-2xl"
-                style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}
-              >
-                <div
-                  className="rounded-xl p-4 mb-6 space-y-2"
-                  style={{ backgroundColor: 'var(--cream)' }}
-                >
+              <div className="mt-2 p-6 rounded-2xl" style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}>
+                <div className="rounded-xl p-4 mb-6 space-y-2" style={{ backgroundColor: 'var(--cream)' }}>
                   <div className="flex justify-between text-sm">
                     <span style={{ color: 'var(--text-gray)' }}>Product Price</span>
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{product.price.toLocaleString('en-IN')}</span>
@@ -398,10 +406,7 @@ export default function ProductDetail() {
                   </div>
                 </div>
 
-                <div
-                  className="rounded-xl p-3 text-xs"
-                  style={{ backgroundColor: 'rgba(74,140,74,0.07)', color: '#4A8C4A' }}
-                >
+                <div className="rounded-xl p-3 text-xs" style={{ backgroundColor: 'rgba(74,140,74,0.07)', color: '#4A8C4A' }}>
                   ✔ Artisan Earnings + Platform Fee = ₹{product.price.toLocaleString('en-IN')} (base price) · Shipping shown separately
                 </div>
 
@@ -423,10 +428,10 @@ export default function ProductDetail() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map(rp => (
+              {relatedProducts.map((rp) => (
                 <Link
                   key={rp.id}
-                  to={`/product/${rp.slug || rp.id}`}
+                  to={`/product/${encodeURIComponent(rp.slug || rp.id || '')}`}
                   className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                   style={{ border: '1px solid var(--beige)' }}
                 >
@@ -452,9 +457,7 @@ export default function ProductDetail() {
         </section>
       )}
 
-      {showVerifiedModal && (
-        <VerifiedModal onClose={() => setShowVerifiedModal(false)} />
-      )}
+      {showVerifiedModal && <VerifiedModal onClose={() => setShowVerifiedModal(false)} />}
     </div>
   );
 }
