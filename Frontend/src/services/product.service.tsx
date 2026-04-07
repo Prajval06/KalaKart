@@ -1,4 +1,4 @@
-import { api } from '../lib/api';
+import { api } from '../utils/api';
 
 export const productService = {
   async getProducts(params?: Record<string, any>) {
