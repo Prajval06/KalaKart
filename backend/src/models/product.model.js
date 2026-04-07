@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema({
   images: [{ type: String }],
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
   artisanName: { type: String, required: true },
+  artisan_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   specialty: { type: String },
   rating: { type: Number, default: 0 },
   numReviews: { type: Number, default: 0 },

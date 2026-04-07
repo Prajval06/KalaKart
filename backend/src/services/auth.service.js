@@ -20,7 +20,7 @@ const generateRefreshToken = (userId) => {
   );
 };
 
-const register = async ({ email, password, full_name }) => {
+const register = async ({ email, password, full_name, role }) => {
   // Check duplicate email
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) throw AppError.create('EMAIL_ALREADY_EXISTS', 'email');
@@ -29,6 +29,7 @@ const register = async ({ email, password, full_name }) => {
   const user = await User.create({
     email,
     full_name,
+    role: role || 'customer',
     hashed_password: password,
   });
 

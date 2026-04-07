@@ -3,29 +3,33 @@ const bcrypt   = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   email:           { type: String, required: true, unique: true, lowercase: true, trim: true },
-  hashed_password: { type: String, required: false, select: false }, // optional — Google OAuth users won't have one
+  hashed_password: { type: String, required: false, select: false },
   full_name:       { type: String, required: true, trim: true },
-  role:            { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  role:            { type: String, enum: ['customer', 'admin', 'artisan'], default: 'customer' },
   is_active:       { type: Boolean, default: true },
-  // ── Google OAuth fields ──────────────────────────────────────────────────────
-  googleId:        { type: String, unique: true, sparse: true }, // sparse = null values are not indexed
+  // ── Google OAuth ─────────────────────────────────────────────
+  googleId:        { type: String, unique: true, sparse: true },
   profileImage:    { type: String },
   authMethod:      { type: String, enum: ['email', 'google'], default: 'email' },
+  // ── Artisan Profile (optional) ───────────────────────────────
+  specialty:       { type: String },
+  location:        { type: String },
+  bio:             { type: String },
+  yearsOfExperience: { type: Number, default: 0 },
+  // ── Wishlist ─────────────────────────────────────────────────
+  wishlist:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
 }, { timestamps: true });
 
-// Hash password before save
 userSchema.pre('save', async function (next) {
   if (!this.isModified('hashed_password')) return next();
   this.hashed_password = await bcrypt.hash(this.hashed_password, 12);
   next();
 });
 
-// Compare password helper
 userSchema.methods.comparePassword = function (plainPassword) {
   return bcrypt.compare(plainPassword, this.hashed_password);
 };
 
-// Always map _id to id, remove __v and hashed_password from output
 userSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret.id = ret._id.toString();

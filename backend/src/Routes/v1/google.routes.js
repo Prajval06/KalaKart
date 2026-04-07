@@ -39,11 +39,14 @@ router.get('/google', (req, res) => {
   }
 
   const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-  console.log('--- GOOGLE REDIRECT DEBUG ---');
-  console.log('Client ID loaded:', config.googleClientId);
-  console.log('Requested state:', state);
-  console.log('Redirecting to:', redirectUrl);
-  console.log('-----------------------------');
+  
+  if (config.nodeEnv === 'development') {
+    console.log('--- GOOGLE REDIRECT DEBUG ---');
+    console.log('Client ID:', config.googleClientId);
+    console.log('State intent:', state);
+    console.log('Redirecting to Google...');
+  }
+  
   res.redirect(redirectUrl);
 });
 
@@ -146,7 +149,9 @@ router.get('/google/callback', async (req, res) => {
       `?token=${session_token}` +
       `&user=${encodeURIComponent(userData)}`;
 
-    console.log(`--- OAUTH SUCCESS: User ${email} (Role: ${user.role}) redirected as ${redirectUserType} ---`);
+    if (config.nodeEnv === 'development') {
+      console.log(`[Google Auth] Success for ${email}. Intent: ${state || 'none'}, Final Role: ${user.role}`);
+    }
 
     return res.redirect(redirectUrl);
 
