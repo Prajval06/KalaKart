@@ -122,7 +122,7 @@ function normalizeProduct(raw: any): UiProduct {
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const { addToCart, toggleWishlist, wishlistItems } = useAppContext();
+  const { addToCart, toggleWishlist, wishlistItems, getAllProducts } = useAppContext();
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -144,6 +144,31 @@ export default function ProductDetail() {
     [wishlistItems, product]
   );
 
+  const applyLocalFallback = (identifier: string) => {
+    const localList = getAllProducts();
+    const localMatch = localList.find((p: any) => {
+      const pid = String(p?.id || '').trim();
+      const pslug = String(p?.slug || '').trim();
+      return pid === identifier || (!!pslug && pslug === identifier);
+    });
+
+    if (!localMatch) return false;
+
+    const normalized = normalizeProduct(localMatch);
+    if (!normalized.id) return false;
+
+    setProduct(normalized);
+
+    const normalizedList = localList.map(normalizeProduct);
+    const related = normalizedList
+      .filter((p: UiProduct) => p.category === normalized.category && p.id !== normalized.id)
+      .slice(0, 4);
+
+    setRelatedProducts(related);
+    setError('');
+    return true;
+  };
+
   useEffect(() => {
     const run = async () => {
       const rawIdentifier = id || '';
@@ -164,16 +189,22 @@ export default function ProductDetail() {
         const detailRaw = detailRes?.data?.product ?? detailRes?.product ?? null;
 
         if (!detailRaw) {
-          setError('Product not found');
-          setProduct(null);
+          const resolved = applyLocalFallback(identifier);
+          if (!resolved) {
+            setError('Product not found');
+            setProduct(null);
+          }
           return;
         }
 
         const normalized = normalizeProduct(detailRaw);
 
         if (!normalized.id) {
-          setError('Product not found');
-          setProduct(null);
+          const resolved = applyLocalFallback(identifier);
+          if (!resolved) {
+            setError('Product not found');
+            setProduct(null);
+          }
           return;
         }
 
@@ -191,6 +222,11 @@ export default function ProductDetail() {
       } catch (e: any) {
         const status = e?.response?.status;
         const code = e?.response?.data?.code;
+        const resolved = applyLocalFallback(identifier);
+
+        if (resolved) {
+          return;
+        }
 
         if (status === 404 || code === 'PRODUCT_NOT_FOUND') {
           setError('Product not found');

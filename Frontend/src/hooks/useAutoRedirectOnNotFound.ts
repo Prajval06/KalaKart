@@ -24,4 +24,4 @@ export function useAutoRedirectOnNotFound({
   }, [error, notFoundMessage, redirectTo, delayMs, navigate]);
 
   return { isNotFound: error === notFoundMessage };
-}zx n
+}
