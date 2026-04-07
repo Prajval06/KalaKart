@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
-import { calculateShipping } from '../utils/shipping';
 import { productService } from '../services/product.service';
 import { useAutoRedirectOnNotFound } from '../hooks/useAutoRedirectOnNotFound';
 
@@ -100,6 +99,7 @@ type UiProduct = {
   image: string;
   images?: string[];
   artisan: string;
+  artisanId?: string;
   state?: string;
 };
 
@@ -116,6 +116,11 @@ function normalizeProduct(raw: any): UiProduct {
     image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
     images: p.images || [],
     artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
+    artisanId: String(
+      (typeof p.artisan_id === 'object' ? (p.artisan_id?.id || p.artisan_id?._id) : p.artisan_id)
+      || p.artisanId
+      || ''
+    ),
     state: p.state || 'India',
   };
 }
@@ -177,6 +182,12 @@ export default function ProductDetail() {
       if (!identifier) {
         setError('Product not found');
         setProduct(null);
+        setLoading(false);
+        return;
+      }
+
+      // Legacy/static cards still use numeric IDs (e.g. "4"); resolve locally first.
+      if (/^\d+$/.test(identifier) && applyLocalFallback(identifier)) {
         setLoading(false);
         return;
       }
@@ -339,7 +350,17 @@ export default function ProductDetail() {
                 <User className="w-8 h-8" style={{ color: 'var(--saffron)' }} />
                 <div>
                   <p className="text-xs" style={{ color: 'var(--text-gray)' }}>Made by</p>
-                  <p className="font-semibold" style={{ color: 'var(--dark-brown)' }}>{product.artisan}</p>
+                  {product.artisanId ? (
+                    <Link
+                      to={`/artisan/${encodeURIComponent(product.artisanId)}`}
+                      className="font-semibold hover:opacity-70 transition-opacity"
+                      style={{ color: 'var(--dark-brown)' }}
+                    >
+                      {product.artisan}
+                    </Link>
+                  ) : (
+                    <p className="font-semibold" style={{ color: 'var(--dark-brown)' }}>{product.artisan}</p>
+                  )}
                 </div>
               </div>
 
@@ -417,10 +438,10 @@ export default function ProductDetail() {
           </button>
 
           {pricingOpen && (() => {
-            const shipping = calculateShipping(product.category || 'Craft', product.price);
-            const total = product.price + shipping;
-            const artisanEarns = Math.round(product.price * 0.85);
-            const platformFees = product.price - artisanEarns;
+            const platformFees = Math.round(product.price * 0.10);
+            const artisanEarns = product.price - platformFees;
+            const deliveryCharge = Math.round(product.price * 0.03);
+            const total = product.price + deliveryCharge;
 
             return (
               <div className="mt-2 p-6 rounded-2xl" style={{ backgroundColor: 'white', border: '1.5px solid var(--beige)' }}>
@@ -430,8 +451,16 @@ export default function ProductDetail() {
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{product.price.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping</span>
-                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{shipping.toLocaleString('en-IN')}</span>
+                    <span style={{ color: 'var(--text-gray)' }}>Platform Fee (10%)</span>
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{platformFees.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span style={{ color: 'var(--text-gray)' }}>Artisan Earnings (90%)</span>
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{artisanEarns.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span style={{ color: 'var(--text-gray)' }}>🚚 Delivery Charge (3%)</span>
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{deliveryCharge.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="h-px" style={{ backgroundColor: 'var(--beige)' }} />
                   <div className="flex justify-between">
@@ -443,11 +472,11 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="rounded-xl p-3 text-xs" style={{ backgroundColor: 'rgba(74,140,74,0.07)', color: '#4A8C4A' }}>
-                  ✔ Artisan Earnings + Platform Fee = ₹{product.price.toLocaleString('en-IN')} (base price) · Shipping shown separately
+                  ✔ Platform fee is deducted from product price (10%), artisan receives 90%, delivery is added separately (3%)
                 </div>
 
                 <p className="text-xs mt-3" style={{ color: 'var(--text-gray)' }}>
-                  Artisan receives approx ₹{artisanEarns.toLocaleString('en-IN')}, platform fee ₹{platformFees.toLocaleString('en-IN')}
+                  Base ₹{product.price.toLocaleString('en-IN')} = Artisan ₹{artisanEarns.toLocaleString('en-IN')} + Platform ₹{platformFees.toLocaleString('en-IN')} · Delivery ₹{deliveryCharge.toLocaleString('en-IN')}
                 </p>
               </div>
             );
