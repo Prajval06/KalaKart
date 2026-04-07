@@ -63,6 +63,8 @@ Where:
 - [backend/src/services/product.service.js](backend/src/services/product.service.js)
 - [backend/src/models/product.model.js](backend/src/models/product.model.js)
 
+Image handling for product cards and detail views now uses a shared fallback component so broken remote URLs automatically fall back to the local placeholder image instead of rendering corrupted tiles.
+
 ### 4. Cart System
 
 The cart supports both guest users and logged-in users. If a guest starts checkout, the selected cart items are preserved through login and then restored afterward so the user can continue checkout without losing the cart.

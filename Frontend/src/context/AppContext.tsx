@@ -97,7 +97,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             slug: p.slug || undefined,
             name: p.name || 'Unnamed Product',
             price: Number(p.price || 0),
-            category: typeof p.category === 'string' ? p.category : 'Craft',
+            category: typeof p.category === 'string'
+              ? p.category
+              : (p.category?.name || p.categorySlug || 'Craft'),
             artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
             artisanId: String(rawArtisanId || p.artisanId || ''),
             image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
@@ -516,6 +518,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return [...staticProducts, ...dbProducts, ...artisanProductsList];
   };
 
+  const getDbProducts = (): Product[] => dbProducts;
+
   return (
     <AppContext.Provider value={{
       cartItems, wishlistItems, toasts, addToCart, updateQuantity, removeItem, clearCart, toggleWishlist, removeToast,
@@ -523,7 +527,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       savedAddress, setSavedAddress, orders, placeOrder,
       artisanProducts, artisanOrders, isNewArtisan, addArtisanProduct, updateArtisanProduct, deleteArtisanProduct, updateArtisanOrder,
       artisanProfile, saveArtisanProfile, getCompletedArtisanProfiles,
-      getAllProducts
+      getAllProducts, getDbProducts
     }}>
       {children}
     </AppContext.Provider>

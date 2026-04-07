@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Heart, Filter } from 'lucide-react';
 import { categories } from '../data/products';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 import { productService } from '../services/product.service';
 
 type ShopProduct = {
@@ -125,7 +126,7 @@ export default function Shop() {
                   className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <div className="relative aspect-square overflow-hidden">
-                    <img
+                    <ImageWithFallback
                       src={product.image}
                       alt={product.name}
                       className="w-full h-full object-cover"

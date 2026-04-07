@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 export default function Wishlist() {
   const { wishlistItems, toggleWishlist, addToCart, getAllProducts } = useAppContext();
@@ -54,7 +55,7 @@ export default function Wishlist() {
               >
                 <Link to={`/product/${product.id}`} className="block">
                   <div className="aspect-square relative">
-                    <img
+                    <ImageWithFallback
                       src={product.image}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover"

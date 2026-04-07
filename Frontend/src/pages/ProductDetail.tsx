@@ -6,6 +6,7 @@ import {
   Shield, Star, X, BadgeCheck, Sparkles,
 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 import { useAppContext } from '../context/AppContext';
 import { productService } from '../services/product.service';
 import { useAutoRedirectOnNotFound } from '../hooks/useAutoRedirectOnNotFound';
@@ -299,7 +300,7 @@ export default function ProductDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="relative">
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                <ImageWithFallback src={product.image} alt={product.name} className="w-full h-full object-cover" />
                 <button
                   onClick={() => toggleWishlist(product.id, product.name)}
                   className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"

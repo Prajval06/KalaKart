@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ShoppingBag, LogIn, ClipboardList, X, Package, Che
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { calculatePlatformFee } from '../utils/shipping';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 // ── Status badge colours ──────────────────────────────────────────────────────
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -127,7 +128,7 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
                     {order.items.map(item => (
                       <div key={item.productId} className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-                          <img
+                          <ImageWithFallback
                             src={item.image}
                             alt={item.name}
                             className="w-full h-full object-cover"
