@@ -11,7 +11,8 @@
     "seed:artisans": "node backend/src/scripts/artisans.seed.js",
     "test": "jest --runInBand --forceExit",
     "test:watch": "jest --watchAll --runInBand",
-    "test:cover": "jest --coverage --runInBand --forceExit"
+    "test:cover": "jest --coverage --runInBand --forceExit",
+    "seed:products": "node backend/src/seeds/seed.products.js"
   },
   "keywords": [
     "ecommerce",

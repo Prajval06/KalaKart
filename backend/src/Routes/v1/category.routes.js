@@ -1,6 +1,14 @@
-const router     = require('express').Router();
-const controller = require('../../controller/product.controller');
+const router = require('express').Router();
+const asyncHandler = require('../../utils/asyncHandler');
+const { success } = require('../../utils/response');
+const productService = require('../../services/product.service');
 
-router.get('/', controller.getCategories);
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const categories = await productService.getCategories();
+    return success(res, { categories });
+  })
+);
 
 module.exports = router;

@@ -42,6 +42,7 @@ const loadUser = (): AuthUser | null => loadJSON<AuthUser | null>(LS_USER, null)
 const cartKey = (email: string) => `kk_cart_${email}`;
 const wishlistKey = (email: string) => `kk_wish_${email}`;
 const sellerOrdersKey = (email: string) => `kk_seller_orders_${email}`;
+const isMongoObjectId = (value: string) => /^[a-f\d]{24}$/i.test(String(value || '').trim());
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(loadUser);
@@ -85,10 +86,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await productsAPI.getProducts();
       if (res.data.success) {
-        setDbProducts(res.data.data.map((p: any) => ({
-          ...p,
-          artisan: p.artisanName
-        })));
+        const list = res.data?.data?.products || [];
+        const mapped: Product[] = list.map((p: any) => {
+          const rawArtisanId = typeof p.artisan_id === 'object'
+            ? (p.artisan_id?.id || p.artisan_id?._id || '')
+            : (p.artisan_id || '');
+
+          return {
+            id: p.id || p._id || '',
+            slug: p.slug || undefined,
+            name: p.name || 'Unnamed Product',
+            price: Number(p.price || 0),
+            category: typeof p.category === 'string' ? p.category : 'Craft',
+            artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
+            artisanId: String(rawArtisanId || p.artisanId || ''),
+            image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
+            description: p.description || '',
+            state: p.state || 'India',
+            rating: p.rating,
+            numReviews: p.numReviews,
+            isAvailable: p.isAvailable,
+          };
+        });
+        setDbProducts(mapped.filter((p: Product) => !!p.id));
       }
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -123,7 +143,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           quantity: it.quantity,
           itemId: it.id
         }));
-        setCartItems(backendItems);
+        setCartItems((prev) => {
+          // Keep guest cart items across checkout -> login flow instead of wiping them.
+          const merged = [...backendItems];
+
+          for (const localItem of prev) {
+            const idx = merged.findIndex((m) => m.productId === localItem.productId);
+            if (idx >= 0) {
+              merged[idx] = {
+                ...merged[idx],
+                quantity: merged[idx].quantity + localItem.quantity,
+                itemId: merged[idx].itemId || localItem.itemId,
+              };
+            } else {
+              merged.push(localItem);
+            }
+          }
+
+          return merged;
+        });
       }
     } catch (err) {
       console.error('Error fetching cart from backend:', err);
@@ -181,7 +219,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // ── Buyer Cart actions ──
   const addToCart = async (productId: string, productName: string) => {
-    if (isLoggedIn) {
+    if (isLoggedIn && isMongoObjectId(productId)) {
       try {
         const res = await cartAPI.addItem({ product_id: productId, quantity: 1 });
         if (res.data.success) {
@@ -194,6 +232,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (err) {
         console.error('Failed to add to backend cart:', err);
+        setCartItems(prev => {
+          const existing = prev.find(item => item.productId === productId);
+          if (existing) {
+            return prev.map(item =>
+              item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item
+            );
+          }
+          return [...prev, { productId, quantity: 1 }];
+        });
       }
     } else {
       setCartItems(prev => {
@@ -267,7 +314,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const toggleWishlist = async (productId: string, productName: string) => {
     const isAdding = !wishlistItems.includes(productId);
 
-    if (isLoggedIn) {
+    if (isLoggedIn && isMongoObjectId(productId)) {
       try {
         const res = await wishlistAPI.toggleWishlist(productId);
         if (res.data.success) {
@@ -275,6 +322,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (err) {
         console.error('Failed to toggle backend wishlist:', err);
+        setWishlistItems(prev =>
+          prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
+        );
       }
     } else {
       setWishlistItems(prev =>

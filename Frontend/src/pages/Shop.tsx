@@ -1,17 +1,66 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Heart, Filter } from 'lucide-react';
 import { categories } from '../data/products';
-import { useAppContext } from '../context/AppContext';
+import { productService } from '../services/product.service';
+
+type ShopProduct = {
+  id: string;
+  _id?: string;
+  slug?: string | null;
+  name: string;
+  image: string;
+  price: number;
+  category: string;
+  artisan: string;
+  state?: string;
+};
+
+function normalizeShopProduct(raw: any): ShopProduct {
+  const p = raw?.product ?? raw ?? {};
+  return {
+    id: p.id || p._id || '',
+    _id: p._id,
+    slug: p.slug ?? null,
+    name: p.name || 'Unnamed Product',
+    image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
+    price: Number(p.price || 0),
+    category: typeof p.category === 'string' ? p.category : 'Craft',
+    artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
+    state: p.state || 'India',
+  };
+}
 
 export default function Shop() {
-  const { getAllProducts } = useAppContext();
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [allProducts, setAllProducts] = useState<ShopProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const allProducts = getAllProducts();
-  const filteredProducts = selectedCategory === 'All'
-    ? allProducts
-    : allProducts.filter(p => p.category === selectedCategory);
+  useEffect(() => {
+    const run = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const res = await productService.getProducts({ per_page: 100 });
+        const list = res?.data?.products ?? res?.products ?? [];
+        const normalized = list.map(normalizeShopProduct).filter((p: ShopProduct) => !!p.id);
+        setAllProducts(normalized);
+      } catch (e) {
+        setError('Failed to load products.');
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'All') return allProducts;
+    return allProducts.filter(p => p.category === selectedCategory);
+  }, [allProducts, selectedCategory]);
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -46,64 +95,80 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* Product Count */}
-        <div className="mb-6">
-          <p style={{ color: 'var(--text-gray)' }}>
-            Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-          </p>
-        </div>
-
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <Link
-              key={product.id}
-              to={`/product/${product.id}`}
-              className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
-            >
-              <div className="relative aspect-square overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  className="absolute top-3 right-3 p-2 bg-white rounded-full hover:scale-110 transition-transform"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <Heart className="w-4 h-4" style={{ color: 'var(--text-gray)' }} />
-                </button>
-                <div
-                  className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs text-white"
-                  style={{ backgroundColor: 'var(--saffron)' }}
-                >
-                  {product.state}
-                </div>
-              </div>
-              <div className="p-4">
-                <p className="text-xs mb-1" style={{ color: 'var(--saffron)' }}>
-                  {product.category}
-                </p>
-                <h3 className="text-lg mb-2 line-clamp-1">{product.name}</h3>
-                <p className="text-sm mb-3" style={{ color: 'var(--text-gray)' }}>
-                  by {product.artisan}
-                </p>
-                <p className="font-semibold" style={{ color: 'var(--text-dark)' }}>
-                  ₹{product.price.toLocaleString('en-IN')}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-xl mb-2">No products found</p>
-            <p style={{ color: 'var(--text-gray)' }}>
-              Try selecting a different category
-            </p>
+        {loading && (
+          <div className="mb-6">
+            <p style={{ color: 'var(--text-gray)' }}>Loading products...</p>
           </div>
+        )}
+
+        {error && !loading && (
+          <div className="mb-6">
+            <p style={{ color: 'var(--rust-red)' }}>{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            {/* Product Count */}
+            <div className="mb-6">
+              <p style={{ color: 'var(--text-gray)' }}>
+                Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+              </p>
+            </div>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/product/${encodeURIComponent(product.slug || product.id || product._id || '')}`}
+                  className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <div className="relative aspect-square overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      className="absolute top-3 right-3 p-2 bg-white rounded-full hover:scale-110 transition-transform"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <Heart className="w-4 h-4" style={{ color: 'var(--text-gray)' }} />
+                    </button>
+                    <div
+                      className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs text-white"
+                      style={{ backgroundColor: 'var(--saffron)' }}
+                    >
+                      {product.state}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs mb-1" style={{ color: 'var(--saffron)' }}>
+                      {product.category}
+                    </p>
+                    <h3 className="text-lg mb-2 line-clamp-1">{product.name}</h3>
+                    <p className="text-sm mb-3" style={{ color: 'var(--text-gray)' }}>
+                      by {product.artisan}
+                    </p>
+                    <p className="font-semibold" style={{ color: 'var(--text-dark)' }}>
+                      ₹{product.price.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-xl mb-2">No products found</p>
+                <p style={{ color: 'var(--text-gray)' }}>
+                  Try selecting a different category
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

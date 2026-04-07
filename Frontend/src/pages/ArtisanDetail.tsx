@@ -9,7 +9,7 @@ export default function ArtisanDetail() {
   const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
   
   const allProducts = getAllProducts();
-  const artisanProducts = allProducts.filter(p => p.artisanId === artisanId);
+  const artisanProducts = allProducts.filter(p => String(p.artisanId || '') === String(artisanId || ''));
 
   let artisan = artisans.find(a => a.id === artisanId);
 
@@ -27,6 +27,20 @@ export default function ArtisanDetail() {
         craft: 'Handicrafts'
       };
     }
+  }
+
+  if (!artisan && artisanProducts.length > 0) {
+    const first = artisanProducts[0];
+    artisan = {
+      id: String(artisanId || ''),
+      name: first.artisan || 'KalaKart Artisan',
+      image: '',
+      specialization: first.category || 'Handcrafted Products',
+      bio: 'Verified KalaKart artisan creating authentic handmade products.',
+      state: first.state || 'India',
+      yearsOfExperience: 1,
+      craft: first.category || 'Handicrafts',
+    };
   }
 
   if (!artisan) {
