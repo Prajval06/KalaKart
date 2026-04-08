@@ -57,7 +57,7 @@ const refreshProductImagesFromProvider = asyncHandler(async (req, res) => {
       .map((item) => item.trim())
       .filter(Boolean);
   const limit = Number(req.body?.limit || 50);
-  const overwrite = Boolean(req.body?.overwrite);
+  const overwrite = String(req.body?.overwrite || '').toLowerCase() === 'true';
   const delayMs = Number(req.body?.delayMs || 400);
 
   const result = await refreshProductImages({

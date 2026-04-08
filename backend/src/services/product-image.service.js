@@ -12,14 +12,59 @@ function buildSearchQueries(product) {
   const name = String(product.name || '').trim();
   const category = String(product.categoryName || '').trim();
   const specialty = String(product.specialty || '').trim();
+  const artisanName = String(product.artisanName || '').trim();
 
   const queries = [
-    [name, category, 'handmade'].filter(Boolean).join(' '),
+    name,
+    [name, category].filter(Boolean).join(' '),
     [name, specialty].filter(Boolean).join(' '),
+    [name, artisanName].filter(Boolean).join(' '),
+    [category, name].filter(Boolean).join(' '),
+    [category, 'handmade'].filter(Boolean).join(' '),
     name,
   ].map((q) => q.trim()).filter(Boolean);
 
   return Array.from(new Set(queries));
+}
+
+function getProductImageKey(product) {
+  const provider = String(product?.imageProvider || '').trim().toLowerCase();
+  const providerId = String(product?.imageProviderId || '').trim();
+  const imageUrl = String(product?.imageUrl || product?.image || '').trim();
+
+  if (provider && providerId) {
+    return `provider:${provider}:${providerId}`;
+  }
+
+  if (imageUrl) {
+    return `url:${imageUrl}`;
+  }
+
+  return null;
+}
+
+function rememberImageKeys(usedKeys, candidate) {
+  const imageUrl = String(candidate?.imageUrl || '').trim();
+  const providerKey = candidate?.imageProvider && candidate?.imageProviderId
+    ? `provider:${String(candidate.imageProvider).trim().toLowerCase()}:${String(candidate.imageProviderId).trim()}`
+    : null;
+
+  if (providerKey) {
+    usedKeys.add(providerKey);
+  }
+
+  if (imageUrl) {
+    usedKeys.add(`url:${imageUrl}`);
+  }
+}
+
+function isImageAlreadyUsed(usedKeys, candidate) {
+  const imageUrl = String(candidate?.imageUrl || '').trim();
+  const providerKey = candidate?.imageProvider && candidate?.imageProviderId
+    ? `provider:${String(candidate.imageProvider).trim().toLowerCase()}:${String(candidate.imageProviderId).trim()}`
+    : null;
+
+  return (providerKey && usedKeys.has(providerKey)) || (imageUrl && usedKeys.has(`url:${imageUrl}`));
 }
 
 function toRenderableUnsplashUrl(rawUrl) {
@@ -36,7 +81,7 @@ async function fetchUnsplashImage(query, accessKey) {
     },
     params: {
       query,
-      per_page: 1,
+      per_page: 8,
       page: 1,
       orientation: 'squarish',
       content_filter: 'high',
@@ -44,23 +89,24 @@ async function fetchUnsplashImage(query, accessKey) {
     timeout: 15000,
   });
 
-  const item = response?.data?.results?.[0];
-  if (!item) return null;
+  return (response?.data?.results || [])
+    .map((item) => {
+      const imageUrl = toRenderableUnsplashUrl(item.urls?.raw || item.urls?.regular || null);
+      if (!imageUrl) return null;
 
-  const imageUrl = toRenderableUnsplashUrl(item.urls?.raw || item.urls?.regular || null);
-  if (!imageUrl) return null;
-
-  return {
-    imageUrl,
-    imageProvider: 'unsplash',
-    imageProviderId: String(item.id),
-    imageAttribution: {
-      photographer: item.user?.name || null,
-      photographerUsername: item.user?.username || null,
-      photographerProfile: item.user?.links?.html || null,
-      photoPage: item.links?.html || null,
-    },
-  };
+      return {
+        imageUrl,
+        imageProvider: 'unsplash',
+        imageProviderId: String(item.id),
+        imageAttribution: {
+          photographer: item.user?.name || null,
+          photographerUsername: item.user?.username || null,
+          photographerProfile: item.user?.links?.html || null,
+          photoPage: item.links?.html || null,
+        },
+      };
+    })
+    .filter(Boolean);
 }
 
 async function fetchPexelsImage(query, apiKey) {
@@ -68,29 +114,30 @@ async function fetchPexelsImage(query, apiKey) {
     headers: { Authorization: apiKey },
     params: {
       query,
-      per_page: 1,
+      per_page: 8,
       page: 1,
       orientation: 'square',
     },
     timeout: 15000,
   });
 
-  const item = response?.data?.photos?.[0];
-  if (!item) return null;
+  return (response?.data?.photos || [])
+    .map((item) => {
+      const imageUrl = item.src?.large2x || item.src?.large || item.src?.medium || null;
+      if (!imageUrl) return null;
 
-  const imageUrl = item.src?.large2x || item.src?.large || item.src?.medium || null;
-  if (!imageUrl) return null;
-
-  return {
-    imageUrl,
-    imageProvider: 'pexels',
-    imageProviderId: String(item.id),
-    imageAttribution: {
-      photographer: item.photographer || null,
-      photographerProfile: item.photographer_url || null,
-      photoPage: item.url || null,
-    },
-  };
+      return {
+        imageUrl,
+        imageProvider: 'pexels',
+        imageProviderId: String(item.id),
+        imageAttribution: {
+          photographer: item.photographer || null,
+          photographerProfile: item.photographer_url || null,
+          photoPage: item.url || null,
+        },
+      };
+    })
+    .filter(Boolean);
 }
 
 async function fetchPixabayImage(query, apiKey) {
@@ -99,27 +146,28 @@ async function fetchPixabayImage(query, apiKey) {
       key: apiKey,
       q: query,
       image_type: 'photo',
-      per_page: 3,
+      per_page: 10,
       safesearch: 'true',
     },
     timeout: 15000,
   });
 
-  const item = response?.data?.hits?.[0];
-  if (!item) return null;
+  return (response?.data?.hits || [])
+    .map((item) => {
+      const imageUrl = item.webformatURL || item.largeImageURL || null;
+      if (!imageUrl) return null;
 
-  const imageUrl = item.webformatURL || item.largeImageURL || null;
-  if (!imageUrl) return null;
-
-  return {
-    imageUrl,
-    imageProvider: 'pixabay',
-    imageProviderId: String(item.id),
-    imageAttribution: {
-      photographer: item.user || null,
-      photoPage: item.pageURL || null,
-    },
-  };
+      return {
+        imageUrl,
+        imageProvider: 'pixabay',
+        imageProviderId: String(item.id),
+        imageAttribution: {
+          photographer: item.user || null,
+          photoPage: item.pageURL || null,
+        },
+      };
+    })
+    .filter(Boolean);
 }
 
 async function fetchProviderImageForQuery(provider, query) {
@@ -163,15 +211,19 @@ function normalizeProviderOrder(provider, providerOrder) {
   return supportedProviders;
 }
 
-async function resolveProviderImage(provider, product, providerOrder) {
+async function resolveProviderImage(provider, product, providerOrder, usedKeys = new Set()) {
   const queries = buildSearchQueries(product);
   const providers = normalizeProviderOrder(provider, providerOrder);
 
   for (const currentProvider of providers) {
     for (const query of queries) {
       try {
-        const result = await fetchProviderImageForQuery(currentProvider, query);
-        if (result?.imageUrl) {
+        const results = await fetchProviderImageForQuery(currentProvider, query);
+        for (const result of results || []) {
+          if (!result?.imageUrl || isImageAlreadyUsed(usedKeys, result)) {
+            continue;
+          }
+
           return result;
         }
       } catch (error) {
@@ -196,21 +248,28 @@ async function refreshProductImages({
   const normalizedProvider = String(provider || 'unsplash').toLowerCase();
   const normalizedProviderOrder = normalizeProviderOrder(normalizedProvider, providerOrder);
 
-  const filter = overwrite
-    ? { isAvailable: true }
-    : {
-      isAvailable: true,
-      $or: [
-        { imageUrl: { $exists: false } },
-        { imageUrl: null },
-        { imageUrl: '' },
-      ],
-    };
-
-  const products = await Product.find(filter)
+  const products = await Product.find({ isAvailable: true })
     .populate('category', 'name')
     .sort({ createdAt: -1 })
     .limit(Math.max(1, Number(limit) || 100));
+
+  const imageCounts = new Map();
+  for (const product of products) {
+    const key = getProductImageKey(product);
+    if (!key) continue;
+    imageCounts.set(key, (imageCounts.get(key) || 0) + 1);
+  }
+
+  const usedKeys = new Set();
+  for (const product of products) {
+    const key = getProductImageKey(product);
+    if (!key) continue;
+    usedKeys.add(key);
+    const imageUrl = String(product.imageUrl || '').trim();
+    if (imageUrl) {
+      usedKeys.add(`url:${imageUrl}`);
+    }
+  }
 
   let updated = 0;
   let skipped = 0;
@@ -218,11 +277,20 @@ async function refreshProductImages({
 
   for (const product of products) {
     try {
+      const currentKey = getProductImageKey(product);
+      const shouldRefresh = overwrite || !currentKey || (imageCounts.get(currentKey) || 0) > 1;
+
+      if (!shouldRefresh) {
+        skipped += 1;
+        continue;
+      }
+
       const resolved = await resolveProviderImage(normalizedProvider, {
         name: product.name,
         categoryName: product.category?.name,
         specialty: product.specialty,
-      }, normalizedProviderOrder);
+        artisanName: product.artisanName,
+      }, normalizedProviderOrder, usedKeys);
 
       if (!resolved?.imageUrl) {
         skipped += 1;
@@ -237,6 +305,7 @@ async function refreshProductImages({
       product.images = [resolved.imageUrl];
 
       await product.save();
+      rememberImageKeys(usedKeys, resolved);
       updated += 1;
     } catch (error) {
       failed += 1;

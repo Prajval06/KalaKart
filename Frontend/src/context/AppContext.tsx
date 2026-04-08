@@ -90,7 +90,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const list = res.data?.data?.products || [];
         const mapped: Product[] = list.map((p: any) => {
           const rawArtisanId = typeof p.artisan_id === 'object'
-            ? (p.artisan_id?.id || p.artisan_id?._id || '')
+            ? (p.artisan_id?.id || p.artisan_id?._id || String(p.artisan_id || ''))
             : (p.artisan_id || '');
 
           return {
@@ -123,13 +123,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const res = await usersAPI.getArtisans();
       if (res.data.success) {
         setDbArtisans(res.data.data.artisans.map((a: any) => ({
-          userId: a.email,
+          userId: String(a.id || a._id || a.email),
           name: a.full_name,
           profileImage: a.profileImage,
           description: a.bio,
           isComplete: true,
           specialty: a.specialty,
-          location: a.location
+          location: a.location,
+          yearsOfExperience: Number(a.yearsOfExperience || 1)
         })));
       }
     } catch (err) {
@@ -413,8 +414,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const forgotPassword = async (email: string) => {
-    await new Promise(res => setTimeout(res, 1000));
-    return { success: `If ${email} is registered, a reset link has been sent.` };
+    try {
+      const response = await authAPI.forgotPassword({ email });
+      return { success: response.data?.data?.message || `If ${email} is registered, a reset link has been sent.` };
+    } catch (err) {
+      return { error: getErrorMessage(err) };
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    try {
+      const response = await authAPI.resetPassword({ token, new_password: newPassword });
+      return { success: response.data?.data?.message || 'Password updated successfully.' };
+    } catch (err) {
+      return { error: getErrorMessage(err) };
+    }
   };
 
   const loginWithGoogle = (userType?: 'buyer' | 'seller') => {
@@ -524,7 +538,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppContext.Provider value={{
       cartItems, wishlistItems, toasts, addToCart, updateQuantity, removeItem, clearCart, toggleWishlist, removeToast,
-      isLoggedIn, currentUser, authToken, login, signup, forgotPassword, logout, loginWithGoogle, loginWithGoogleToken,
+      isLoggedIn, currentUser, authToken, login, signup, forgotPassword, resetPassword, logout, loginWithGoogle, loginWithGoogleToken,
       savedAddress, setSavedAddress, orders, placeOrder,
       artisanProducts, artisanOrders, isNewArtisan, addArtisanProduct, updateArtisanProduct, deleteArtisanProduct, updateArtisanOrder,
       artisanProfile, saveArtisanProfile, getCompletedArtisanProfiles,

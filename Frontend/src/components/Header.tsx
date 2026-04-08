@@ -5,7 +5,6 @@ import {
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { artisans } from '../data/artisans';
 
 const logoImage =
   'https://raw.githubusercontent.com/Prajval06/KalaKart/refs/heads/main/Kalakart%20logo.png';
@@ -20,6 +19,13 @@ function normalize(s: string) {
   return s.toLowerCase().replace(/[&]/g, 'and');
 }
 
+type SearchArtisan = {
+  id: string;
+  name: string;
+  craft: string;
+  state: string;
+};
+
 interface Suggestion {
   id: string;
   label: string;
@@ -28,7 +34,7 @@ interface Suggestion {
   type: 'product' | 'artisan';
 }
 
-function getSuggestions(query: string, allProducts: any[], limit = 6): Suggestion[] {
+function getSuggestions(query: string, allProducts: any[], allArtisans: SearchArtisan[], limit = 6): Suggestion[] {
   const q = normalize(query.trim());
   if (!q) return [];
 
@@ -48,7 +54,7 @@ function getSuggestions(query: string, allProducts: any[], limit = 6): Suggestio
     }
   }
 
-  for (const a of artisans) {
+  for (const a of allArtisans) {
     const hay = normalize([a.name, a.craft, a.state].join(' '));
     if (results.length >= limit) break;
     if (hay.includes(q)) {
@@ -84,8 +90,14 @@ function UserAvatar({ name, photoURL }: { name: string; photoURL?: string }) {
 
 // ── SearchBox ────────────────────────────────────────────────────────────────
 function SearchBox({ mobile = false }: { mobile?: boolean }) {
-  const { getAllProducts }       = useAppContext();
+  const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
   const allProducts              = getAllProducts();
+  const allArtisans: SearchArtisan[] = getCompletedArtisanProfiles().map((artisan) => ({
+    id: artisan.userId,
+    name: artisan.name,
+    craft: artisan.specialty || 'Handicrafts',
+    state: artisan.location || 'India',
+  }));
   const navigate                 = useNavigate();
   const [searchParams]           = useSearchParams();
   const [query, setQuery]        = useState(searchParams.get('q') ?? '');
@@ -99,7 +111,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
     setQuery(searchParams.get('q') ?? '');
   }, [searchParams]);
 
-  const suggestions = getSuggestions(query, allProducts);
+  const suggestions = getSuggestions(query, allProducts, allArtisans);
   const showDropdown = focused && query.trim().length > 0 && suggestions.length > 0;
 
   const commitSearch = useCallback(

@@ -260,6 +260,56 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Categories Section */}
+        <div className="mb-12">
+          <h2 className="mb-6" style={{ color: 'var(--dark-brown)' }}>Shop by Category</h2>
+          {/* Horizontal scrollable row — all 6 cards in one line */}
+          <div className="flex flex-row gap-4 overflow-x-auto pb-3" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--saffron) var(--beige)' }}>
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                to={`/category/${encodeURIComponent(category.name)}`}
+                className="flex-shrink-0 rounded-2xl overflow-hidden relative hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+                style={{ width: '180px', height: '200px' }}
+              >
+                <ImageWithFallback
+                  src={category.image}
+                  alt={category.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Gradient overlay */}
+                <div
+                  className="absolute inset-0 transition-opacity duration-300"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(70,30,10,0.82) 0%, rgba(70,30,10,0.35) 55%, rgba(70,30,10,0.05) 100%)'
+                  }}
+                />
+                {/* Hover shimmer overlay */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: 'linear-gradient(135deg, rgba(218,165,32,0.18) 0%, rgba(139,37,0,0.18) 100%)' }}
+                />
+                {/* Card content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-end pb-5 px-2 text-center">
+                  <span className="text-2xl mb-2 drop-shadow">{category.emoji}</span>
+                  <h3
+                    className="font-semibold leading-tight drop-shadow-md"
+                    style={{ color: 'white', fontSize: '0.9rem' }}
+                  >
+                    {category.name}
+                  </h3>
+                  <span
+                    className="mt-2 text-xs px-3 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ backgroundColor: 'var(--saffron)', color: 'white' }}
+                  >
+                    Explore →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Main Product Showcase */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
@@ -328,56 +378,6 @@ export default function Home() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Categories Section */}
-        <div className="mb-12">
-          <h2 className="mb-6" style={{ color: 'var(--dark-brown)' }}>Shop by Category</h2>
-          {/* Horizontal scrollable row — all 6 cards in one line */}
-          <div className="flex flex-row gap-4 overflow-x-auto pb-3" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--saffron) var(--beige)' }}>
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                to={`/category/${encodeURIComponent(category.name)}`}
-                className="flex-shrink-0 rounded-2xl overflow-hidden relative hover:shadow-xl transition-all duration-300 hover:scale-105 group"
-                style={{ width: '180px', height: '200px' }}
-              >
-                <ImageWithFallback
-                  src={category.image}
-                  alt={category.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                {/* Gradient overlay */}
-                <div
-                  className="absolute inset-0 transition-opacity duration-300"
-                  style={{
-                    background: 'linear-gradient(to top, rgba(70,30,10,0.82) 0%, rgba(70,30,10,0.35) 55%, rgba(70,30,10,0.05) 100%)'
-                  }}
-                />
-                {/* Hover shimmer overlay */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ background: 'linear-gradient(135deg, rgba(218,165,32,0.18) 0%, rgba(139,37,0,0.18) 100%)' }}
-                />
-                {/* Card content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-end pb-5 px-2 text-center">
-                  <span className="text-2xl mb-2 drop-shadow">{category.emoji}</span>
-                  <h3
-                    className="font-semibold leading-tight drop-shadow-md"
-                    style={{ color: 'white', fontSize: '0.9rem' }}
-                  >
-                    {category.name}
-                  </h3>
-                  <span
-                    className="mt-2 text-xs px-3 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ backgroundColor: 'var(--saffron)', color: 'white' }}
-                  >
-                    Explore →
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
 
         {/* ── Mongo Product Showcase ── */}

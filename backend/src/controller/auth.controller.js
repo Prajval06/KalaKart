@@ -17,4 +17,14 @@ const refreshToken = asyncHandler(async (req, res) => {
   return success(res, result);
 });
 
-module.exports = { register, login, refreshToken };
+const forgotPassword = asyncHandler(async (req, res) => {
+  const result = await authService.forgotPassword(req.body);
+  return success(res, result);
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const result = await authService.resetPassword(req.body);
+  return success(res, result);
+});
+
+module.exports = { register, login, refreshToken, forgotPassword, resetPassword };

@@ -18,6 +18,7 @@ const axios   = require('axios');
 const jwt     = require('jsonwebtoken');
 const User    = require('../../models/user.model');
 const config  = require('../../config/config');
+const { sendWelcomeEmail } = require('../../services/email.service');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /google  →  Redirect to Google consent screen
@@ -109,12 +110,18 @@ router.get('/google/callback', async (req, res) => {
         // Create new account
         user = await User.create({
           googleId,
-          email,
+          email: email.toLowerCase(),
           full_name:   name,
           profileImage,
           authMethod:  'google',
           role:        state === 'seller' ? 'admin' : 'customer',
         });
+
+        try {
+          await sendWelcomeEmail(user, 'google');
+        } catch (emailErr) {
+          console.warn('AUTH EMAIL — Google welcome email failed:', emailErr.message);
+        }
       }
     }
 

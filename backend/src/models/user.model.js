@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   full_name:       { type: String, required: true, trim: true },
   role:            { type: String, enum: ['customer', 'admin', 'artisan'], default: 'customer' },
   is_active:       { type: Boolean, default: true },
+  passwordResetTokenHash: { type: String, select: false },
+  passwordResetExpires: { type: Date, select: false },
   // ── Google OAuth ─────────────────────────────────────────────
   googleId:        { type: String, unique: true, sparse: true },
   profileImage:    { type: String },
@@ -36,6 +38,8 @@ userSchema.set('toJSON', {
     delete ret._id;
     delete ret.__v;
     delete ret.hashed_password;
+    delete ret.passwordResetTokenHash;
+    delete ret.passwordResetExpires;
     return ret;
   },
 });
