@@ -305,9 +305,8 @@ export default function Cart() {
                       </button>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          disabled={item.quantity <= 1}
-                          className="p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-30"
+                          onClick={() => (item.quantity <= 1 ? removeItem(item.id) : updateQuantity(item.id, -1))}
+                          className="p-1 rounded hover:bg-gray-100 transition-colors"
                         >
                           <Minus className="w-4 h-4" />
                         </button>

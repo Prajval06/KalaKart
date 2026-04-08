@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router';
 import {
   ShoppingCart, Heart, MapPin, Award,
   User, ChevronDown, ChevronUp,
-  Shield, Star, X, BadgeCheck, Sparkles,
+  Shield, Star, X, BadgeCheck, Sparkles, Plus, Minus,
 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ImageWithFallback, DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
@@ -142,6 +142,7 @@ export default function ProductDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
   const { addToCart, toggleWishlist, wishlistItems, getAllProducts } = useAppContext();
+  const [selectedQty, setSelectedQty] = useState(1);
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -407,8 +408,25 @@ export default function ProductDetail() {
               </div>
 
               <div className="flex gap-3 mb-6">
+                <div className="flex items-center gap-2 px-2 rounded-xl" style={{ border: '1px solid var(--beige)', backgroundColor: 'white' }}>
+                  <button
+                    onClick={() => setSelectedQty((q) => Math.max(1, q - 1))}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-8 text-center font-semibold" style={{ color: 'var(--dark-brown)' }}>{selectedQty}</span>
+                  <button
+                    onClick={() => setSelectedQty((q) => q + 1)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
                 <button
-                  onClick={() => addToCart(product.id, product.name)}
+                  onClick={() => addToCart(product.id, product.name, selectedQty)}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-white font-semibold hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: 'var(--saffron)' }}
                 >

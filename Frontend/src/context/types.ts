@@ -90,7 +90,7 @@ export interface AppContextType {
   cartItems: CartItem[];
   wishlistItems: string[];
   toasts: Omit<ToastProps, 'onClose'>[];
-  addToCart: (productId: string, productName: string) => void;
+  addToCart: (productId: string, productName: string, quantity?: number) => void;
   updateQuantity: (productId: string, change: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;

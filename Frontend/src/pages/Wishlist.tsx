@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
-import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Heart, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
@@ -8,6 +9,19 @@ import { useTranslation } from 'react-i18next';
 export default function Wishlist() {
   const { t } = useTranslation();
   const { wishlistItems, toggleWishlist, addToCart, getAllProducts } = useAppContext();
+  const [qtyByProduct, setQtyByProduct] = useState<Record<string, number>>({});
+
+  const getQty = (productId: string) => qtyByProduct[productId] || 1;
+
+  const changeQty = (productId: string, change: number) => {
+    setQtyByProduct((prev) => {
+      const current = prev[productId] || 1;
+      return {
+        ...prev,
+        [productId]: Math.max(1, current + change),
+      };
+    });
+  };
   
   const allProducts = getAllProducts();
   const wishlistProducts = allProducts.filter((product) =>
@@ -81,9 +95,29 @@ export default function Wishlist() {
                     ₹{product.price.toLocaleString('en-IN')}
                   </p>
 
+                  <div className="flex items-center gap-2 mb-3">
+                    <button
+                      onClick={() => changeQty(product.id, -1)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-8 text-center font-semibold" style={{ color: 'var(--dark-brown)' }}>
+                      {getQty(product.id)}
+                    </span>
+                    <button
+                      onClick={() => changeQty(product.id, 1)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+
                   <div className="flex gap-2">
                     <button
-                      onClick={() => addToCart(product.id, product.name)}
+                      onClick={() => addToCart(product.id, product.name, getQty(product.id))}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full text-white font-semibold hover:opacity-90 transition-opacity"
                       style={{ backgroundColor: 'var(--sage-green)' }}
                     >
