@@ -1,6 +1,7 @@
 import {
   ShoppingCart, Menu, X, User, Heart, Search,
-  LogOut, LayoutDashboard,
+  LogOut, LayoutDashboard, ChevronDown, Store, Bell, Headset, Megaphone,
+  Package,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -249,19 +250,24 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
 export function Header({ cartCount, wishlistCount }: HeaderProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen]     = useState(false);
-  const [dropdownOpen, setDropdown] = useState(false);
-  const dropdownRef                 = useRef<HTMLDivElement>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
   const location                    = useLocation();
   const navigate                    = useNavigate();
   const { isLoggedIn, currentUser, logout } = useAppContext();
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdown(false);
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false);
+      }
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -270,8 +276,14 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
 
   const handleLogout = () => {
     logout();
-    setDropdown(false);
+    setAccountOpen(false);
+    setMoreOpen(false);
     navigate('/');
+  };
+
+  const closeDesktopMenus = () => {
+    setAccountOpen(false);
+    setMoreOpen(false);
   };
 
   return (
@@ -298,53 +310,136 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
           {/* Right Icons */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* User / Profile */}
+            {/* Account + More (desktop, signed in) */}
             {isLoggedIn && currentUser ? (
-              <div ref={dropdownRef} className="relative">
-                <button
-                  id="profile-avatar-btn"
-                  onClick={() => setDropdown(v => !v)}
-                  className="w-11 h-11 rounded-full flex items-center justify-center hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-[#8B2500] focus:ring-offset-1 overflow-hidden shadow-md border-2 border-[#DAA520]"
-                  style={{ backgroundColor: '#F4C95D' }}
-                  aria-label="User menu"
-                  aria-expanded={dropdownOpen}
-                >
-                  <UserAvatar name={currentUser.name} photoURL={currentUser.photoURL} />
-                </button>
-
-                {dropdownOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl border border-[#DEB887] overflow-hidden z-50"
-                    style={{ backgroundColor: '#FFF8E7' }}
+              <>
+                <div ref={accountRef} className="relative hidden md:block">
+                  <button
+                    id="account-menu-btn"
+                    onClick={() => { setAccountOpen(v => !v); setMoreOpen(false); }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FFF0D0] transition-colors"
+                    style={{ color: 'var(--dark-brown)' }}
+                    aria-expanded={accountOpen}
                   >
-                    <div className="px-4 py-3 border-b border-[#DEB887]/60 bg-[#FFF0D0]">
-                      <p className="text-xs text-[#8B4513] font-serif">{t('header.signedInAs')}</p>
-                      <p className="text-sm font-bold text-[#4A2C2A] truncate">{currentUser.name}</p>
-                      <p className="text-xs text-[#8B4513] truncate">{currentUser.email}</p>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden border border-[#DAA520]" style={{ backgroundColor: '#F4C95D' }}>
+                      <UserAvatar name={currentUser.name} photoURL={currentUser.photoURL} />
                     </div>
+                    <span className="font-medium max-w-[90px] truncate">{currentUser.name.split(' ')[0]}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
 
-                    {currentUser.userType === 'seller' && (
-                      <button
-                        id="go-to-dashboard"
-                        onClick={() => { setDropdown(false); navigate('/seller-dashboard'); }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#4A2C2A] font-serif hover:bg-[#FFF0D0] transition-colors"
-                      >
-                        <LayoutDashboard size={16} className="text-[#8B2500]" />
-                        {t('header.dashboard')}
-                      </button>
-                    )}
+                  {accountOpen && (
+                    <div className="absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl border border-[#DEB887] overflow-hidden z-50" style={{ backgroundColor: '#FFF8E7' }}>
+                      <div className="px-5 py-4 border-b border-[#DEB887]/60">
+                        <p className="text-2xl font-semibold text-[#3B3B3B]">Your Account</p>
+                      </div>
 
-                    <button
-                      id="logout-btn"
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#C03030] font-serif hover:bg-red-50 transition-colors border-t border-[#DEB887]/40"
-                    >
-                      <LogOut size={16} />
-                      {t('header.signOut')}
-                    </button>
-                  </div>
-                )}
-              </div>
+                      <div className="py-2">
+                        {currentUser.userType === 'seller' && (
+                          <button
+                            onClick={() => { closeDesktopMenus(); navigate('/seller-dashboard'); }}
+                            className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                          >
+                            <LayoutDashboard className="w-5 h-5" />
+                            <span>{t('header.dashboard')}</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => { closeDesktopMenus(); navigate('/setup-profile'); }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <User className="w-5 h-5" />
+                          <span>My Profile</span>
+                        </button>
+
+                        <button
+                          onClick={() => { closeDesktopMenus(); navigate('/orders'); }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Package className="w-5 h-5" />
+                          <span>{t('cart.myOrders')}</span>
+                        </button>
+
+                        <button
+                          onClick={() => { closeDesktopMenus(); navigate('/wishlist'); }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Heart className="w-5 h-5" />
+                          <span>Wishlist</span>
+                        </button>
+
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          <span>{t('header.signOut')}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div ref={moreRef} className="relative hidden md:block">
+                  <button
+                    id="more-menu-btn"
+                    onClick={() => { setMoreOpen(v => !v); setAccountOpen(false); }}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[#FFF0D0] transition-colors"
+                    style={{ color: 'var(--dark-brown)' }}
+                    aria-expanded={moreOpen}
+                  >
+                    <span className="font-medium">More</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+
+                  {moreOpen && (
+                    <div className="absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl border border-[#DEB887] overflow-hidden z-50" style={{ backgroundColor: '#FFF8E7' }}>
+                      <div className="px-5 py-4 border-b border-[#DEB887]/60">
+                        <p className="text-2xl font-semibold text-[#3B3B3B]">More</p>
+                      </div>
+
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            closeDesktopMenus();
+                            if (currentUser.userType === 'seller') navigate('/seller-dashboard');
+                            else navigate('/auth');
+                          }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Store className="w-5 h-5" />
+                          <span>Become a Seller</span>
+                        </button>
+
+                        <button
+                          onClick={() => closeDesktopMenus()}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Bell className="w-5 h-5" />
+                          <span>Notification Settings</span>
+                        </button>
+
+                        <button
+                          onClick={() => closeDesktopMenus()}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Headset className="w-5 h-5" />
+                          <span>24x7 Customer Care</span>
+                        </button>
+
+                        <button
+                          onClick={() => closeDesktopMenus()}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Megaphone className="w-5 h-5" />
+                          <span>Advertise on KalaKart</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <Link
                 id="profile-icon-btn"
