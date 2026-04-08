@@ -263,18 +263,18 @@ export default function Auth() {
               {/* Buyer / Seller tabs (login + signup only) */}
               {mode !== 'forgot' && (
                 <div className="flex justify-center mb-6 bg-[#F5DEB3] p-1 rounded-full w-fit mx-auto shadow-inner">
-                  {(['buyer', 'seller'] as UserType[]).map(t => (
+                  {(['buyer', 'seller'] as UserType[]).map(tabType => (
                     <button
-                      key={t}
+                      key={tabType}
                       type="button"
-                      onClick={() => { setUserType(t); setError(''); }}
+                      onClick={() => { setUserType(tabType); setError(''); }}
                       className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-                        userType === t
+                        userType === tabType
                           ? 'bg-[#8B2500] text-white shadow-md'
                           : 'text-[#5D4037] hover:bg-[#DEB887]'
                       }`}
                     >
-                      {t === 'buyer' ? t('auth.buyerMode') : t('auth.sellerMode')}
+                      {tabType === 'buyer' ? t('auth.buyerMode') : t('auth.sellerMode')}
                     </button>
                   ))}
                 </div>
