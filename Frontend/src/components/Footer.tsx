@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ArrowUpRight, Send, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 
 export function Footer() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const quickLinks = [
-    { label: 'Shop', to: '/shop' },
-    { label: 'Meet Our Artisans', to: '/artisans' },
-    { label: 'About Us', to: '/about' },
-    { label: 'Your Cart', to: '/cart' },
-    { label: 'Wishlist', to: '/wishlist' },
+    { label: t('footer.shop'), to: '/shop' },
+    { label: t('footer.meetArtisans'), to: '/artisans' },
+    { label: t('footer.about'), to: '/about' },
+    { label: t('footer.yourCart'), to: '/cart' },
+    { label: t('footer.wishlist'), to: '/wishlist' },
   ];
 
   const categories = [
@@ -77,7 +79,7 @@ export function Footer() {
                 </span>
               </div>
               <p className="text-sm leading-6" style={{ color: 'var(--text-gray)' }}>
-                Celebrating India&apos;s rich heritage through authentic handcrafted products made by local artisans.
+                {t('footer.brandTagline')}
               </p>
 
               <button
@@ -86,13 +88,13 @@ export function Footer() {
                 className="mt-5 inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full border transition-opacity hover:opacity-80"
                 style={{ borderColor: 'var(--sage-green)', color: 'var(--dark-brown)', backgroundColor: 'rgba(255,255,255,0.7)' }}
               >
-                Back to top <ChevronUp className="w-3 h-3" />
+                {t('footer.backToTop')} <ChevronUp className="w-3 h-3" />
               </button>
             </div>
 
             <div>
               <h3 className="font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
-                Quick Links
+                {t('footer.quickLinks')}
               </h3>
               <ul className="space-y-2">
                 {quickLinks.map((link) => (
@@ -112,7 +114,7 @@ export function Footer() {
 
             <div>
               <h3 className="font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
-                Shop by Category
+                {t('footer.shopByCategory')}
               </h3>
               <ul className="space-y-2">
                 {categories.map((category) => (
@@ -131,7 +133,7 @@ export function Footer() {
 
             <div>
               <h3 className="font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
-                Contact & Updates
+                {t('footer.contactAndUpdates')}
               </h3>
               <ul className="space-y-3 mb-5">
                 <li className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-gray)' }}>
@@ -157,7 +159,7 @@ export function Footer() {
 
               <form onSubmit={handleNewsletter} className="space-y-2">
                 <label className="text-xs font-semibold" style={{ color: 'var(--dark-brown)' }}>
-                  Newsletter
+                  {t('footer.newsletter')}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -167,7 +169,7 @@ export function Footer() {
                       setEmail(event.target.value);
                       if (status !== 'idle') setStatus('idle');
                     }}
-                    placeholder="Enter your email"
+                    placeholder={t('footer.newsletterPlaceholder')}
                     className="w-full text-sm rounded-lg px-3 py-2 border"
                     style={{ borderColor: 'var(--beige)', backgroundColor: 'white', color: 'var(--dark-brown)' }}
                   />
@@ -182,12 +184,12 @@ export function Footer() {
                 </div>
                 {status === 'success' && (
                   <p className="text-xs" style={{ color: '#2F7A3D' }}>
-                    You are subscribed. We&apos;ll share artisan stories and new drops.
+                    {t('footer.newsletterSuccess')}
                   </p>
                 )}
                 {status === 'error' && (
                   <p className="text-xs" style={{ color: '#B43232' }}>
-                    Please enter a valid email address.
+                    {t('footer.newsletterError')}
                   </p>
                 )}
               </form>
@@ -229,12 +231,12 @@ export function Footer() {
 
           <div className="border-t mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTopColor: 'rgba(145, 128, 97, 0.28)' }}>
             <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
-              Copyright 2026 KALAKART. Crafted with love for Indian heritage.
+              {t('footer.copyright')}
             </p>
             <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-gray)' }}>
-              <Link to="/about" className="hover:opacity-75 transition-opacity">About</Link>
-              <Link to="/shop" className="hover:opacity-75 transition-opacity">Shop</Link>
-              <Link to="/artisans" className="hover:opacity-75 transition-opacity">Artisans</Link>
+              <Link to="/about" className="hover:opacity-75 transition-opacity">{t('footer.about')}</Link>
+              <Link to="/shop" className="hover:opacity-75 transition-opacity">{t('footer.shop')}</Link>
+              <Link to="/artisans" className="hover:opacity-75 transition-opacity">{t('footer.artisans')}</Link>
             </div>
           </div>
         </div>

@@ -10,7 +10,9 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('kk_token');
+  const lang = localStorage.getItem('i18nextLng') || 'en';
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  config.headers['Accept-Language'] = lang;
   return config;
 });
 

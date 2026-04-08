@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: string }> = {
   'Jewelry':            { accent: '#B5851A', emoji: '💎', bg: '#FDF6E3' },
@@ -115,6 +116,7 @@ function RangeSlider({
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function CategoryPage() {
+  const { t } = useTranslation();
   const { categoryName } = useParams<{ categoryName: string }>();
   const navigate = useNavigate();
   const { getAllProducts } = useAppContext();
@@ -159,7 +161,7 @@ export default function CategoryPage() {
   if (!decoded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Category not found.</p>
+        <p className="text-gray-500">{t('category.categoryNotFound')}</p>
       </div>
     );
   }
@@ -168,7 +170,7 @@ export default function CategoryPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
       <Breadcrumb
         items={[
-          { label: 'Home', href: '/' },
+          { label: t('header.home'), href: '/' },
           { label: decoded },
         ]}
       />
@@ -193,7 +195,7 @@ export default function CategoryPage() {
                 <h1 style={{ color: 'var(--dark-brown)' }}>{decoded}</h1>
               </div>
               <p className="text-sm ml-14" style={{ color: '#7A6A5A' }}>
-                {categoryProducts.length} handcrafted {decoded.toLowerCase()} by Indian artisans
+                {t('category.handcraftedByArtisans', { count: categoryProducts.length, category: decoded.toLowerCase() })}
               </p>
             </div>
           </div>
@@ -224,7 +226,7 @@ export default function CategoryPage() {
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4" style={{ color: cfg.accent }} />
             <span className="text-sm text-gray-600">
-              Showing <span style={{ fontWeight: 700, color: 'var(--dark-brown)' }}>{categoryProducts.length}</span> products
+              {t('category.showingProducts', { count: categoryProducts.length })}
             </span>
           </div>
 
@@ -241,7 +243,7 @@ export default function CategoryPage() {
               }}
             >
               <SlidersHorizontal className="w-4 h-4" style={{ color: filtersActive ? cfg.accent : '#9CA3AF' }} />
-              Filter By
+              {t('category.filterBy')}
               {filtersActive && (
                 <span
                   className="ml-1 w-2 h-2 rounded-full"
@@ -262,7 +264,7 @@ export default function CategoryPage() {
                 {/* ── Sort section ── */}
                 <div className="px-4 pt-4 pb-2">
                   <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: cfg.accent }}>
-                    Sort By
+                    {t('category.sortBy')}
                   </p>
                   <div className="flex flex-col gap-0.5">
                     {SORT_OPTIONS.map(opt => (
@@ -294,7 +296,7 @@ export default function CategoryPage() {
                 {/* ── Price range section ── */}
                 <div className="px-4 pt-3 pb-4">
                   <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: cfg.accent }}>
-                    Price Range
+                    {t('category.priceRange')}
                   </p>
                   <RangeSlider
                     min={PRICE_MIN}
@@ -306,10 +308,10 @@ export default function CategoryPage() {
                   />
                   <div className="flex gap-2 mt-3">
                     <div className="flex-1 text-center rounded-xl py-1.5 text-xs border" style={{ borderColor: `${cfg.accent}40`, color: '#7A6A5A' }}>
-                      Min: <strong style={{ color: cfg.accent }}>₹{priceLow.toLocaleString('en-IN')}</strong>
+                      {t('category.min')}: <strong style={{ color: cfg.accent }}>₹{priceLow.toLocaleString('en-IN')}</strong>
                     </div>
                     <div className="flex-1 text-center rounded-xl py-1.5 text-xs border" style={{ borderColor: `${cfg.accent}40`, color: '#7A6A5A' }}>
-                      Max: <strong style={{ color: cfg.accent }}>₹{priceHigh.toLocaleString('en-IN')}</strong>
+                      {t('category.max')}: <strong style={{ color: cfg.accent }}>₹{priceHigh.toLocaleString('en-IN')}</strong>
                     </div>
                   </div>
                 </div>
@@ -328,7 +330,7 @@ export default function CategoryPage() {
                     className="w-full py-2 rounded-xl text-sm font-semibold transition-colors hover:opacity-80"
                     style={{ backgroundColor: `${cfg.accent}15`, color: cfg.accent }}
                   >
-                    Reset All Filters
+                    {t('category.resetAllFilters')}
                   </button>
                 </div>
               </div>
@@ -340,14 +342,14 @@ export default function CategoryPage() {
         {categoryProducts.length === 0 ? (
           <div className="py-24 text-center">
             <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="mb-2" style={{ color: 'var(--dark-brown)' }}>No products found</h3>
-            <p className="text-gray-500 mb-6">Try adjusting your price range or sort order.</p>
+            <h3 className="mb-2" style={{ color: 'var(--dark-brown)' }}>{t('category.noProductsFound')}</h3>
+            <p className="text-gray-500 mb-6">{t('category.tryAdjusting')}</p>
             <button
               onClick={() => { setPriceLow(PRICE_MIN); setPriceHigh(PRICE_MAX); setSort('default'); }}
               className="inline-flex items-center px-6 py-3 rounded-xl text-white hover:opacity-90 transition-opacity"
               style={{ backgroundColor: cfg.accent }}
             >
-              Reset Filters
+              {t('category.resetFilters')}
             </button>
           </div>
         ) : (
@@ -387,7 +389,7 @@ export default function CategoryPage() {
                     ₹{product.price.toLocaleString('en-IN')}
                   </p>
                   <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.7rem' }}>
-                    by {product.artisan} · {product.state}
+                    {t('category.by')} {product.artisan} · {product.state}
                   </p>
                 </div>
               </Link>

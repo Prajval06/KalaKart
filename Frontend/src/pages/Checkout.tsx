@@ -7,14 +7,16 @@ import {
 } from 'lucide-react';
 import { useAppContext, type AddressData, type OrderItem } from '../context/AppContext';
 import { calculatePlatformFee } from '../utils/shipping';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────── Progress Stepper ───────────────────────────── */
-const PROGRESS_STEPS = ['Cart', 'Login', 'Address', 'Payment'];
-
 function ProgressBar({ current }: { current: number }) {
+  const { t } = useTranslation();
+  const progressSteps = [t('checkout.cart'), t('checkout.login'), t('checkout.address'), t('checkout.payment')];
+
   return (
     <div className="flex items-center justify-center gap-0 mb-10">
-      {PROGRESS_STEPS.map((label, i) => {
+      {progressSteps.map((label, i) => {
         const done   = i < current;
         const active = i === current;
         return (
@@ -44,7 +46,7 @@ function ProgressBar({ current }: { current: number }) {
                 {label}
               </span>
             </div>
-            {i < PROGRESS_STEPS.length - 1 && (
+            {i < progressSteps.length - 1 && (
               <div
                 className="h-0.5 w-12 sm:w-16 mx-1 mb-5 rounded-full transition-all"
                 style={{ backgroundColor: i < current ? '#4A8C4A' : 'var(--beige)' }}
@@ -124,6 +126,7 @@ const EMPTY_ADDRESS: AddressData = {
 };
 
 export default function Checkout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     cartItems, clearCart, currentUser, isLoggedIn,
@@ -136,14 +139,14 @@ export default function Checkout() {
       <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--cream-bg)' }}>
         <div className="text-center">
           <ShieldCheck className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--saffron)' }} />
-          <h2 className="mb-3">Login Required</h2>
-          <p className="mb-6" style={{ color: 'var(--text-gray)' }}>Please login from your cart to place an order.</p>
+          <h2 className="mb-3">{t('checkout.loginRequired')}</h2>
+          <p className="mb-6" style={{ color: 'var(--text-gray)' }}>{t('checkout.loginRequiredDesc')}</p>
           <button
             onClick={() => navigate('/cart')}
             className="px-6 py-3 rounded-xl text-white font-semibold"
             style={{ backgroundColor: 'var(--saffron)' }}
           >
-            Back to Cart
+            {t('checkout.backToCart')}
           </button>
         </div>
       </div>
@@ -156,10 +159,10 @@ export default function Checkout() {
       <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--cream-bg)' }}>
         <div className="text-center">
           <ShoppingBag className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-gray)' }} />
-          <h2 className="mb-3">Your Cart is Empty</h2>
-          <p className="mb-6" style={{ color: 'var(--text-gray)' }}>Add some products before checking out.</p>
+          <h2 className="mb-3">{t('checkout.yourCartEmpty')}</h2>
+          <p className="mb-6" style={{ color: 'var(--text-gray)' }}>{t('checkout.addProductsBeforeCheckout')}</p>
           <Link to="/" className="px-6 py-3 rounded-xl text-white font-semibold inline-block" style={{ backgroundColor: 'var(--saffron)' }}>
-            Browse Products
+            {t('checkout.browseProducts')}
           </Link>
         </div>
       </div>
@@ -185,6 +188,7 @@ function CheckoutInner({
   onSaveAddress: (addr: AddressData) => void;
   onClearCart: () => void;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, placeOrder: savePlacedOrder, getAllProducts } = useAppContext();
 
@@ -204,14 +208,14 @@ function CheckoutInner({
   if (cartProducts.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--rust-red)' }}>Your checkout is empty</h2>
+        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--rust-red)' }}>{t('checkout.yourCheckoutEmpty')}</h2>
         <p className="text-gray-600 mb-8 max-w-md text-center">It looks like your cart doesn't have any items yet. Add a few masterpieces before checking out!</p>
         <button 
           onClick={() => navigate('/shop')} 
           className="px-8 py-3 rounded-full text-white font-medium hover:opacity-90 transition-opacity"
           style={{ backgroundColor: 'var(--rust-red)' }}
         >
-          Return to Shop
+          {t('checkout.returnToShop')}
         </button>
       </div>
     );
@@ -318,7 +322,7 @@ function CheckoutInner({
             style={{ color: 'var(--saffron)' }}
           >
             <ArrowLeft className="w-4 h-4" />
-            {step === 'payment' ? 'Back to Address' : 'Back to Cart'}
+            {step === 'payment' ? t('checkout.address') : t('checkout.backToCart')}
           </button>
         )}
 
@@ -347,7 +351,7 @@ function CheckoutInner({
                       <MapPin className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
                     </div>
                     <div>
-                      <h3 style={{ color: 'var(--dark-brown)' }}>Delivery Address</h3>
+                      <h3 style={{ color: 'var(--dark-brown)' }}>{t('checkout.address')}</h3>
                       {savedAddress && (
                         <p className="text-xs" style={{ color: '#4A8C4A' }}>✔ Pre-filled from your saved address</p>
                       )}
@@ -513,7 +517,7 @@ function CheckoutInner({
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(180,140,90,0.1)' }}>
                       <CreditCard className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
                     </div>
-                    <h3 style={{ color: 'var(--dark-brown)' }}>Payment Method</h3>
+                    <h3 style={{ color: 'var(--dark-brown)' }}>{t('checkout.payment')}</h3>
                   </div>
 
                   {/* Confirmed address strip */}
@@ -655,8 +659,8 @@ function CheckoutInner({
                     style={{ backgroundColor: 'var(--saffron)' }}
                   >
                     {placing
-                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing Payment…</>
-                      : <>Place Order · ₹{total.toLocaleString('en-IN')}</>
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('checkout.processingPayment')}</>
+                      : <>{t('checkout.placeOrder')} · ₹{total.toLocaleString('en-IN')}</>
                     }
                   </button>
                 </div>
@@ -670,7 +674,7 @@ function CheckoutInner({
                 style={{ border: '1.5px solid var(--beige)' }}
               >
                 <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>
-                  Order Summary
+                  {t('checkout.orderSummary')}
                   <span className="ml-2 text-sm font-normal" style={{ color: 'var(--text-gray)' }}>
                     ({cartProducts.reduce((s, i) => s + i.quantity, 0)} item{cartProducts.reduce((s, i) => s + i.quantity, 0) > 1 ? 's' : ''})
                   </span>
@@ -690,7 +694,7 @@ function CheckoutInner({
                       <div className="flex-1 min-w-0">
                         <p className="text-xs mb-0.5" style={{ color: 'var(--saffron)' }}>{item.category}</p>
                         <p className="text-sm font-semibold line-clamp-1" style={{ color: 'var(--dark-brown)' }}>{item.name}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-gray)' }}>by {item.artisan}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-gray)' }}>{t('checkout.byArtisan', { artisan: item.artisan })}</p>
                         {item.description && (
                           <p className="text-xs mt-0.5 line-clamp-2" style={{ color: 'var(--text-gray)' }}>
                             {item.description}
@@ -710,11 +714,11 @@ function CheckoutInner({
                 {/* Pricing breakdown */}
                 <div className="space-y-2 mb-4 pt-3" style={{ borderTop: '1px solid var(--beige)' }}>
                   <div className="flex justify-between text-sm">
-                    <span style={{ color: 'var(--text-gray)' }}>Product Total</span>
+                    <span style={{ color: 'var(--text-gray)' }}>{t('checkout.productTotal')}</span>
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping</span>
+                    <span style={{ color: 'var(--text-gray)' }}>🚚 {t('checkout.shipping')}</span>
                     <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{deliveryCharge.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>

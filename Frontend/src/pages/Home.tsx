@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { ArrowRight, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 import { ImageWithFallback } from '../components/ImageWithFallback';
 
 const HOME_CATEGORY_ORDER = [
@@ -25,6 +26,7 @@ const HOME_CATEGORY_META: Record<string, { emoji: string; accent: string; label:
 };
 
 export default function Home() {
+  const { t } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const { getDbProducts } = useAppContext();
   const dbProducts = getDbProducts();
@@ -212,7 +214,7 @@ export default function Home() {
                   className="inline-flex items-center px-8 py-4 rounded-full text-white font-semibold hover:opacity-90 transition-opacity self-start"
                   style={{ backgroundColor: 'var(--rust-red)' }}
                 >
-                  Visit Store
+                  {t('home.visitStore')}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </div>
@@ -262,7 +264,7 @@ export default function Home() {
 
         {/* Categories Section */}
         <div className="mb-12">
-          <h2 className="mb-6" style={{ color: 'var(--dark-brown)' }}>Shop by Category</h2>
+          <h2 className="mb-6" style={{ color: 'var(--dark-brown)' }}>{t('home.shopByCategory')}</h2>
           {/* Horizontal scrollable row — all 6 cards in one line */}
           <div className="flex flex-row gap-4 overflow-x-auto pb-3" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--saffron) var(--beige)' }}>
             {categories.map((category) => (
@@ -302,7 +304,7 @@ export default function Home() {
                     className="mt-2 text-xs px-3 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ backgroundColor: 'var(--saffron)', color: 'white' }}
                   >
-                    Explore →
+                    {t('home.exploreArrow')}
                   </span>
                 </div>
               </Link>
@@ -314,9 +316,9 @@ export default function Home() {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 style={{ color: 'var(--dark-brown)' }}>Featured Catalog</h2>
+              <h2 style={{ color: 'var(--dark-brown)' }}>{t('home.featuredCatalog')}</h2>
               <p className="text-sm mt-1" style={{ color: '#8B7765' }}>
-                Products loaded from the catalog and displayed on the homepage.
+                {t('home.catalogDesc')}
               </p>
             </div>
             <Link
@@ -324,15 +326,15 @@ export default function Home() {
               className="inline-flex items-center gap-1 text-sm font-semibold hover:opacity-80 transition-opacity"
               style={{ color: 'var(--rust-red)' }}
             >
-              View all <ArrowRight className="w-4 h-4" />
+              {t('home.viewAll')} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
           {featuredProducts.length === 0 ? (
             <div className="rounded-2xl p-8 bg-white text-center" style={{ border: '1px solid var(--beige)' }}>
-              <p className="text-lg mb-2" style={{ color: 'var(--dark-brown)' }}>No products available yet</p>
+              <p className="text-lg mb-2" style={{ color: 'var(--dark-brown)' }}>{t('home.noProductsYet')}</p>
               <p className="text-sm" style={{ color: '#8B7765' }}>
-                Seed the database to make products appear here.
+                {t('home.seedDatabase')}
               </p>
             </div>
           ) : (
@@ -368,7 +370,7 @@ export default function Home() {
                       {product.name}
                     </p>
                     <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.7rem' }}>
-                      by {product.artisan}
+                      {t('home.craftedBy')} {product.artisan}
                     </p>
                     <p style={{ color: 'var(--rust-red)', fontSize: '0.85rem', fontWeight: 700, marginTop: '0.35rem' }}>
                       ₹{product.price.toLocaleString('en-IN')}
@@ -384,9 +386,9 @@ export default function Home() {
         <div className="space-y-12 mb-16">
           <div className="flex items-center justify-between">
             <div>
-              <h2 style={{ color: 'var(--dark-brown)' }}>Product Catalog</h2>
+              <h2 style={{ color: 'var(--dark-brown)' }}>{t('home.productCatalog')}</h2>
               <p className="text-sm mt-1" style={{ color: '#8B7765' }}>
-                Live catalog entries fetched from the backend database.
+                {t('home.catalogFetch')}
               </p>
             </div>
           </div>
@@ -407,7 +409,7 @@ export default function Home() {
                       className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-xs text-white"
                       style={{ backgroundColor: cfg.accent, opacity: 0.85 }}
                     >
-                      {categoryProducts.length} items
+                      {categoryProducts.length} {t('home.items')}
                     </span>
                   </div>
                 </div>
@@ -446,7 +448,7 @@ export default function Home() {
                             ₹{product.price.toLocaleString('en-IN')}
                           </p>
                           <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.65rem' }}>
-                            by {product.artisan}
+                            {t('home.craftedBy')} {product.artisan}
                           </p>
                         </div>
                       </Link>
@@ -461,7 +463,7 @@ export default function Home() {
                         <ArrowRight className="w-5 h-5" style={{ color: cfg.accent }} />
                       </div>
                       <p className="text-xs text-center px-4" style={{ color: cfg.accent, fontWeight: 600 }}>
-                        See all {cfg.label}
+                        {t('home.seeAllCategory', { category: cfg.label })}
                       </p>
                     </Link>
                   </div>
@@ -474,9 +476,9 @@ export default function Home() {
 
           {dbProducts.length === 0 && (
             <div className="rounded-2xl p-8 bg-white text-center" style={{ border: '1px solid var(--beige)' }}>
-              <p className="text-lg mb-2" style={{ color: 'var(--dark-brown)' }}>No database products found</p>
+              <p className="text-lg mb-2" style={{ color: 'var(--dark-brown)' }}>{t('home.noDbProducts')}</p>
               <p className="text-sm" style={{ color: '#8B7765' }}>
-                Add products to the catalog and refresh the page to see them here.
+                {t('home.addProductsRefresh')}
               </p>
             </div>
           )}
@@ -488,7 +490,7 @@ export default function Home() {
               className="inline-flex items-center font-semibold hover:opacity-70 transition-opacity"
               style={{ color: 'var(--rust-red)' }}
             >
-              Meet Our Artisans
+              {t('home.meetOurArtisans')}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
           </div>
@@ -509,10 +511,9 @@ export default function Home() {
             }}
           />
           <div className="relative z-10 p-12 text-center">
-            <h2 className="text-white mb-4">Supporting Indian Artisans</h2>
+            <h2 className="text-white mb-4">{t('home.supportTitle')}</h2>
             <p className="text-white text-lg mb-8 max-w-3xl mx-auto opacity-90">
-              Every purchase helps preserve traditional crafts and provides sustainable livelihoods 
-              to artisan communities across India
+              {t('home.supportDesc')}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link

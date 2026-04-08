@@ -9,6 +9,7 @@ import {
 import { useAppContext } from '../context/AppContext';
 import type { ArtisanProduct, SellerOrderStatus, SellerOrder } from '../context/types';
 import { ImageWithFallback } from '../components/ImageWithFallback';
+import { useTranslation } from 'react-i18next';
 
 // ─── Types ────────────────────────────────────────────────────────
 type Section = 'home' | 'products' | 'orders' | 'earnings';
@@ -26,6 +27,7 @@ interface ProductModalProps {
 }
 
 function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModalProps) {
+  const { t } = useTranslation();
   const isEdit = !!editingProduct;
   const [form, setForm] = useState({
     name: editingProduct?.name || '',
@@ -41,11 +43,11 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
   const [dragOver, setDragOver] = useState(false);
 
   const suggestions: string[] = [];
-  if (!form.name) suggestions.push('Give your product a clear name');
-  if (Number(form.price) > 5000) suggestions.push('Your price is higher than similar products');
-  if (!form.description || form.description.length < 20) suggestions.push('Add a detailed description to attract buyers');
-  if (!form.category) suggestions.push('Select a category so buyers can find your product');
-  if (images.length === 0) suggestions.push('Add at least one photo — products with images sell 5× more');
+  if (!form.name) suggestions.push(t('dashboard.suggestionClearName'));
+  if (Number(form.price) > 5000) suggestions.push(t('dashboard.suggestionHighPrice'));
+  if (!form.description || form.description.length < 20) suggestions.push(t('dashboard.suggestionDetailedDescription'));
+  if (!form.category) suggestions.push(t('dashboard.suggestionSelectCategory'));
+  if (images.length === 0) suggestions.push(t('dashboard.suggestionAddPhoto'));
 
   // Convert selected File objects → base64 strings and merge into state
   const addFiles = (files: FileList | null) => {
@@ -92,7 +94,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 style={{ color: 'var(--dark-brown)' }}>{isEdit ? 'Edit Product' : 'Add New Product'}</h2>
+          <h2 style={{ color: 'var(--dark-brown)' }}>{isEdit ? t('dashboard.editProduct') : t('dashboard.addNewProduct')}</h2>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100"><X className="w-5 h-5" /></button>
         </div>
 
@@ -100,7 +102,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
           <div className="mb-5 p-3 rounded-xl" style={{ backgroundColor: '#FFF8E1' }}>
             <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--rust-red)' }}>
               <Lightbulb className="w-4 h-4" />
-              <span className="text-sm" style={{ fontWeight: 600 }}>Smart Suggestions</span>
+              <span className="text-sm" style={{ fontWeight: 600 }}>{t('dashboard.smartSuggestions')}</span>
             </div>
             {suggestions.map((s, i) => <p key={i} className="text-sm text-gray-700 ml-6">• {s}</p>)}
           </div>
@@ -109,19 +111,19 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
         <div className="space-y-4">
           {/* Product Name */}
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Product Name *</label>
+            <label className="block text-sm text-gray-700 mb-1">{t('dashboard.productName')} *</label>
             <input
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Handpainted Ceramic Vase"
+              placeholder={t('dashboard.productNamePlaceholder')}
             />
           </div>
 
           {/* Price & Stock */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Price (₹) *</label>
+              <label className="block text-sm text-gray-700 mb-1">{t('dashboard.price')} (₹) *</label>
               <input
                 type="number"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -131,7 +133,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Stock</label>
+              <label className="block text-sm text-gray-700 mb-1">{t('dashboard.stock')}</label>
               <input
                 type="number"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -144,13 +146,13 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
 
           {/* Category */}
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Category *</label>
+            <label className="block text-sm text-gray-700 mb-1">{t('dashboard.category')} *</label>
             <select
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 bg-white"
               value={form.category}
               onChange={e => setForm({ ...form, category: e.target.value })}
             >
-              <option value="">Select category</option>
+              <option value="">{t('dashboard.selectCategory')}</option>
               {[
                 'Art & Paintings',
                 'Pottery & Ceramics',
@@ -168,26 +170,26 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
 
           {/* Description */}
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Description</label>
+            <label className="block text-sm text-gray-700 mb-1">{t('dashboard.description')}</label>
             <textarea
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 resize-none"
               rows={3}
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
-              placeholder="Describe your product..."
+              placeholder={t('dashboard.describeProduct')}
             />
           </div>
 
           {/* Status */}
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Status</label>
+            <label className="block text-sm text-gray-700 mb-1">{t('dashboard.status')}</label>
             <select
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 bg-white"
               value={form.status}
               onChange={e => setForm({ ...form, status: e.target.value as 'active' | 'draft' })}
             >
-              <option value="active">Active (Visible to buyers)</option>
-              <option value="draft">Draft (Hidden)</option>
+              <option value="active">{t('dashboard.activeVisible')}</option>
+              <option value="draft">{t('dashboard.draftHidden')}</option>
             </select>
           </div>
 
@@ -195,9 +197,9 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm text-gray-700">
-                Product Photos
+                {t('dashboard.productPhotos')}
                 {images.length > 0 && (
-                  <span className="ml-2 text-xs text-gray-600">({images.length} added · first is cover)</span>
+                  <span className="ml-2 text-xs text-gray-600">({t('dashboard.photosAdded', { count: images.length })})</span>
                 )}
               </label>
             </div>
@@ -224,7 +226,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
                 }}
               >
                 <span className="text-base">🖼️</span>
-                Add from Photos
+                {t('dashboard.addFromPhotos')}
               </label>
             </div>
 
@@ -245,8 +247,8 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
                 }}
               >
                 <ImageIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm text-gray-600">or drag & drop photos here</p>
-                <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP — up to 10 photos</p>
+                <p className="text-sm text-gray-600">{t('dashboard.dragDropPhotos')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.photoFormats')}</p>
               </div>
             )}
 
@@ -278,15 +280,15 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
                           onClick={() => setCover(idx)}
                           className="text-white text-xs px-2 py-1 rounded-lg"
                           style={{ backgroundColor: 'var(--sage-green)', fontSize: 10, fontWeight: 600 }}
-                          title="Set as cover photo"
+                          title={t('dashboard.setAsCover')}
                         >
-                          Cover
+                          {t('dashboard.cover')}
                         </button>
                       )}
                       <button
                         onClick={() => removeImage(idx)}
                         className="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
-                        title="Remove"
+                        title={t('dashboard.remove')}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -302,7 +304,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
                     style={{ aspectRatio: '1' }}
                   >
                     <Plus className="w-6 h-6" />
-                    <span className="text-xs mt-1">Add more</span>
+                    <span className="text-xs mt-1">{t('dashboard.addMore')}</span>
                   </label>
                 )}
               </div>
@@ -312,14 +314,14 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
 
         <div className="flex gap-3 mt-6">
           <button onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
-            Cancel
+            {t('dashboard.cancel')}
           </button>
           <button
             onClick={handleSubmit}
             className="flex-1 px-4 py-3 rounded-xl text-white transition-colors hover:opacity-90"
             style={{ backgroundColor: form.name && form.price && form.category ? 'var(--sage-green)' : '#9ca3af' }}
           >
-            {isEdit ? 'Save Changes' : 'Add Product'}
+            {isEdit ? t('dashboard.saveChanges') : t('dashboard.addProduct')}
           </button>
         </div>
       </div>
@@ -336,6 +338,7 @@ interface NewArtisanHomeProps {
 }
 
 function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHomeProps) {
+  const { t } = useTranslation();
   const firstName = userName.split(' ')[0];
 
   const steps = [
@@ -343,18 +346,18 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
       icon: Package,
       color: 'var(--sage-green)',
       bg: '#F0FFF4',
-      title: 'Add Your First Product',
-      desc: 'List your handcrafted items so buyers across India can discover them.',
-      cta: 'Add Product',
+      title: t('dashboard.addFirstProduct'),
+      desc: t('dashboard.addFirstProductDesc'),
+      cta: t('dashboard.addProduct'),
       action: onAddProduct,
     },
     {
       icon: BookOpen,
       color: 'var(--rust-red)',
       bg: '#FFF0F0',
-      title: 'Set Up Your Profile',
-      desc: 'Add your photo and story — appear on the "Meet Our Artisans" page and build buyer trust.',
-      cta: 'Set Up Your Profile',
+      title: t('dashboard.setupProfile'),
+      desc: t('dashboard.setupProfileDesc'),
+      cta: t('dashboard.setupProfile'),
       action: onGoToProfile,
     },
   ];
@@ -371,13 +374,13 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-yellow-300" />
-            <span className="text-sm text-yellow-200" style={{ fontWeight: 500 }}>Welcome to KalaKart!</span>
+            <span className="text-sm text-yellow-200" style={{ fontWeight: 500 }}>{t('dashboard.welcomeToKalaKart')}</span>
           </div>
           <h1 className="text-white text-2xl sm:text-3xl mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
             Namaste, {firstName}! 🙏
           </h1>
           <p className="text-white/90 text-sm sm:text-base max-w-md leading-relaxed">
-            Your artisan store is ready. Complete these 2 steps to start selling your crafts to buyers across India.
+            {t('dashboard.storeReady')}
           </p>
         </div>
         {/* Decorative circles */}
@@ -388,10 +391,10 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
       {/* Zero-state KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Earnings', value: '₹0', icon: IndianRupee, color: 'var(--sage-green)' },
-          { label: 'Orders', value: '0', icon: ShoppingBag, color: 'var(--peach-pink)' },
-          { label: 'Products', value: '0', icon: Package, color: 'var(--dark-brown)' },
-          { label: 'Alerts', value: '—', icon: AlertTriangle, color: 'var(--rust-red)' },
+          { label: t('dashboard.totalEarnings'), value: '₹0', icon: IndianRupee, color: 'var(--sage-green)' },
+          { label: t('dashboard.orders'), value: '0', icon: ShoppingBag, color: 'var(--peach-pink)' },
+          { label: t('dashboard.products'), value: '0', icon: Package, color: 'var(--dark-brown)' },
+          { label: t('dashboard.alerts'), value: '—', icon: AlertTriangle, color: 'var(--rust-red)' },
         ].map(kpi => {
           const KIcon = kpi.icon;
           return (
@@ -399,7 +402,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
               key={kpi.label}
               className="bg-white rounded-2xl p-5 shadow-sm opacity-70 border"
               style={{ borderColor: '#EFE4D2' }}
-              title="Data will appear once you start selling"
+              title={t('dashboard.dataWillAppear')}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: kpi.color }}>
@@ -415,7 +418,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
 
       {/* Onboarding cards */}
       <div>
-        <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>Get Started — 2 Simple Steps</h3>
+        <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>{t('dashboard.getStartedSteps')}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {steps.map((step, i) => {
             const SIcon = step.icon;
@@ -436,7 +439,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
                     className="text-xs font-bold rounded-full px-2 py-0.5 text-white"
                     style={{ backgroundColor: step.color }}
                   >
-                    Step {i + 1}
+                    {t('dashboard.step', { count: i + 1 })}
                   </span>
                 </div>
                 <div>
@@ -462,7 +465,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
       <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: '#EFE4D2' }}>
         <div className="flex items-center gap-2 mb-4">
           <Lightbulb className="w-5 h-5" style={{ color: 'var(--rust-red)' }} />
-          <h3 style={{ color: 'var(--dark-brown)' }}>Quick Tips for New Artisans</h3>
+          <h3 style={{ color: 'var(--dark-brown)' }}>{t('dashboard.quickTips')}</h3>
         </div>
         <div className="space-y-3">
           {[
@@ -504,6 +507,7 @@ function ExistingArtisanHome({
   onAcceptOrder, onAddProduct, onViewOrders,
   storeStory, onSaveStory,
 }: ExistingArtisanHomeProps) {
+  const { t } = useTranslation();
   const [editingStory, setEditingStory] = useState(false);
   const [draft, setDraft] = useState(storeStory);
 
@@ -517,10 +521,10 @@ function ExistingArtisanHome({
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Earnings', value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: IndianRupee, color: 'var(--sage-green)' },
-          { label: 'Orders', value: orders.length.toString(), icon: ShoppingBag, color: 'var(--peach-pink)' },
-          { label: 'Products', value: products.length.toString(), icon: Package, color: 'var(--dark-brown)' },
-          { label: 'Alerts', value: alerts.toString(), icon: AlertTriangle, color: 'var(--rust-red)' },
+          { label: t('dashboard.totalEarnings'), value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: IndianRupee, color: 'var(--sage-green)' },
+          { label: t('dashboard.orders'), value: orders.length.toString(), icon: ShoppingBag, color: 'var(--peach-pink)' },
+          { label: t('dashboard.products'), value: products.length.toString(), icon: Package, color: 'var(--dark-brown)' },
+          { label: t('dashboard.alerts'), value: alerts.toString(), icon: AlertTriangle, color: 'var(--rust-red)' },
         ].map(kpi => {
           const KIcon = kpi.icon;
           return (
@@ -544,14 +548,14 @@ function ExistingArtisanHome({
           className="flex items-center justify-center gap-3 py-4 rounded-2xl text-white transition-all hover:opacity-90 shadow-sm"
           style={{ backgroundColor: 'var(--sage-green)', boxShadow: '0 10px 18px rgba(74,140,74,0.2)' }}
         >
-          <Plus className="w-5 h-5" /> Add Product
+          <Plus className="w-5 h-5" /> {t('dashboard.addProduct')}
         </button>
         <button
           onClick={onViewOrders}
           className="flex items-center justify-center gap-3 py-4 rounded-2xl text-white transition-all hover:opacity-90 shadow-sm"
           style={{ backgroundColor: 'var(--rust-red)', boxShadow: '0 10px 18px rgba(140,74,54,0.2)' }}
         >
-          <ShoppingBag className="w-5 h-5" /> View Orders
+          <ShoppingBag className="w-5 h-5" /> {t('dashboard.viewOrders')}
         </button>
       </div>
 
@@ -559,9 +563,9 @@ function ExistingArtisanHome({
       {newOrders.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: '#EFE4D2' }}>
           <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #f0ebe0' }}>
-            <h3 style={{ color: 'var(--dark-brown)' }}>New Orders</h3>
+            <h3 style={{ color: 'var(--dark-brown)' }}>{t('dashboard.newOrders')}</h3>
             <span className="px-3 py-1 rounded-full text-xs text-white" style={{ backgroundColor: 'var(--rust-red)' }}>
-              {newOrders.length} new
+              {t('dashboard.newCount', { count: newOrders.length })}
             </span>
           </div>
           {newOrders.map(order => (
@@ -578,7 +582,7 @@ function ExistingArtisanHome({
                 className="px-4 py-2 rounded-xl text-sm text-white transition-colors hover:opacity-90"
                 style={{ backgroundColor: 'var(--sage-green)' }}
               >
-                Accept
+                {t('dashboard.accept')}
               </button>
             </div>
           ))}
@@ -587,9 +591,9 @@ function ExistingArtisanHome({
 
       {/* Recent Activity */}
       <div className="bg-white rounded-2xl shadow-sm p-5 border" style={{ borderColor: '#EFE4D2' }}>
-        <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>Recent Activity</h3>
+        <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>{t('dashboard.recentActivity')}</h3>
         {outOfStock.length === 0 && lowStock.length === 0 && orders.filter(o => o.status === 'completed').length === 0 ? (
-          <p className="text-sm text-gray-600 text-center py-4">No recent activity yet</p>
+          <p className="text-sm text-gray-600 text-center py-4">{t('dashboard.noRecentActivity')}</p>
         ) : (
           <div className="space-y-3">
             {outOfStock.map(p => (
@@ -619,7 +623,7 @@ function ExistingArtisanHome({
       {/* Store Story */}
       <div className="bg-white rounded-2xl shadow-sm p-5 border" style={{ borderColor: '#EFE4D2' }}>
         <div className="flex items-center justify-between mb-3">
-          <h3 style={{ color: 'var(--dark-brown)' }}>Your Store Story</h3>
+          <h3 style={{ color: 'var(--dark-brown)' }}>{t('dashboard.storeStory')}</h3>
           {!editingStory ? (
             <button onClick={() => { setEditingStory(true); setDraft(storeStory); }} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
               <Edit2 className="w-4 h-4 text-gray-500" />
@@ -630,7 +634,7 @@ function ExistingArtisanHome({
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm text-white hover:opacity-90 transition-colors"
               style={{ backgroundColor: 'var(--sage-green)' }}
             >
-              <Save className="w-3.5 h-3.5" /> Save
+              <Save className="w-3.5 h-3.5" /> {t('dashboard.save')}
             </button>
           )}
         </div>
@@ -640,7 +644,7 @@ function ExistingArtisanHome({
             rows={3}
             value={draft}
             onChange={e => setDraft(e.target.value)}
-            placeholder="Tell buyers your craft story..."
+            placeholder={t('dashboard.storeStoryPlaceholder')}
           />
         ) : (
           <p className="text-sm text-gray-700 leading-relaxed italic">"{storeStory}"</p>
@@ -660,17 +664,18 @@ interface ProductsSectionProps {
 }
 
 function ProductsSection({ products, search, onEdit, onDelete, onAdd }: ProductsSectionProps) {
+  const { t } = useTranslation();
   const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h3 style={{ color: 'var(--dark-brown)' }}>Your Products</h3>
+        <h3 style={{ color: 'var(--dark-brown)' }}>{t('dashboard.yourProducts')}</h3>
         <button
           onClick={onAdd}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm transition-colors hover:opacity-90"
           style={{ backgroundColor: 'var(--sage-green)' }}
         >
-          <Plus className="w-4 h-4" /> Add Product
+          <Plus className="w-4 h-4" /> {t('dashboard.addProduct')}
         </button>
       </div>
 
@@ -678,14 +683,14 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
         {filtered.length === 0 ? (
           <div className="p-16 text-center">
             <Package className="w-14 h-14 mx-auto mb-4 text-gray-200" />
-            <p className="text-gray-700 mb-1" style={{ fontWeight: 600 }}>No products yet</p>
-            <p className="text-sm text-gray-600 mb-5">Your listings will appear here once you add them</p>
+            <p className="text-gray-700 mb-1" style={{ fontWeight: 600 }}>{t('dashboard.noProductsYet')}</p>
+            <p className="text-sm text-gray-600 mb-5">{t('dashboard.listingsAppear')}</p>
             <button
               onClick={onAdd}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm hover:opacity-90 transition-opacity"
               style={{ backgroundColor: 'var(--sage-green)' }}
             >
-              <Plus className="w-4 h-4" /> Add Your First Product
+              <Plus className="w-4 h-4" /> {t('dashboard.addFirstProduct')}
             </button>
           </div>
         ) : (
@@ -693,7 +698,7 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
             <table className="w-full">
               <thead>
                 <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
-                  {['Product', 'Price', 'Stock', 'Status', 'Actions'].map(h => (
+                  {[t('dashboard.product'), t('dashboard.price'), t('dashboard.stock'), t('dashboard.status'), t('dashboard.actions')].map(h => (
                     <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
                   ))}
                 </tr>
@@ -713,22 +718,22 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>₹{p.price.toLocaleString('en-IN')}</td>
                     <td className="px-5 py-4">
                       {p.readOnly ? (
-                        <span className="text-xs text-gray-700">Managed in catalog</span>
+                        <span className="text-xs text-gray-700">{t('dashboard.managedInCatalog')}</span>
                       ) : (
                         <span className={`text-sm ${p.stock === 0 ? 'text-red-600' : p.stock <= 3 ? 'text-amber-600' : 'text-gray-700'}`} style={{ fontWeight: p.stock <= 3 ? 600 : 400 }}>
-                          {p.stock === 0 ? 'Out of Stock' : p.stock <= 3 ? `Low (${p.stock})` : p.stock}
+                          {p.stock === 0 ? t('dashboard.outOfStock') : p.stock <= 3 ? t('dashboard.lowStockCount', { count: p.stock }) : p.stock}
                         </span>
                       )}
                     </td>
                     <td className="px-5 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`} style={{ fontWeight: 500 }}>
-                        {p.sourceLabel || (p.status === 'active' ? 'Active' : 'Draft')}
+                        {p.sourceLabel || (p.status === 'active' ? t('dashboard.active') : t('dashboard.draft'))}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {p.readOnly ? (
-                          <span className="text-xs text-gray-700">Read only</span>
+                          <span className="text-xs text-gray-700">{t('dashboard.readOnly')}</span>
                         ) : (
                           <>
                             <button onClick={() => onEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -761,10 +766,11 @@ interface OrdersSectionProps {
 }
 
 function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersSectionProps) {
+  const { t } = useTranslation();
   const tabs: { key: SellerOrderStatus; label: string }[] = [
-    { key: 'new', label: 'New' },
-    { key: 'processing', label: 'Processing' },
-    { key: 'completed', label: 'Completed' },
+    { key: 'new', label: t('dashboard.new') },
+    { key: 'processing', label: t('dashboard.processing') },
+    { key: 'completed', label: t('dashboard.completed') },
   ];
   const filtered = orders.filter(o => o.status === orderTab);
 
@@ -791,7 +797,7 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
       {orderTab === 'new' && filtered.length > 0 && (
         <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ backgroundColor: '#FFF8E1', color: 'var(--rust-red)' }}>
           <Clock className="w-4 h-4 shrink-0" />
-          <span>Ship within 24 hours to keep your rating high!</span>
+          <span>{t('dashboard.shipWithin24h')}</span>
         </div>
       )}
 
@@ -799,15 +805,15 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
         {filtered.length === 0 ? (
           <div className="p-14 text-center">
             <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-            <p className="text-gray-700 text-sm" style={{ fontWeight: 500 }}>No {orderTab} orders</p>
-            {orderTab === 'new' && <p className="text-gray-600 text-xs mt-1">New orders will appear here when buyers purchase your products</p>}
+            <p className="text-gray-700 text-sm" style={{ fontWeight: 500 }}>{t('dashboard.noOrdersForTab', { tab: orderTab })}</p>
+            {orderTab === 'new' && <p className="text-gray-600 text-xs mt-1">{t('dashboard.newOrdersAppear')}</p>}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
-                  {['Order ID', 'Product', 'Customer', 'Amount', 'Date', 'Actions'].map(h => (
+                  {[t('dashboard.orderId'), t('dashboard.product'), t('dashboard.customer'), t('dashboard.amount'), t('dashboard.date'), t('dashboard.actions')].map(h => (
                     <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
                   ))}
                 </tr>
@@ -831,20 +837,20 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
                       {o.status === 'new' && (
                         <div className="flex gap-2">
                           <button onClick={() => onOrderAction(o.id, 'processing')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90" style={{ backgroundColor: 'var(--sage-green)' }}>
-                            <CheckCircle className="w-3.5 h-3.5" /> Accept
+                            <CheckCircle className="w-3.5 h-3.5" /> {t('dashboard.accept')}
                           </button>
                           <button onClick={() => onOrderAction(o.id, 'completed')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90" style={{ backgroundColor: 'var(--rust-red)' }}>
-                            <XCircle className="w-3.5 h-3.5" /> Decline
+                            <XCircle className="w-3.5 h-3.5" /> {t('dashboard.decline')}
                           </button>
                         </div>
                       )}
                       {o.status === 'processing' && (
                         <button onClick={() => onOrderAction(o.id, 'completed')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-white hover:opacity-90" style={{ backgroundColor: 'var(--dark-brown)' }}>
-                          <Truck className="w-3.5 h-3.5" /> Mark Shipped
+                          <Truck className="w-3.5 h-3.5" /> {t('dashboard.markShipped')}
                         </button>
                       )}
                       {o.status === 'completed' && (
-                        <span className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700" style={{ fontWeight: 500 }}>Done</span>
+                        <span className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700" style={{ fontWeight: 500 }}>{t('dashboard.done')}</span>
                       )}
                     </td>
                   </tr>
@@ -864,6 +870,7 @@ interface EarningsSectionProps {
 }
 
 function EarningsSection({ orders }: EarningsSectionProps) {
+  const { t } = useTranslation();
   const completed = orders.filter(o => o.status === 'completed');
   const totalEarnings = completed.reduce((sum, o) => sum + o.amount, 0);
   // Simulate platform fee: 8%
@@ -874,8 +881,8 @@ function EarningsSection({ orders }: EarningsSectionProps) {
       <div className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { label: 'Total Earned', value: '₹0', sub: 'Complete orders to see earnings', color: 'var(--dark-brown)' },
-            { label: 'Available Balance', value: '₹0', sub: 'Withdrawals enabled after first sale', color: 'var(--sage-green)' },
+            { label: t('dashboard.totalEarned'), value: '₹0', sub: t('dashboard.completeOrdersToSeeEarnings'), color: 'var(--dark-brown)' },
+            { label: t('dashboard.availableBalance'), value: '₹0', sub: t('dashboard.withdrawalsAfterFirstSale'), color: 'var(--sage-green)' },
           ].map(c => (
             <div key={c.label} className="bg-white rounded-2xl p-5 shadow-sm border opacity-70" style={{ borderColor: '#EFE4D2' }}>
               <p className="text-sm text-gray-700 mb-1">{c.label}</p>
@@ -886,8 +893,8 @@ function EarningsSection({ orders }: EarningsSectionProps) {
         </div>
         <div className="bg-white rounded-2xl p-10 shadow-sm border text-center" style={{ borderColor: '#EFE4D2' }}>
           <IndianRupee className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-          <p className="text-gray-700" style={{ fontWeight: 600 }}>No transactions yet</p>
-          <p className="text-sm text-gray-600 mt-1">Your earnings will appear here as orders are completed</p>
+          <p className="text-gray-700" style={{ fontWeight: 600 }}>{t('dashboard.noTransactionsYet')}</p>
+          <p className="text-sm text-gray-600 mt-1">{t('dashboard.earningsAppear')}</p>
         </div>
       </div>
     );
@@ -897,30 +904,30 @@ function EarningsSection({ orders }: EarningsSectionProps) {
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border" style={{ borderColor: '#EFE4D2' }}>
-          <p className="text-sm text-gray-700 mb-1">Total Earned</p>
+          <p className="text-sm text-gray-700 mb-1">{t('dashboard.totalEarned')}</p>
           <p className="text-3xl" style={{ color: 'var(--dark-brown)', fontWeight: 700 }}>₹{totalEarnings.toLocaleString('en-IN')}</p>
           <p className="text-xs mt-2 text-green-600 flex items-center gap-1" style={{ fontWeight: 500 }}>
-            <TrendingUp className="w-3.5 h-3.5" /> {completed.length} completed order{completed.length !== 1 ? 's' : ''}
+            <TrendingUp className="w-3.5 h-3.5" /> {t('dashboard.completedOrdersCount', { count: completed.length })}
           </p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm border" style={{ borderColor: '#EFE4D2' }}>
-          <p className="text-sm text-gray-700 mb-1">Available Balance</p>
+          <p className="text-sm text-gray-700 mb-1">{t('dashboard.availableBalance')}</p>
           <p className="text-3xl" style={{ color: 'var(--sage-green)', fontWeight: 700 }}>₹{availableBalance.toLocaleString('en-IN')}</p>
           <p className="text-xs mt-2 text-gray-600 flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-500" /> After 8% platform fee
+            <Star className="w-3.5 h-3.5 text-amber-500" /> {t('dashboard.afterPlatformFee')}
           </p>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: '#EFE4D2' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid #f0ebe0' }}>
-          <h3 style={{ color: 'var(--dark-brown)' }}>Transaction History</h3>
+          <h3 style={{ color: 'var(--dark-brown)' }}>{t('dashboard.transactionHistory')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr style={{ backgroundColor: 'var(--cream-bg)' }}>
-                {['Date', 'Order ID', 'Product', 'Amount'].map(h => (
+                {[t('dashboard.date'), t('dashboard.orderId'), t('dashboard.product'), t('dashboard.amount')].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
@@ -944,23 +951,9 @@ function EarningsSection({ orders }: EarningsSectionProps) {
   );
 }
 
-// ─── Smart Assistant Messages ──────────────────────────────────────
-const NEW_ARTISAN_TIPS = [
-  { text: 'Add your first product to get discovered by buyers!', icon: Package },
-  { text: 'Complete your store story to build buyer trust', icon: BookOpen },
-  { text: 'Using 3+ product photos increases sales by 40%', icon: ImageIcon },
-  { text: 'Artisans with complete profiles get 3× more views', icon: Star },
-];
-
-const EXISTING_ARTISAN_TIPS = [
-  { text: 'Respond to new orders quickly to boost your rating!', icon: ShoppingBag },
-  { text: 'Low-stock items sell out fast — restock soon!', icon: AlertTriangle },
-  { text: 'Add more images to your listings to improve sales', icon: ImageIcon },
-  { text: 'Check your earnings regularly to track growth', icon: TrendingUp },
-];
-
 // ─── Main Dashboard ────────────────────────────────────────────────
 export default function SellerDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     currentUser,
@@ -1043,7 +1036,19 @@ export default function SellerDashboard() {
   }, [currentUser, navigate]);
 
   // Rotate smart tips
-  const tips = effectiveIsNewArtisan ? NEW_ARTISAN_TIPS : EXISTING_ARTISAN_TIPS;
+  const tips = effectiveIsNewArtisan
+    ? [
+        { text: t('dashboard.tipAddFirstProduct'), icon: Package },
+        { text: t('dashboard.tipCompleteStory'), icon: BookOpen },
+        { text: t('dashboard.tipMorePhotos'), icon: ImageIcon },
+        { text: t('dashboard.tipCompleteProfile'), icon: Star },
+      ]
+    : [
+        { text: t('dashboard.tipRespondQuickly'), icon: ShoppingBag },
+        { text: t('dashboard.tipRestockSoon'), icon: AlertTriangle },
+        { text: t('dashboard.tipMoreImages'), icon: ImageIcon },
+        { text: t('dashboard.tipTrackEarnings'), icon: TrendingUp },
+      ];
   useEffect(() => {
     const t = setInterval(() => setSmartIdx(i => (i + 1) % tips.length), 5000);
     return () => clearInterval(t);
@@ -1064,10 +1069,10 @@ export default function SellerDashboard() {
   const SmartIcon = currentMsg.icon;
 
   const navItems: { key: Section; label: string; icon: typeof Home }[] = [
-    { key: 'home', label: 'Home', icon: Home },
-    { key: 'products', label: 'Products', icon: Package },
-    { key: 'orders', label: 'Orders', icon: ShoppingBag },
-    { key: 'earnings', label: 'Earnings', icon: IndianRupee },
+    { key: 'home', label: t('dashboard.home'), icon: Home },
+    { key: 'products', label: t('dashboard.products'), icon: Package },
+    { key: 'orders', label: t('dashboard.orders'), icon: ShoppingBag },
+    { key: 'earnings', label: t('dashboard.earnings'), icon: IndianRupee },
   ];
 
   // User initials for avatar
@@ -1170,7 +1175,7 @@ export default function SellerDashboard() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2"
-              placeholder="Search products, orders..."
+              placeholder={t('dashboard.searchPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{
@@ -1198,19 +1203,19 @@ export default function SellerDashboard() {
               {showNotifications && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
                   <div className="px-4 py-3" style={{ borderBottom: '1px solid #f0ebe0' }}>
-                    <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>Notifications</p>
+                    <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>{t('dashboard.notifications')}</p>
                   </div>
                   {newOrdersCount > 0 ? (
                     artisanOrders.filter(o => o.status === 'new').slice(0, 5).map(o => (
                       <div key={o.id} className="px-4 py-3 hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid #f9f5eb' }}>
-                        <p className="text-sm text-gray-700">New order from <strong>{o.customer}</strong> for {o.product}</p>
+                        <p className="text-sm text-gray-700">{t('dashboard.newOrderFrom', { customer: o.customer, product: o.product })}</p>
                         <p className="text-xs text-gray-600 mt-1">₹{o.amount.toLocaleString('en-IN')}</p>
                       </div>
                     ))
                   ) : (
                     <div className="px-4 py-8 text-center">
                       <Bell className="w-8 h-8 mx-auto mb-2 text-gray-200" />
-                      <p className="text-sm text-gray-600">No new notifications</p>
+                      <p className="text-sm text-gray-600">{t('dashboard.noNotifications')}</p>
                     </div>
                   )}
                 </div>
@@ -1219,7 +1224,7 @@ export default function SellerDashboard() {
 
             <button
               onClick={() => navigate('/setup-profile')}
-              title="Setup Profile"
+              title={t('dashboard.setupProfile')}
               className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
               style={{ border: '1px solid #EFE4D2', backgroundColor: 'rgba(255,255,255,0.9)' }}
             >
@@ -1231,7 +1236,7 @@ export default function SellerDashboard() {
               className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-white transition-colors hover:opacity-90"
               style={{ backgroundColor: 'var(--sage-green)', boxShadow: '0 8px 18px rgba(74,140,74,0.2)' }}
             >
-              <Plus className="w-4 h-4" /> Add Product
+              <Plus className="w-4 h-4" /> {t('dashboard.addProduct')}
             </button>
           </div>
         </header>

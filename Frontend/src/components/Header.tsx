@@ -5,6 +5,8 @@ import {
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const logoImage =
   'https://raw.githubusercontent.com/Prajval06/KalaKart/refs/heads/main/Kalakart%20logo.png';
@@ -90,6 +92,7 @@ function UserAvatar({ name, photoURL }: { name: string; photoURL?: string }) {
 
 // ── SearchBox ────────────────────────────────────────────────────────────────
 function SearchBox({ mobile = false }: { mobile?: boolean }) {
+  const { t } = useTranslation();
   const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
   const allProducts              = getAllProducts();
   const allArtisans: SearchArtisan[] = getCompletedArtisanProfiles().map((artisan) => ({
@@ -170,7 +173,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
         onChange={e => { setQuery(e.target.value); setActiveIdx(-1); }}
         onFocus={() => setFocused(true)}
         onKeyDown={handleKeyDown}
-        placeholder={mobile ? 'Search...' : 'Search for handicrafts, artisans...'}
+        placeholder={mobile ? t('header.searchPlaceholderMobile') : t('header.searchPlaceholderDesktop')}
         autoComplete="off"
         className={`w-full ${mobile ? 'px-4 py-2 pr-10 text-sm' : 'px-4 py-3 pr-12'} rounded-full border-2 focus:outline-none focus:ring-2 transition-shadow`}
         style={{
@@ -178,7 +181,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
           backgroundColor: 'white',
           boxShadow: focused ? '0 0 0 3px rgba(139,37,0,0.08)' : undefined,
         }}
-        aria-label="Search KalaKart"
+        aria-label={mobile ? t('header.searchPlaceholderMobile') : t('header.searchPlaceholderDesktop')}
         aria-autocomplete="list"
         aria-expanded={showDropdown}
       />
@@ -187,7 +190,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
         onClick={() => commitSearch(query)}
         className={`absolute ${mobile ? 'right-2 top-1/2 -translate-y-1/2' : 'right-1 top-1/2 -translate-y-1/2 p-2 rounded-full hover:opacity-70'} transition-opacity`}
         style={mobile ? undefined : { backgroundColor: 'var(--cream-bg, #FFF8E7)' }}
-        aria-label="Submit search"
+        aria-label={t('header.submitSearch')}
       >
         <Search className={`${mobile ? 'w-5 h-5' : 'w-5 h-5'}`} style={{ color: 'var(--dark-brown, #5D4037)' }} />
       </button>
@@ -234,7 +237,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
             className="w-full text-left px-4 py-2.5 text-xs font-semibold text-[#8B2500] bg-[#FFF8E7] hover:bg-[#FFF0D0] transition-colors flex items-center gap-2"
           >
             <Search size={12} />
-            See all results for "{query}"
+            {t('header.seeAllResults', { query })}
           </button>
         </div>
       )}
@@ -244,6 +247,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
 
 // ── Header component ──────────────────────────────────────────────────────────
 export function Header({ cartCount, wishlistCount }: HeaderProps) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen]     = useState(false);
   const [dropdownOpen, setDropdown] = useState(false);
   const dropdownRef                 = useRef<HTMLDivElement>(null);
@@ -314,7 +318,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                     style={{ backgroundColor: '#FFF8E7' }}
                   >
                     <div className="px-4 py-3 border-b border-[#DEB887]/60 bg-[#FFF0D0]">
-                      <p className="text-xs text-[#8B4513] font-serif">Signed in as</p>
+                      <p className="text-xs text-[#8B4513] font-serif">{t('header.signedInAs')}</p>
                       <p className="text-sm font-bold text-[#4A2C2A] truncate">{currentUser.name}</p>
                       <p className="text-xs text-[#8B4513] truncate">{currentUser.email}</p>
                     </div>
@@ -326,7 +330,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#4A2C2A] font-serif hover:bg-[#FFF0D0] transition-colors"
                       >
                         <LayoutDashboard size={16} className="text-[#8B2500]" />
-                        Dashboard
+                        {t('header.dashboard')}
                       </button>
                     )}
 
@@ -336,7 +340,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#C03030] font-serif hover:bg-red-50 transition-colors border-t border-[#DEB887]/40"
                     >
                       <LogOut size={16} />
-                      Sign Out
+                      {t('header.signOut')}
                     </button>
                   </div>
                 )}
@@ -347,18 +351,22 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                 to="/auth"
                 className="w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
                 style={{ backgroundColor: '#F4C95D' }}
-                aria-label="Sign in"
+                aria-label={t('header.signInAria')}
               >
                 <User className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
               </Link>
             )}
+
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
 
             {/* Wishlist */}
             <Link
               to="/wishlist"
               className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
               style={{ backgroundColor: 'var(--dark-brown)' }}
-              aria-label="Wishlist"
+              aria-label={t('header.wishlistAria')}
             >
               <Heart className="w-5 h-5 text-white" />
               {wishlistCount > 0 && (
@@ -376,7 +384,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
               to="/cart"
               className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
               style={{ backgroundColor: '#D77A3F' }}
-              aria-label="Cart"
+              aria-label={t('header.cartAria')}
             >
               <ShoppingCart className="w-5 h-5 text-white" />
               {cartCount > 0 && (
@@ -393,7 +401,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
             <button
               className="md:hidden p-2 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setMenuOpen(v => !v)}
-              aria-label="Toggle mobile menu"
+              aria-label={t('header.toggleMobileMenu')}
             >
               {menuOpen
                 ? <X className="w-6 h-6" style={{ color: 'var(--dark-brown)' }} />
@@ -412,12 +420,12 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
           <nav className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-3">
               {[
-                { to: '/', label: 'Home' },
-                { to: '/shop', label: 'Shop' },
-                { to: '/artisans', label: 'Artisans' },
-                { to: '/about', label: 'About' },
+                { to: '/', label: t('header.home') },
+                { to: '/shop', label: t('header.shop') },
+                { to: '/artisans', label: t('header.artisans') },
+                { to: '/about', label: t('header.about') },
                 ...(currentUser?.userType === 'seller'
-                  ? [{ to: '/seller-dashboard', label: 'Seller Dashboard' }]
+                  ? [{ to: '/seller-dashboard', label: t('header.sellerDashboard') }]
                   : []),
               ].map(({ to, label }) => (
                 <Link
@@ -436,7 +444,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                   className="py-2 text-left font-semibold"
                   style={{ color: '#C03030' }}
                 >
-                  Sign Out
+                  {t('header.signOut')}
                 </button>
               ) : (
                 <Link
@@ -445,9 +453,12 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                   style={{ color: 'var(--text-dark)' }}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Login / Sign Up
+                  {t('header.loginSignup')}
                 </Link>
               )}
+              <div className="pt-2">
+                <LanguageSwitcher mobile />
+              </div>
             </div>
           </nav>
         )}

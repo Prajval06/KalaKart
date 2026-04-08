@@ -3,8 +3,10 @@ import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
+import { useTranslation } from 'react-i18next';
 
 export default function Wishlist() {
+  const { t } = useTranslation();
   const { wishlistItems, toggleWishlist, addToCart, getAllProducts } = useAppContext();
   
   const allProducts = getAllProducts();
@@ -14,17 +16,20 @@ export default function Wishlist() {
 
   return (
     <div style={{ backgroundColor: 'var(--cream-bg)', minHeight: '100vh' }}>
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'My Wishlist' }]} />
+      <Breadcrumb items={[{ label: t('header.home'), href: '/' }, { label: t('wishlist.title') }]} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Heart className="w-8 h-8" style={{ color: 'var(--rust-red)' }} fill="var(--rust-red)" />
-            <h1 style={{ color: 'var(--dark-brown)' }}>My Wishlist</h1>
+            <h1 style={{ color: 'var(--dark-brown)' }}>{t('wishlist.title')}</h1>
           </div>
           <p style={{ color: 'var(--text-dark)' }}>
-            {wishlistProducts.length} {wishlistProducts.length === 1 ? 'item' : 'items'} saved
+            {t('wishlist.savedCount', {
+              count: wishlistProducts.length,
+              label: wishlistProducts.length === 1 ? t('wishlist.item') : t('wishlist.items')
+            })}
           </p>
         </div>
 
@@ -33,17 +38,17 @@ export default function Wishlist() {
           <div className="text-center py-16">
             <Heart className="w-24 h-24 mx-auto mb-6 opacity-30" style={{ color: 'var(--dark-brown)' }} />
             <h2 className="mb-4" style={{ color: 'var(--dark-brown)' }}>
-              Your wishlist is empty
+              {t('wishlist.emptyTitle')}
             </h2>
             <p className="mb-8 text-lg" style={{ color: 'var(--text-dark)' }}>
-              Start exploring and save your favorite handicrafts!
+              {t('wishlist.emptySubtitle')}
             </p>
             <Link
               to="/"
               className="inline-flex items-center px-8 py-4 rounded-full text-white font-semibold hover:opacity-90 transition-opacity"
               style={{ backgroundColor: 'var(--rust-red)' }}
             >
-              Explore Products
+              {t('wishlist.exploreProducts')}
             </Link>
           </div>
         ) : (
@@ -70,7 +75,7 @@ export default function Wishlist() {
                     </h3>
                   </Link>
                   <p className="text-sm mb-1" style={{ color: 'var(--text-dark)' }}>
-                    by {product.artisan}
+                    {t('wishlist.by')} {product.artisan}
                   </p>
                   <p className="mb-4 font-semibold" style={{ color: 'var(--rust-red)', fontSize: '1.25rem' }}>
                     ₹{product.price.toLocaleString('en-IN')}
@@ -83,13 +88,13 @@ export default function Wishlist() {
                       style={{ backgroundColor: 'var(--sage-green)' }}
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      Add to Cart
+                      {t('wishlist.addToCart')}
                     </button>
                     <button
                       onClick={() => toggleWishlist(product.id, product.name)}
                       className="px-4 py-3 rounded-full hover:opacity-80 transition-opacity"
                       style={{ backgroundColor: '#FEE' }}
-                      title="Remove from wishlist"
+                      title={t('wishlist.removeFromWishlist')}
                     >
                       <Trash2 className="w-5 h-5" style={{ color: 'var(--rust-red)' }} />
                     </button>

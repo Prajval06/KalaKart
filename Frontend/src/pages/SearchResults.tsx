@@ -4,6 +4,7 @@ import { SearchX, Package, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
 import type { ArtisanProfile } from '../context/types';
+import { useTranslation } from 'react-i18next';
 
 type SearchArtisan = {
   id: string;
@@ -57,6 +58,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 
 // ── Product card ──────────────────────────────────────────────────────────────
 function ProductCard({ product, query }: { product: any; query: string }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={`/product/${product.id}`}
@@ -83,7 +85,7 @@ function ProductCard({ product, query }: { product: any; query: string }) {
           <Highlight text={product.name} query={query} />
         </h3>
         <p className="text-sm mb-3 text-[#8B4513]">
-          by <Highlight text={product.artisan} query={query} />
+          {t('search.by')} <Highlight text={product.artisan} query={query} />
         </p>
         <p className="font-bold text-[#8B2500] text-lg">
           ₹{product.price.toLocaleString('en-IN')}
@@ -95,6 +97,7 @@ function ProductCard({ product, query }: { product: any; query: string }) {
 
 // ── Artisan card ──────────────────────────────────────────────────────────────
 function ArtisanCard({ artisan, query }: { artisan: SearchArtisan; query: string }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={`/artisan/${artisan.id}`}
@@ -113,7 +116,7 @@ function ArtisanCard({ artisan, query }: { artisan: SearchArtisan; query: string
           <Highlight text={artisan.craft} query={query} />
         </p>
         <p className="text-xs text-[#8B4513]/70 mt-0.5">
-          {artisan.state} · {artisan.yearsOfExperience} yrs experience
+          {artisan.state} · {t('search.yearsExperience', { count: artisan.yearsOfExperience })}
         </p>
       </div>
     </Link>
@@ -122,6 +125,7 @@ function ArtisanCard({ artisan, query }: { artisan: SearchArtisan; query: string
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function SearchResults() {
+  const { t } = useTranslation();
   const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
   const allProducts = getAllProducts();
   const allArtisans: SearchArtisan[] = getCompletedArtisanProfiles().map((a: ArtisanProfile) => ({
@@ -158,14 +162,17 @@ export default function SearchResults() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold font-serif text-[#4A2C2A] mb-1">
             {rawQuery ? (
-              <>Search Results for "<span className="text-[#8B2500]">{rawQuery}</span>"</>
+              <>{t('search.searchResultsFor')} "<span className="text-[#8B2500]">{rawQuery}</span>"</>
             ) : (
-              'Search KalaKart'
+              t('search.searchKalaKart')
             )}
           </h1>
           {q && (
             <p className="text-[#8B4513] text-sm">
-              {totalResults} {totalResults === 1 ? 'result' : 'results'} found
+              {t('search.resultsFound', {
+                count: totalResults,
+                label: totalResults === 1 ? t('search.result') : t('search.results')
+              })}
             </p>
           )}
         </div>
@@ -177,9 +184,9 @@ export default function SearchResults() {
               style={{ backgroundColor: '#FFF0D0', border: '2px dashed #DAA520' }}>
               <SearchX className="w-10 h-10 text-[#DAA520]" />
             </div>
-            <p className="text-xl font-serif text-[#4A2C2A] mb-2">Start searching…</p>
+            <p className="text-xl font-serif text-[#4A2C2A] mb-2">{t('search.startSearching')}</p>
             <p className="text-[#8B4513] max-w-sm">
-              Use the search bar above to find handicrafts, artisans, categories, or Indian states.
+              {t('search.startSearchingDesc')}
             </p>
           </div>
         )}
@@ -191,10 +198,9 @@ export default function SearchResults() {
               style={{ backgroundColor: '#FFF0D0', border: '2px dashed #DAA520' }}>
               <SearchX className="w-10 h-10 text-[#DAA520]" />
             </div>
-            <p className="text-xl font-serif text-[#4A2C2A] mb-2">No results found</p>
+            <p className="text-xl font-serif text-[#4A2C2A] mb-2">{t('search.noResults')}</p>
             <p className="text-[#8B4513] mb-6 max-w-sm">
-              We couldn't find anything for "<strong>{rawQuery}</strong>".
-              Try a different keyword, category, or artisan name.
+              {t('search.noResultsDesc', { query: rawQuery })}
             </p>
             <div className="flex gap-3 flex-wrap justify-center">
               <Link
@@ -202,13 +208,13 @@ export default function SearchResults() {
                 className="px-5 py-2 rounded-full text-white font-semibold text-sm shadow hover:opacity-90 transition"
                 style={{ background: 'linear-gradient(135deg, #8B2500, #A52A2A)' }}
               >
-                Browse All Products
+                {t('search.browseAllProducts')}
               </Link>
               <Link
                 to="/artisans"
                 className="px-5 py-2 rounded-full text-[#4A2C2A] font-semibold text-sm shadow bg-white border border-[#DEB887] hover:bg-[#FFF8DC] transition"
               >
-                Meet Artisans
+                {t('search.meetArtisans')}
               </Link>
             </div>
           </div>
@@ -220,7 +226,7 @@ export default function SearchResults() {
             <div className="flex items-center gap-3 mb-5">
               <Package className="w-5 h-5 text-[#8B2500]" />
               <h2 className="text-xl font-bold font-serif text-[#4A2C2A]">
-                Products
+                {t('search.productsTitle')}
                 <span className="ml-2 text-sm font-normal text-[#8B4513]">({matchedProducts.length})</span>
               </h2>
               <div className="flex-1 h-px bg-[#DAA520]/40" />
@@ -239,7 +245,7 @@ export default function SearchResults() {
             <div className="flex items-center gap-3 mb-5">
               <Users className="w-5 h-5 text-[#8B2500]" />
               <h2 className="text-xl font-bold font-serif text-[#4A2C2A]">
-                Artisans
+                {t('search.artisansTitle')}
                 <span className="ml-2 text-sm font-normal text-[#8B4513]">({matchedArtisans.length})</span>
               </h2>
               <div className="flex-1 h-px bg-[#DAA520]/40" />
