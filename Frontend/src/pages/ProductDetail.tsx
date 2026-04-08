@@ -125,7 +125,9 @@ function normalizeProduct(raw: any): UiProduct {
     images: p.images || [],
     artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
     artisanId: String(
-      (typeof p.artisan_id === 'object' ? (p.artisan_id?.id || p.artisan_id?._id) : p.artisan_id)
+      (typeof p.artisan_id === 'object'
+        ? (p.artisan_id?.id || p.artisan_id?._id || String(p.artisan_id || ''))
+        : p.artisan_id)
       || p.artisanId
       || ''
     ),

@@ -70,7 +70,7 @@ export interface AddressData {
 
 // ── Artisan Profile (public-facing) ─────────────────────────────────────────
 export interface ArtisanProfile {
-  userId: string;        // email (unique)
+  userId: string;        // Mongo User id (fallback: email for local-only profiles)
   name: string;          // display name
   profileImage: string;  // base64 or URL
   description: string;   // artisan bio
@@ -99,6 +99,7 @@ export interface AppContextType {
   login: (email: string, password: string, userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
   signup: (email: string, password: string, name: string, userType?: 'buyer' | 'seller') => Promise<{ error?: string }>;
   forgotPassword: (email: string) => Promise<{ error?: string; success?: string }>;
+  resetPassword: (token: string, newPassword: string) => Promise<{ error?: string; success?: string }>;
   loginWithGoogle: (userType?: 'buyer' | 'seller') => void;          // redirects browser — no return value
   loginWithGoogleToken: (token: string, user: AuthUser) => void;    // called by AuthSuccess after redirect
   logout: () => void;

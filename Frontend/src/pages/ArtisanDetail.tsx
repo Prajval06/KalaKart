@@ -21,11 +21,11 @@ export default function ArtisanDetail() {
         id: dynamicProfile.userId,
         name: dynamicProfile.name,
         image: dynamicProfile.profileImage || '',
-        specialization: 'Independent Artisan',
+        specialization: dynamicProfile.specialty || 'Independent Artisan',
         bio: dynamicProfile.description,
-        state: 'India',
-        yearsOfExperience: 1,
-        craft: 'Handicrafts'
+        state: dynamicProfile.location || 'India',
+        yearsOfExperience: dynamicProfile.yearsOfExperience || 1,
+        craft: dynamicProfile.specialty || 'Handicrafts'
       };
     }
   }

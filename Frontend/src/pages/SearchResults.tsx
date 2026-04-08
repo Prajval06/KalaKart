@@ -1,9 +1,20 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { SearchX, Package, Users } from 'lucide-react';
-import { artisans } from '../data/artisans';
 import { useAppContext } from '../context/AppContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
+import type { ArtisanProfile } from '../context/types';
+
+type SearchArtisan = {
+  id: string;
+  name: string;
+  craft: string;
+  state: string;
+  bio: string;
+  specialization: string;
+  image: string;
+  yearsOfExperience: number;
+};
 
 // ── Search helpers ────────────────────────────────────────────────────────────
 function normalize(s: string) {
@@ -17,7 +28,7 @@ function matchesProduct(q: string, p: any) {
   return q.split(' ').every(word => hay.includes(word));
 }
 
-function matchesArtisan(q: string, a: (typeof artisans)[0]) {
+function matchesArtisan(q: string, a: SearchArtisan) {
   const hay = normalize(
     [a.name, a.craft, a.state, a.bio, a.specialization].join(' ')
   );
@@ -83,7 +94,7 @@ function ProductCard({ product, query }: { product: any; query: string }) {
 }
 
 // ── Artisan card ──────────────────────────────────────────────────────────────
-function ArtisanCard({ artisan, query }: { artisan: (typeof artisans)[0]; query: string }) {
+function ArtisanCard({ artisan, query }: { artisan: SearchArtisan; query: string }) {
   return (
     <Link
       to={`/artisan/${artisan.id}`}
@@ -111,8 +122,18 @@ function ArtisanCard({ artisan, query }: { artisan: (typeof artisans)[0]; query:
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function SearchResults() {
-  const { getAllProducts } = useAppContext();
+  const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
   const allProducts = getAllProducts();
+  const allArtisans: SearchArtisan[] = getCompletedArtisanProfiles().map((a: ArtisanProfile) => ({
+    id: a.userId,
+    name: a.name,
+    craft: a.specialty || 'Handicrafts',
+    state: a.location || 'India',
+    bio: a.description || '',
+    specialization: a.specialty || 'Independent Artisan',
+    image: a.profileImage || '',
+    yearsOfExperience: Number(a.yearsOfExperience || 1),
+  }));
   const [searchParams] = useSearchParams();
   const rawQuery = searchParams.get('q') ?? '';
   const q = normalize(rawQuery.trim());
@@ -123,8 +144,8 @@ export default function SearchResults() {
   );
 
   const matchedArtisans = useMemo(
-    () => (q ? artisans.filter(a => matchesArtisan(q, a)) : []),
-    [q]
+    () => (q ? allArtisans.filter(a => matchesArtisan(q, a)) : []),
+    [q, allArtisans]
   );
 
   const totalResults = matchedProducts.length + matchedArtisans.length;

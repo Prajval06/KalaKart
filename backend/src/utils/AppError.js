@@ -15,6 +15,7 @@ class AppError extends Error {
       INVALID_CREDENTIALS: { msg: 'Invalid email or password', status: 401 },
       ACCOUNT_DISABLED: { msg: 'Account is disabled', status: 403 },
       INVALID_REFRESH_TOKEN: { msg: 'Invalid or expired refresh token', status: 401 },
+      INVALID_RESET_TOKEN: { msg: 'Invalid or expired password reset token', status: 400 },
       // Access
       UNAUTHORIZED: { msg: 'Authentication required', status: 401 },
       FORBIDDEN: { msg: 'Insufficient permissions', status: 403 },

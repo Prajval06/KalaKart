@@ -165,6 +165,15 @@ REFRESH_EXPIRE_DAYS=7
 STRIPE_SECRET_KEY=sk_test_xxxx
 STRIPE_WEBHOOK_SECRET=whsec_xxxx
 FRONTEND_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/v1/auth/google/callback
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-smtp-username
+SMTP_PASS=your-smtp-password-or-app-password
+SMTP_FROM="KalaKart <no-reply@kalakart.com>"
 NODE_ENV=development
 ```
 
@@ -178,6 +187,15 @@ NODE_ENV=development
 | `STRIPE_SECRET_KEY` | ✅ Yes | — | Stripe secret key (`sk_test_` for dev) |
 | `STRIPE_WEBHOOK_SECRET` | ✅ Yes | — | Stripe webhook signing secret |
 | `FRONTEND_URL` | No | localhost:3000 | Allowed CORS origin |
+| `GOOGLE_CLIENT_ID` | No | — | Google OAuth client id |
+| `GOOGLE_CLIENT_SECRET` | No | — | Google OAuth client secret |
+| `GOOGLE_CALLBACK_URL` | No | `/api/v1/auth/google/callback` | Google OAuth redirect URI |
+| `SMTP_HOST` | No | — | SMTP host for outgoing auth emails |
+| `SMTP_PORT` | No | 587 | SMTP port |
+| `SMTP_SECURE` | No | false | Use TLS for SMTP (`true` or `false`) |
+| `SMTP_USER` | No | — | SMTP username |
+| `SMTP_PASS` | No | — | SMTP password or app password |
+| `SMTP_FROM` | No | `KalaKart <SMTP_USER>` | From address for auth emails |
 | `NODE_ENV` | No | development | `development` or `production` |
 
 > ⚠️ **Never commit your `.env` file.** Only `.env.example` is committed to git.
@@ -195,6 +213,11 @@ All routes are prefixed with `/api/v1`.
 | `POST` | `/auth/register` | None | Register a new customer |
 | `POST` | `/auth/login` | None | Login — returns access + refresh token |
 | `POST` | `/auth/refresh` | None | Get new access token using refresh token |
+| `POST` | `/auth/forgot-password` | None | Send a password reset email |
+| `POST` | `/auth/reset-password` | None | Set a new password from a reset token |
+| `GET` | `/auth/google` | None | Redirect to Google consent screen |
+| `GET` | `/auth/google/callback` | None | Google OAuth callback and account creation |
+| `GET` | `/auth/me` | Bearer | Resolve current user from JWT |
 
 ### Products
 

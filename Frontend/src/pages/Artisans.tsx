@@ -7,9 +7,11 @@ import type { ArtisanProfile } from '../context/types';
 
 export default function Artisans() {
   const { getCompletedArtisanProfiles } = useAppContext();
+  const isMongoObjectId = (value: string) => /^[a-f\d]{24}$/i.test(String(value || '').trim());
 
-  // Registered artisans who completed their profile
-  const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles();
+  // Use backend artisan identities for this public listing to avoid stale local profile images.
+  const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles()
+    .filter((profile: ArtisanProfile) => isMongoObjectId(profile.userId));
 
   // Deduplicate by name to guarantee the UI never shows the same artisan twice
   const uniqueProfiles = registeredProfiles.reduce((acc: ArtisanProfile[], current: ArtisanProfile) => {

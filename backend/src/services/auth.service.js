@@ -1,8 +1,20 @@
 const jwt       = require('jsonwebtoken');
+const crypto    = require('crypto');
 const User      = require('../models/user.model');
 const Session   = require('../models/session.model');
 const AppError  = require('../utils/AppError');
 const config    = require('../config/config');
+const { sendWelcomeEmail, sendResetPasswordEmail } = require('./email.service');
+
+const RESET_TOKEN_EXPIRES_MS = 60 * 60 * 1000;
+
+const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+const createResetUrl = (token) => {
+  const url = new URL('/auth', config.frontendUrl);
+  url.searchParams.set('resetToken', token);
+  return url.toString();
+};
 
 const generateAccessToken = (userId, role) => {
   return jwt.sign(
@@ -21,15 +33,18 @@ const generateRefreshToken = (userId) => {
 };
 
 const register = async ({ email, password, full_name, role }) => {
+  const normalizedEmail = email.toLowerCase();
+
   // Check duplicate email
-  const existing = await User.findOne({ email: email.toLowerCase() });
+  const existing = await User.findOne({ email: normalizedEmail });
   if (existing) throw AppError.create('EMAIL_ALREADY_EXISTS', 'email');
 
   // Create user (password hashed by pre-save hook)
   const user = await User.create({
-    email,
+    email: normalizedEmail,
     full_name,
     role: role || 'customer',
+    authMethod: 'email',
     hashed_password: password,
   });
 
@@ -40,6 +55,12 @@ const register = async ({ email, password, full_name, role }) => {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + config.refreshExpireDays);
   await Session.create({ user_id: user._id, refresh_token, expires_at: expiresAt });
+
+  try {
+    await sendWelcomeEmail(user, 'email');
+  } catch (err) {
+    console.warn('AUTH EMAIL — welcome email failed:', err.message);
+  }
 
   return { user, access_token, refresh_token };
 };
@@ -95,4 +116,48 @@ const refresh = async ({ refresh_token }) => {
   return { access_token };
 };
 
-module.exports = { register, login, refresh };
+const forgotPassword = async ({ email }) => {
+  const normalizedEmail = email.toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (user && user.is_active) {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.passwordResetTokenHash = hashResetToken(resetToken);
+    user.passwordResetExpires = new Date(Date.now() + RESET_TOKEN_EXPIRES_MS);
+    await user.save();
+
+    const resetUrl = createResetUrl(resetToken);
+    try {
+      await sendResetPasswordEmail(user, resetUrl);
+    } catch (err) {
+      console.warn('AUTH EMAIL — reset email failed:', err.message);
+    }
+  }
+
+  return {
+    success: true,
+    message: `If ${normalizedEmail} is registered, a reset link has been sent.`,
+  };
+};
+
+const resetPassword = async ({ token, new_password }) => {
+  const tokenHash = hashResetToken(token);
+  const user = await User.findOne({
+    passwordResetTokenHash: tokenHash,
+    passwordResetExpires: { $gt: new Date() },
+  });
+
+  if (!user) throw AppError.create('INVALID_RESET_TOKEN');
+
+  user.hashed_password = new_password;
+  user.passwordResetTokenHash = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  return {
+    success: true,
+    message: 'Password updated successfully. You can now sign in with your new password.',
+  };
+};
+
+module.exports = { register, login, refresh, forgotPassword, resetPassword };

@@ -35,11 +35,12 @@ function GoogleIcon() {
 export default function Auth() {
   const navigate       = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, signup, forgotPassword, loginWithGoogle, cartItems, isLoggedIn } =
+  const { login, signup, forgotPassword, resetPassword, loginWithGoogle, cartItems, isLoggedIn } =
     useAppContext();
 
   const redirectTo  = searchParams.get('redirect') || '/';
   const fromCheckout = redirectTo === '/checkout';
+  const resetToken = searchParams.get('resetToken') || '';
 
   // ── View state ──
   const [mode, setMode]       = useState<FormMode>('login');
@@ -134,6 +135,23 @@ export default function Auth() {
     setSuccess(result.success || 'Reset email sent!');
   };
 
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setSuccess('');
+    if (!resetToken) { setError('Invalid reset link. Please request a new one.'); return; }
+    if (!password || !confirmPassword) { setError('Please fill in all fields.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+
+    setLoading(true);
+    const result = await resetPassword(resetToken, password);
+    setLoading(false);
+    if (result.error) { setError(result.error); return; }
+
+    setSuccess(result.success || 'Password updated successfully.');
+    setTimeout(() => navigate('/auth', { replace: true }), 1500);
+  };
+
   const handleGoogleSignIn = () => {
     setError(''); setSuccess('');
     setLoading(true);
@@ -151,12 +169,13 @@ export default function Auth() {
   const pwInputCls = inputCls.replace('pr-4', 'pr-12');
 
   // ── Title labels ─────────────────────────────────────────────────────────────
-  const titles: Record<FormMode, { heading: string; sub: string }> = {
+  const titles: Record<FormMode | 'reset', { heading: string; sub: string }> = {
     login:  { heading: 'Welcome Back',     sub: 'Sign in to your account' },
     signup: { heading: 'Join KalaKart',    sub: 'Create your account today' },
     forgot: { heading: 'Forgot Password?', sub: 'We\'ll send you a reset link' },
+    reset:  { heading: 'Set New Password',  sub: 'Choose a new password to continue' },
   };
-  const { heading, sub } = titles[mode];
+  const { heading, sub } = resetToken ? titles.reset : titles[mode];
 
   return (
     <div
@@ -583,7 +602,7 @@ export default function Auth() {
               )}
 
               {/* ═══════════════ FORGOT PASSWORD FORM ═══════════════ */}
-              {mode === 'forgot' && (
+              {mode === 'forgot' && !resetToken && (
                 <form id="forgot-form" className="space-y-4" onSubmit={handleForgot} noValidate>
 
                   <p className="text-sm text-[#5D4037] font-serif text-center -mt-2 mb-2">
@@ -627,6 +646,82 @@ export default function Auth() {
                     id="back-to-login"
                     type="button"
                     onClick={() => switchMode('login')}
+                    className="w-full py-2 text-sm text-[#8B2500] font-semibold font-serif flex items-center justify-center gap-1 hover:underline"
+                  >
+                    <ArrowLeft size={15} /> Back to Login
+                  </button>
+                </form>
+              )}
+
+              {/* ═══════════════ RESET PASSWORD FORM ═══════════════ */}
+              {resetToken && (
+                <form id="reset-form" className="space-y-4" onSubmit={handleReset} noValidate>
+
+                  <p className="text-sm text-[#5D4037] font-serif text-center -mt-2 mb-2">
+                    Enter a new password for your KalaKart account.
+                  </p>
+
+                  <div className="relative">
+                    <FieldIcon><Key size={18} /></FieldIcon>
+                    <input
+                      id="reset-password"
+                      type={showPw ? 'text' : 'password'}
+                      placeholder="New Password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      autoComplete="new-password"
+                      autoFocus
+                      className={pwInputCls}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
+                      aria-label={showPw ? 'Hide password' : 'Show password'}
+                    >
+                      {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <FieldIcon><Key size={18} /></FieldIcon>
+                    <input
+                      id="reset-confirm-password"
+                      type={showCPw ? 'text' : 'password'}
+                      placeholder="Confirm New Password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      autoComplete="new-password"
+                      className={pwInputCls}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCPw(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
+                      aria-label={showCPw ? 'Hide confirm password' : 'Show confirm password'}
+                    >
+                      {showCPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </div>
+
+                  <button
+                    id="reset-submit"
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 rounded-lg text-white font-bold text-base shadow-lg hover:shadow-xl hover:opacity-95 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                    style={{
+                      background: 'linear-gradient(135deg, #8B2500 0%, #A52A2A 100%)',
+                      fontFamily: 'Georgia, serif',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Updating…</> : 'Update Password'}
+                  </button>
+
+                  <button
+                    id="cancel-reset"
+                    type="button"
+                    onClick={() => navigate('/auth', { replace: true })}
                     className="w-full py-2 text-sm text-[#8B2500] font-semibold font-serif flex items-center justify-center gap-1 hover:underline"
                   >
                     <ArrowLeft size={15} /> Back to Login

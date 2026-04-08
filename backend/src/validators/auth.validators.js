@@ -17,6 +17,16 @@ const refresh = Joi.object({
   refresh_token: Joi.string().required(),
 });
 
+const forgotPassword = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+const resetPassword = Joi.object({
+  token: Joi.string().min(16).required(),
+  new_password: Joi.string().min(8).required()
+    .messages({ 'string.min': 'Password must be at least 8 characters' }),
+});
+
 const changePassword = Joi.object({
   current_password: Joi.string().required(),
   new_password:     Joi.string().min(8).required()
@@ -28,4 +38,4 @@ const updateProfile = Joi.object({
   email:     Joi.string().email().optional(),
 });
 
-module.exports = { register, login, refresh, changePassword, updateProfile };
+module.exports = { register, login, refresh, forgotPassword, resetPassword, changePassword, updateProfile };

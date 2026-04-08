@@ -66,6 +66,8 @@ KalaKart/
 | `POST` | `/api/v1/auth/register` | Register a new user |
 | `POST` | `/api/v1/auth/login` | Authenticate & login user |
 | `POST` | `/api/v1/auth/refresh` | Refresh JWT authentication token |
+| `POST` | `/api/v1/auth/forgot-password` | Send a password reset email |
+| `POST` | `/api/v1/auth/reset-password` | Set a new password from a reset token |
 | `GET`/`POST`/`PUT`/`DELETE` | `/api/v1/products` | Fetch, create, update, or remove products |
 | `GET` | `/api/v1/categories` | Retrieve all product categories |
 | `GET`/`POST`/`DELETE` | `/api/v1/cart` | View, add to, or clear user shopping cart |
@@ -131,6 +133,16 @@ npm run dev
 | `JWT_REFRESH_SECRET` | Secret key for refresh token |
 | `STRIPE_SECRET_KEY` | Secret key from your Stripe Dashboard |
 | `STRIPE_WEBHOOK_SECRET`| Secret key for Stripe webhooks |
+| `FRONTEND_URL` | Frontend app URL used for redirects |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `GOOGLE_CALLBACK_URL` | Google OAuth callback URL |
+| `SMTP_HOST` | SMTP host for auth emails |
+| `SMTP_PORT` | SMTP port for auth emails |
+| `SMTP_SECURE` | Use TLS for SMTP (`true` or `false`) |
+| `SMTP_USER` | SMTP username |
+| `SMTP_PASS` | SMTP password or app password |
+| `SMTP_FROM` | From address for outgoing auth emails |
 
 ### Frontend `.env`
 | Variable | Description |

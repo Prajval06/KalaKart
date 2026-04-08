@@ -69,7 +69,7 @@ const getWishlist = asyncHandler(async (req, res) => {
 // GET /api/v1/users/artisans — public list of artisan profiles
 const getArtisans = asyncHandler(async (req, res) => {
   const artisans = await User.find({ role: 'artisan', is_active: true })
-    .select('full_name profileImage specialty location bio email');
+    .select('full_name profileImage specialty location bio email yearsOfExperience');
   return success(res, { artisans });
 });
 
