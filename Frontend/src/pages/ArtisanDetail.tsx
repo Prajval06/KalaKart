@@ -8,14 +8,14 @@ import { ImageWithFallback } from '../components/ImageWithFallback';
 export default function ArtisanDetail() {
   const { artisanId } = useParams();
   const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
-  
-  const allProducts = getAllProducts();
-  const artisanProducts = allProducts.filter(p => String(p.artisanId || '') === String(artisanId || ''));
+
+  const completedProfiles = getCompletedArtisanProfiles();
+  const matchingProfile = completedProfiles.find((profile) => String(profile.userId || '') === String(artisanId || ''));
 
   let artisan = artisans.find(a => a.id === artisanId);
 
   if (!artisan) {
-    const dynamicProfile = getCompletedArtisanProfiles().find(p => p.userId === artisanId);
+    const dynamicProfile = matchingProfile;
     if (dynamicProfile) {
       artisan = {
         id: dynamicProfile.userId,
@@ -29,6 +29,22 @@ export default function ArtisanDetail() {
       };
     }
   }
+
+  const allProducts = getAllProducts();
+  const artisanIdentityIds = new Set(
+    [
+      String(artisanId || '').trim(),
+      String(matchingProfile?.userId || '').trim(),
+      String(matchingProfile?.email || '').trim(),
+    ].filter(Boolean)
+  );
+  const artisanName = String(artisan?.name || matchingProfile?.name || '').trim().toLowerCase();
+
+  const artisanProducts = allProducts.filter((product) => {
+    const productArtisanId = String(product.artisanId || '').trim();
+    const productArtisanName = String(product.artisan || '').trim().toLowerCase();
+    return artisanIdentityIds.has(productArtisanId) || (!!artisanName && productArtisanName === artisanName);
+  });
 
   if (!artisan && artisanProducts.length > 0) {
     const first = artisanProducts[0];

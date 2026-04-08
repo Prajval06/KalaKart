@@ -76,7 +76,7 @@ const ARTISANS = [
     location:     'Khurja, Uttar Pradesh',
     yearsOfExperience: 14,
     bio:          'Third-generation potter crafting terracotta and blue pottery inspired by regional motifs and natural pigments.',
-    profileImage: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/36779010/pexels-photo-36779010.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name:    'Meera Devi',
@@ -85,7 +85,7 @@ const ARTISANS = [
     location:     'Sanganer, Rajasthan',
     yearsOfExperience: 11,
     bio:          'Master block printer using hand-carved stamps and natural dyes to produce heritage-inspired textile work.',
-    profileImage: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/32673642/pexels-photo-32673642.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name:    'Anjali Patel',
@@ -94,7 +94,7 @@ const ARTISANS = [
     location:     'Pune, Maharashtra',
     yearsOfExperience: 9,
     bio:          'Artist blending miniature precision with mandala compositions to create expressive handcrafted wall pieces.',
-    profileImage: 'https://images.unsplash.com/photo-1606406054219-619c4c2e2100?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/15542925/pexels-photo-15542925.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name:    'Vikram Joshi',
@@ -103,7 +103,7 @@ const ARTISANS = [
     location:     'Moradabad, Uttar Pradesh',
     yearsOfExperience: 13,
     bio:          'Fourth-generation brass artisan creating ritual and decor metalwork with engraved and cast techniques.',
-    profileImage: 'https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/34878464/pexels-photo-34878464.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name:    'Priya Singh',
@@ -112,7 +112,7 @@ const ARTISANS = [
     location:     'Guwahati, Assam',
     yearsOfExperience: 8,
     bio:          'Natural fiber weaving specialist creating practical and decorative handcrafted products from jute, cane, and cotton.',
-    profileImage: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/30886656/pexels-photo-30886656.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name:    'Arjun Sharma',
@@ -121,7 +121,7 @@ const ARTISANS = [
     location:     'Mysuru, Karnataka',
     yearsOfExperience: 12,
     bio:          'Wood carving artisan specializing in carved home decor pieces with floral, temple, and geometric motifs.',
-    profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/32646621/pexels-photo-32646621.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name:    'Lakshmi Nair',
@@ -130,7 +130,7 @@ const ARTISANS = [
     location:     'Jaipur, Rajasthan',
     yearsOfExperience: 10,
     bio:          'Jewelry artisan crafting kundan and meenakari designs with traditional settings for festive and bridal collections.',
-    profileImage: 'https://images.unsplash.com/photo-1614436163996-25cee5f54290?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/34735228/pexels-photo-34735228.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
 ];
 
@@ -142,7 +142,7 @@ const CATEGORY_ARTISANS = [
     location: 'Jaipur, Rajasthan',
     yearsOfExperience: 12,
     bio: 'Specialist in handcrafted pottery and terracotta decor for modern and traditional homes.',
-    profileImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/30969805/pexels-photo-30969805.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name: 'Naina Weaves',
@@ -151,7 +151,7 @@ const CATEGORY_ARTISANS = [
     location: 'Kolkata, West Bengal',
     yearsOfExperience: 10,
     bio: 'Creates handcrafted textile and fabric products using traditional weaving and dye methods.',
-    profileImage: 'https://images.unsplash.com/photo-1595433707802-6b2626ef1c91?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/9209327/pexels-photo-9209327.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name: 'Ritvik Jewels',
@@ -160,7 +160,7 @@ const CATEGORY_ARTISANS = [
     location: 'Jaipur, Rajasthan',
     yearsOfExperience: 9,
     bio: 'Designs handcrafted jewelry inspired by classic Indian craft traditions and festive aesthetics.',
-    profileImage: 'https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/18405276/pexels-photo-18405276.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name: 'Ishita Arts',
@@ -169,7 +169,7 @@ const CATEGORY_ARTISANS = [
     location: 'Indore, Madhya Pradesh',
     yearsOfExperience: 8,
     bio: 'Produces hand-painted art and decor with mandala, miniature, and contemporary folk influences.',
-    profileImage: 'https://images.unsplash.com/photo-1615109398623-88346a601842?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/20887994/pexels-photo-20887994.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name: 'Kabir Looms',
@@ -178,7 +178,7 @@ const CATEGORY_ARTISANS = [
     location: 'Varanasi, Uttar Pradesh',
     yearsOfExperience: 11,
     bio: 'Crafts handloom clothing and wearable textiles with comfort-focused traditional craftsmanship.',
-    profileImage: 'https://images.unsplash.com/photo-1604072366595-e75dc92d6bdc?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/20893982/pexels-photo-20893982.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name: 'Mira Decor',
@@ -187,7 +187,7 @@ const CATEGORY_ARTISANS = [
     location: 'Mysuru, Karnataka',
     yearsOfExperience: 13,
     bio: 'Builds handcrafted home decor collections blending woodwork, metalwork, and artisanal utility pieces.',
-    profileImage: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/33788161/pexels-photo-33788161.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
   {
     full_name: 'Dev Craftworks',
@@ -196,7 +196,7 @@ const CATEGORY_ARTISANS = [
     location: 'Guwahati, Assam',
     yearsOfExperience: 7,
     bio: 'Focuses on handcrafted weaving and natural-material craft products for everyday lifestyle use.',
-    profileImage: 'https://images.unsplash.com/photo-1584999734482-0361aecad844?auto=format&fit=crop&w=400&h=400&q=80',
+    profileImage: 'https://images.pexels.com/photos/33673496/pexels-photo-33673496.jpeg?auto=compress&cs=tinysrgb&w=700',
   },
 ];
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Home, Package, ShoppingBag, IndianRupee, Search, Bell, Plus,
@@ -12,6 +12,10 @@ import { ImageWithFallback } from '../components/ImageWithFallback';
 
 // ─── Types ────────────────────────────────────────────────────────
 type Section = 'home' | 'products' | 'orders' | 'earnings';
+type DashboardProduct = ArtisanProduct & {
+  readOnly?: boolean;
+  sourceLabel?: string;
+};
 
 // ─── Product Modal ────────────────────────────────────────────────
 interface ProductModalProps {
@@ -647,7 +651,7 @@ function ExistingArtisanHome({
 
 // ─── Products Section ──────────────────────────────────────────────
 interface ProductsSectionProps {
-  products: ArtisanProduct[];
+  products: DashboardProduct[];
   search: string;
   onEdit: (p: ArtisanProduct) => void;
   onDelete: (id: string) => void;
@@ -707,23 +711,33 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
                     </td>
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>₹{p.price.toLocaleString('en-IN')}</td>
                     <td className="px-5 py-4">
-                      <span className={`text-sm ${p.stock === 0 ? 'text-red-600' : p.stock <= 3 ? 'text-amber-600' : 'text-gray-700'}`} style={{ fontWeight: p.stock <= 3 ? 600 : 400 }}>
-                        {p.stock === 0 ? 'Out of Stock' : p.stock <= 3 ? `Low (${p.stock})` : p.stock}
-                      </span>
+                      {p.readOnly ? (
+                        <span className="text-xs text-gray-500">Managed in catalog</span>
+                      ) : (
+                        <span className={`text-sm ${p.stock === 0 ? 'text-red-600' : p.stock <= 3 ? 'text-amber-600' : 'text-gray-700'}`} style={{ fontWeight: p.stock <= 3 ? 600 : 400 }}>
+                          {p.stock === 0 ? 'Out of Stock' : p.stock <= 3 ? `Low (${p.stock})` : p.stock}
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`} style={{ fontWeight: 500 }}>
-                        {p.status === 'active' ? 'Active' : 'Draft'}
+                        {p.sourceLabel || (p.status === 'active' ? 'Active' : 'Draft')}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => onEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                          <Edit2 className="w-4 h-4 text-gray-500" />
-                        </button>
-                        <button onClick={() => onDelete(p.id)} className="p-2 rounded-lg hover:bg-red-50 transition-colors">
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </button>
+                        {p.readOnly ? (
+                          <span className="text-xs text-gray-500">Read only</span>
+                        ) : (
+                          <>
+                            <button onClick={() => onEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                              <Edit2 className="w-4 h-4 text-gray-500" />
+                            </button>
+                            <button onClick={() => onDelete(p.id)} className="p-2 rounded-lg hover:bg-red-50 transition-colors">
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -949,7 +963,8 @@ export default function SellerDashboard() {
   const navigate = useNavigate();
   const {
     currentUser,
-    artisanProducts, artisanOrders, isNewArtisan,
+    artisanProducts, artisanOrders,
+    getDbProducts, getCompletedArtisanProfiles,
     addArtisanProduct, updateArtisanProduct, deleteArtisanProduct, updateArtisanOrder,
   } = useAppContext();
 
@@ -965,6 +980,61 @@ export default function SellerDashboard() {
     () => localStorage.getItem(`kk_story_${currentUser?.email}`) || ''
   );
 
+  const ownArtisanProducts = useMemo(() => {
+    const ownerEmail = String(currentUser?.email || '').toLowerCase();
+    return artisanProducts.filter((product) => {
+      const productOwner = String(product.artisanOwnerEmail || '').toLowerCase();
+      return !!productOwner && productOwner === ownerEmail;
+    });
+  }, [artisanProducts, currentUser?.email]);
+
+  const assignedCatalogProducts = useMemo(() => {
+    const ownerEmail = String(currentUser?.email || '').toLowerCase();
+    const ownerName = String(currentUser?.name || '').trim().toLowerCase();
+    const profiles = getCompletedArtisanProfiles();
+    const matchedProfile = profiles.find((profile) => String(profile.email || '').toLowerCase() === ownerEmail);
+    const ownerIds = new Set(
+      [
+        String(matchedProfile?.userId || '').trim(),
+        ownerEmail,
+      ].filter(Boolean)
+    );
+
+    return getDbProducts()
+      .filter((product) => {
+        const productArtisanId = String(product.artisanId || '').trim();
+        const productArtisanName = String(product.artisan || '').trim().toLowerCase();
+        return ownerIds.has(productArtisanId) || (!!ownerName && productArtisanName === ownerName);
+      })
+      .map((product) => ({
+        id: `assigned-${product.id}`,
+        name: product.name,
+        price: product.price,
+        stock: 0,
+        image: product.image,
+        images: [product.image],
+        category: product.category,
+        description: product.description,
+        status: product.isAvailable === false ? 'draft' : 'active',
+        artisanOwnerEmail: ownerEmail,
+        artisanOwnerName: currentUser?.name || 'KalaKart Artisan',
+        artisanOwnerId: String(matchedProfile?.userId || ownerEmail),
+        readOnly: true,
+        sourceLabel: 'Assigned',
+      } as DashboardProduct));
+  }, [currentUser?.email, currentUser?.name, getCompletedArtisanProfiles, getDbProducts]);
+
+  const dashboardProducts = useMemo<DashboardProduct[]>(() => {
+    const merged = [...assignedCatalogProducts, ...ownArtisanProducts.map((product) => ({
+      ...product,
+      readOnly: false,
+      sourceLabel: product.status === 'active' ? 'Manual' : 'Manual Draft',
+    }))];
+    return merged;
+  }, [assignedCatalogProducts, ownArtisanProducts]);
+
+  const effectiveIsNewArtisan = dashboardProducts.length === 0 && artisanOrders.length === 0;
+
   // Guard: redirect if not logged in or not a seller
   useEffect(() => {
     if (!currentUser) { navigate('/auth'); return; }
@@ -972,7 +1042,7 @@ export default function SellerDashboard() {
   }, [currentUser, navigate]);
 
   // Rotate smart tips
-  const tips = isNewArtisan ? NEW_ARTISAN_TIPS : EXISTING_ARTISAN_TIPS;
+  const tips = effectiveIsNewArtisan ? NEW_ARTISAN_TIPS : EXISTING_ARTISAN_TIPS;
   useEffect(() => {
     const t = setInterval(() => setSmartIdx(i => (i + 1) % tips.length), 5000);
     return () => clearInterval(t);
@@ -1164,7 +1234,7 @@ export default function SellerDashboard() {
         {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
           {section === 'home' && (
-            isNewArtisan ? (
+            effectiveIsNewArtisan ? (
               <NewArtisanHome
                 userName={name}
                 onAddProduct={() => { setShowAddProduct(true); }}
@@ -1172,7 +1242,7 @@ export default function SellerDashboard() {
               />
             ) : (
               <ExistingArtisanHome
-                products={artisanProducts}
+                products={dashboardProducts}
                 orders={artisanOrders}
                 totalEarnings={totalEarnings}
                 onAcceptOrder={id => updateArtisanOrder(id, 'processing')}
@@ -1185,7 +1255,7 @@ export default function SellerDashboard() {
           )}
           {section === 'products' && (
             <ProductsSection
-              products={artisanProducts}
+              products={dashboardProducts}
               search={search}
               onEdit={p => { setEditingProduct(p); setShowAddProduct(true); }}
               onDelete={deleteArtisanProduct}

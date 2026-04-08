@@ -37,6 +37,9 @@ export interface ArtisanProduct {
   category: string;
   description: string;
   status: 'active' | 'draft';
+  artisanOwnerEmail?: string;
+  artisanOwnerName?: string;
+  artisanOwnerId?: string;
 }
 
 export type SellerOrderStatus = 'new' | 'processing' | 'completed';
@@ -71,6 +74,7 @@ export interface AddressData {
 // ── Artisan Profile (public-facing) ─────────────────────────────────────────
 export interface ArtisanProfile {
   userId: string;        // Mongo User id (fallback: email for local-only profiles)
+  email?: string;
   name: string;          // display name
   profileImage: string;  // base64 or URL
   description: string;   // artisan bio

@@ -1,37 +1,47 @@
 import { Link } from 'react-router';
 import { MapPin, Award, User } from 'lucide-react';
-import { artisans } from '../data/artisans';
+import { useEffect, useState } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
-import { useAppContext } from '../context/AppContext';
-import type { ArtisanProfile } from '../context/types';
+import { usersAPI } from '../utils/api';
+
+type ArtisanCard = {
+  id: string;
+  name: string;
+  image: string;
+  specialization: string;
+  state: string;
+  yearsOfExperience: number;
+  bio: string;
+};
 
 export default function Artisans() {
-  const { getCompletedArtisanProfiles } = useAppContext();
-  const isMongoObjectId = (value: string) => /^[a-f\d]{24}$/i.test(String(value || '').trim());
+  const [artisans, setArtisans] = useState<ArtisanCard[]>([]);
 
-  // Use backend artisan identities for this public listing to avoid stale local profile images.
-  const registeredProfiles: ArtisanProfile[] = getCompletedArtisanProfiles()
-    .filter((profile: ArtisanProfile) => isMongoObjectId(profile.userId));
+  useEffect(() => {
+    const loadArtisans = async () => {
+      try {
+        const res = await usersAPI.getArtisans();
+        const list = res?.data?.data?.artisans || [];
 
-  // Deduplicate by name to guarantee the UI never shows the same artisan twice
-  const uniqueProfiles = registeredProfiles.reduce((acc: ArtisanProfile[], current: ArtisanProfile) => {
-    const exists = acc.find(p => p.name === current.name);
-    if (!exists) acc.push(current);
-    return acc;
-  }, [] as ArtisanProfile[]);
+        const mapped = list.map((a: any) => ({
+          id: String(a.id || a._id || ''),
+          name: a.full_name || 'KalaKart Artisan',
+          image: a.profileImage || '',
+          specialization: a.specialty || 'Independent Artisan',
+          state: a.location || 'India',
+          yearsOfExperience: Number(a.yearsOfExperience || 1),
+          bio: a.bio || '',
+        }));
 
-  const unifiedArtisans = uniqueProfiles.map((p: ArtisanProfile) => {
-    const original = artisans.find(a => a.name === p.name);
-    return {
-      id: p.userId,
-      name: p.name,
-      image: p.profileImage || original?.image || '',
-      specialization: p.specialty || original?.specialization || 'Independent Artisan',
-      state: p.location || original?.state || 'India',
-      yearsOfExperience: p.yearsOfExperience || original?.yearsOfExperience || 1,
-      bio: p.description || original?.bio || ''
+        setArtisans(mapped.filter((a: ArtisanCard) => !!a.id));
+      } catch (error) {
+        console.error('Failed to load artisans:', error);
+        setArtisans([]);
+      }
     };
-  });
+
+    loadArtisans();
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
@@ -65,58 +75,64 @@ export default function Artisans() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {unifiedArtisans.map((artisan: any) => (
-              <Link
-                key={artisan.id}
-                to={`/artisan/${artisan.id}`}
-                className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                  {artisan.image ? (
-                    <img
-                      src={artisan.image}
-                      alt={artisan.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <User className="w-20 h-20 text-gray-300" />
-                    </div>
-                  )}
-                  <div
-                    className="absolute inset-0"
-                    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="mb-2 text-white">{artisan.name}</h3>
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{artisan.state}</span>
-                    </div>
-                    {artisan.yearsOfExperience > 1 && (
-                      <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4" />
-                        <span className="text-sm">{artisan.yearsOfExperience} years of experience</span>
+            {artisans.map((artisan) => {
+              const imageSrc = artisan.image
+                ? `${artisan.image}${artisan.image.includes('?') ? '&' : '?'}v=kk-artisans-20260408`
+                : '';
+
+              return (
+                <Link
+                  key={artisan.id}
+                  to={`/artisan/${artisan.id}`}
+                  className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt={artisan.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-20 h-20 text-gray-300" />
                       </div>
                     )}
+                    <div
+                      className="absolute inset-0"
+                      style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <h3 className="mb-2 text-white">{artisan.name}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-sm">{artisan.state}</span>
+                      </div>
+                      {artisan.yearsOfExperience > 1 && (
+                        <div className="flex items-center gap-2">
+                          <Award className="w-4 h-4" />
+                          <span className="text-sm">{artisan.yearsOfExperience} years of experience</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  <p
-                    className="text-sm font-semibold mb-2"
-                    style={{ color: 'var(--saffron)' }}
-                  >
-                    {artisan.specialization}
-                  </p>
-                  <p
-                    className="text-sm line-clamp-3"
-                    style={{ color: 'var(--text-gray)' }}
-                  >
-                    {artisan.bio}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                  <div className="p-6">
+                    <p
+                      className="text-sm font-semibold mb-2"
+                      style={{ color: 'var(--saffron)' }}
+                    >
+                      {artisan.specialization}
+                    </p>
+                    <p
+                      className="text-sm line-clamp-3"
+                      style={{ color: 'var(--text-gray)' }}
+                    >
+                      {artisan.bio}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
 
           {/* Support Banner */}

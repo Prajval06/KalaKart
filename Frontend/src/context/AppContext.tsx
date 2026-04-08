@@ -124,6 +124,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (res.data.success) {
         setDbArtisans(res.data.data.artisans.map((a: any) => ({
           userId: String(a.id || a._id || a.email),
+          email: a.email,
           name: a.full_name,
           profileImage: a.profileImage,
           description: a.bio,
@@ -464,6 +465,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const profiles = loadJSON<Record<string, ArtisanProfile>>(LS_PROFILES, {});
     profiles[currentUser.email] = {
       userId: currentUser.email,
+      email: currentUser.email,
       name: currentUser.name,
       profileImage,
       description,
@@ -484,7 +486,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addArtisanProduct = (data: Omit<ArtisanProduct, 'id'>) => {
-    const newProduct = { ...data, id: `art-${Date.now()}` };
+    const matchingProfile = dbArtisans.find((profile) => String(profile.email || '').toLowerCase() === String(currentUser?.email || '').toLowerCase());
+    const ownerId = String(matchingProfile?.userId || currentUser?.email || 'local');
+    const newProduct = {
+      ...data,
+      id: `art-${Date.now()}`,
+      artisanOwnerEmail: currentUser?.email || '',
+      artisanOwnerName: currentUser?.name || 'KalaKart Artisan',
+      artisanOwnerId: ownerId,
+    };
     setArtisanProducts(prev => [...prev, newProduct as ArtisanProduct]);
   };
 
@@ -513,6 +523,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const getAllProducts = (): Product[] => {
     const artisanProductsList = artisanProducts.map(ap => {
+      const ownerProfile = dbArtisans.find((profile) => {
+        const ownerId = String(ap.artisanOwnerId || '').trim();
+        const ownerEmail = String(ap.artisanOwnerEmail || '').toLowerCase().trim();
+        return (ownerId && String(profile.userId) === ownerId) || (ownerEmail && String(profile.email || '').toLowerCase() === ownerEmail);
+      });
+
       const p: Product = {
         id: ap.id,
         name: ap.name,
@@ -520,9 +536,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         description: ap.description,
         category: ap.category,
         image: ap.image,
-        artisan: currentUser?.name || 'Local Artisan',
-        artisanId: currentUser?.email || 'local',
-        state: 'Local',
+        artisan: ap.artisanOwnerName || ownerProfile?.name || 'KalaKart Artisan',
+        artisanId: ap.artisanOwnerId || ap.artisanOwnerEmail || 'local',
+        state: ownerProfile?.location || 'Local',
         rating: 0,
         numReviews: 0,
         isAvailable: ap.status === 'active'
