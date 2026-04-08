@@ -6,7 +6,7 @@ import {
   Shield, Star, X, BadgeCheck, Sparkles,
 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
-import { ImageWithFallback } from '../components/ImageWithFallback';
+import { ImageWithFallback, DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
 import { useAppContext } from '../context/AppContext';
 import { productService } from '../services/product.service';
 import { useAutoRedirectOnNotFound } from '../hooks/useAutoRedirectOnNotFound';
@@ -102,6 +102,13 @@ type UiProduct = {
   artisan: string;
   artisanId?: string;
   state?: string;
+  imageProvider?: string;
+  imageAttribution?: {
+    photographer?: string | null;
+    photographerUsername?: string | null;
+    photographerProfile?: string | null;
+    photoPage?: string | null;
+  } | null;
 };
 
 function normalizeProduct(raw: any): UiProduct {
@@ -114,7 +121,7 @@ function normalizeProduct(raw: any): UiProduct {
     description: p.description || '',
     price: Number(p.price || 0),
     category: typeof p.category === 'string' ? p.category : 'Craft',
-    image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
+    image: p.imageUrl || (Array.isArray(p.images) && p.images[0]) || p.image || DEFAULT_FALLBACK_IMAGE,
     images: p.images || [],
     artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
     artisanId: String(
@@ -123,6 +130,8 @@ function normalizeProduct(raw: any): UiProduct {
       || ''
     ),
     state: p.state || 'India',
+    imageProvider: p.imageProvider,
+    imageAttribution: p.imageAttribution || null,
   };
 }
 
@@ -319,6 +328,24 @@ export default function ProductDetail() {
                   <span className="text-white text-sm">100% Handmade or Money Back Guarantee</span>
                 </div>
               </div>
+              {product.imageAttribution?.photographer && (
+                <p className="mt-2 text-xs" style={{ color: 'var(--text-gray)' }}>
+                  Photo: {product.imageAttribution.photoPage ? (
+                    <a
+                      href={product.imageAttribution.photoPage}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                      style={{ color: 'var(--saffron)' }}
+                    >
+                      {product.imageAttribution.photographer}
+                    </a>
+                  ) : (
+                    product.imageAttribution.photographer
+                  )}
+                  {product.imageProvider ? ` via ${product.imageProvider}` : ''}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col">

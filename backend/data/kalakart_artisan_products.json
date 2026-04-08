@@ -10,7 +10,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 4.4,
     "date_listed": "2023-05-17",
-    "image_url": "https://source.unsplash.com/600x600/?terracotta,vase,handmade,clay,indian,pottery"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxIYW5kY3JhZnRlZCUyMFRlcnJhY290dGElMjBWYXNlJTIwUG90dGVyeSUyMFRlcnJhY290dGElMjAlMjYlMjBCbHVlJTIwUG90dGVyeSUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY2N3ww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 2,
@@ -23,7 +23,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 4.3,
     "date_listed": "2022-06-28",
-    "image_url": "https://source.unsplash.com/600x600/?blue,pottery,plate,jaipur,ceramic,floral"
+    "image_url": "https://images.unsplash.com/photo-1737662374763-9d852121c8c6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbHVlJTIwUG90dGVyeSUyMERlY29yYXRpdmUlMjBQbGF0ZSUyMFBvdHRlcnklMjBUZXJyYWNvdHRhJTIwJTI2JTIwQmx1ZSUyMFBvdHRlcnklMjBoYW5kbWFkZSUyMGluZGlhfGVufDF8Mnx8fDE3NzU2MzQ2Njh8MA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 3,
@@ -36,7 +36,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 2.9,
     "date_listed": "2023-03-24",
-    "image_url": "https://source.unsplash.com/600x600/?clay,water,pot,matka,terracotta,indian"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxUZXJyYWNvdHRhJTIwQ2xheSUyMFdhdGVyJTIwUG90JTIwJTI4TWF0a2ElMjklMjBQb3R0ZXJ5JTIwVGVycmFjb3R0YSUyMCUyNiUyMEJsdWUlMjBQb3R0ZXJ5JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjY5fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 4,
@@ -47,9 +47,9 @@
     "stock": 6,
     "seller": "Ramesh Kumar",
     "seller_specialty": "Terracotta & Blue Pottery",
-    "rating": 4.0,
+    "rating": 4,
     "date_listed": "2024-05-09",
-    "image_url": "https://source.unsplash.com/600x600/?blue,pottery,box,ceramic,jaipur,trinket"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbHVlJTIwUG90dGVyeSUyMFRyaW5rZXQlMjBCb3glMjBQb3R0ZXJ5JTIwVGVycmFjb3R0YSUyMCUyNiUyMEJsdWUlMjBQb3R0ZXJ5JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjY5fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 5,
@@ -62,7 +62,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 3.4,
     "date_listed": "2022-01-14",
-    "image_url": "https://source.unsplash.com/600x600/?terracotta,wall,hanging,clay,art,decor"
+    "image_url": "https://images.unsplash.com/photo-1737662374799-aae29ea19ad6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxUZXJyYWNvdHRhJTIwV2FsbCUyMEhhbmdpbmclMjBTZXQlMjBQb3R0ZXJ5JTIwVGVycmFjb3R0YSUyMCUyNiUyMEJsdWUlMjBQb3R0ZXJ5JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjcxfDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 6,
@@ -75,7 +75,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 4.3,
     "date_listed": "2023-11-28",
-    "image_url": "https://source.unsplash.com/600x600/?blue,pottery,vase,turquoise,flowers,jaipur"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbHVlJTIwUG90dGVyeSUyMEZsb3dlciUyMFZhc2UlMjBQb3R0ZXJ5JTIwVGVycmFjb3R0YSUyMCUyNiUyMEJsdWUlMjBQb3R0ZXJ5JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjcyfDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 7,
@@ -88,7 +88,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 4.9,
     "date_listed": "2023-11-21",
-    "image_url": "https://source.unsplash.com/600x600/?terracotta,diya,oil,lamp,diwali,clay,set"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxUZXJyYWNvdHRhJTIwRGl5YSUyMFNldCUyMCUyODEyJTIwcGNzJTI5JTIwUG90dGVyeSUyMFRlcnJhY290dGElMjAlMjYlMjBCbHVlJTIwUG90dGVyeSUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY3Mnww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 8,
@@ -99,9 +99,9 @@
     "stock": 97,
     "seller": "Ramesh Kumar",
     "seller_specialty": "Terracotta & Blue Pottery",
-    "rating": 3.0,
+    "rating": 3,
     "date_listed": "2023-12-06",
-    "image_url": "https://source.unsplash.com/600x600/?blue,pottery,bowl,ceramic,lotus,jaipur"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbHVlJTIwUG90dGVyeSUyMENlcmVhbCUyMEJvd2wlMjBQb3R0ZXJ5JTIwVGVycmFjb3R0YSUyMCUyNiUyMEJsdWUlMjBQb3R0ZXJ5JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjczfDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 9,
@@ -114,7 +114,7 @@
     "seller_specialty": "Terracotta & Blue Pottery",
     "rating": 4.4,
     "date_listed": "2022-09-13",
-    "image_url": "https://source.unsplash.com/600x600/?terracotta,planter,pot,clay,garden,saucer"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxUZXJyYWNvdHRhJTIwUGxhbnRlciUyMHdpdGglMjBTYXVjZXIlMjBQb3R0ZXJ5JTIwVGVycmFjb3R0YSUyMCUyNiUyMEJsdWUlMjBQb3R0ZXJ5JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0Njc0fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 10,
@@ -125,9 +125,9 @@
     "stock": 96,
     "seller": "Ramesh Kumar",
     "seller_specialty": "Terracotta & Blue Pottery",
-    "rating": 3.0,
+    "rating": 3,
     "date_listed": "2023-08-24",
-    "image_url": "https://source.unsplash.com/600x600/?blue,pottery,mug,ceramic,peacock,handmade"
+    "image_url": "https://images.unsplash.com/photo-1645437540390-31888b8c3065?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbHVlJTIwUG90dGVyeSUyME11ZyUyMFBvdHRlcnklMjBUZXJyYWNvdHRhJTIwJTI2JTIwQmx1ZSUyMFBvdHRlcnklMjBoYW5kbWFkZSUyMGluZGlhfGVufDF8Mnx8fDE3NzU2MzQ2NzV8MA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 11,
@@ -140,7 +140,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 4.1,
     "date_listed": "2022-05-23",
-    "image_url": "https://source.unsplash.com/600x600/?ajrakh,block,print,kurta,cotton,indian,indigo"
+    "image_url": "https://images.unsplash.com/photo-1572798177358-9402eeb43f31?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxBanJha2glMjBCbG9jayUyMFByaW50JTIwS3VydGElMjBDbG90aGluZyUyMEJsb2NrJTIwUHJpbnRpbmclMjAlMjYlMjBOYXR1cmFsJTIwRHllcyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY3Nnww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 12,
@@ -151,7 +151,7 @@
     "stock": 74,
     "seller": "Meera Devi",
     "seller_specialty": "Block Printing & Natural Dyes",
-    "rating": 5.0,
+    "rating": 5,
     "date_listed": "2023-04-22",
     "image_url": "https://source.unsplash.com/600x600/?block,print,table,runner,cotton,fabric,indian"
   },
@@ -166,7 +166,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 4.2,
     "date_listed": "2024-01-18",
-    "image_url": "https://source.unsplash.com/600x600/?indigo,dupatta,natural,dye,fabric,scarf"
+    "image_url": "https://images.unsplash.com/photo-1560579392-7031c9c222f5?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxOYXR1cmFsJTIwRHllJTIwRHVwYXR0YSUyMCUyOEluZGlnbyUyOSUyMEhvbWUlMjBEZWNvciUyMEJsb2NrJTIwUHJpbnRpbmclMjAlMjYlMjBOYXR1cmFsJTIwRHllcyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY3OHww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 14,
@@ -179,7 +179,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 4.3,
     "date_listed": "2022-05-27",
-    "image_url": "https://source.unsplash.com/600x600/?block,print,cushion,cover,cotton,natural,dye"
+    "image_url": "https://images.unsplash.com/photo-1707330202976-0c26cced53c9?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbG9jayUyMFByaW50JTIwQ3VzaGlvbiUyMENvdmVyJTIwU2V0JTIwSG9tZSUyMERlY29yJTIwQmxvY2slMjBQcmludGluZyUyMCUyNiUyME5hdHVyYWwlMjBEeWVzJTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0Njc4fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 15,
@@ -192,7 +192,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 4.4,
     "date_listed": "2022-12-01",
-    "image_url": "https://source.unsplash.com/600x600/?sanganeri,block,print,saree,cotton,floral"
+    "image_url": "https://images.unsplash.com/photo-1560579392-7031c9c222f5?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxTYW5nYW5lcmklMjBCbG9jayUyMFByaW50JTIwU2FyZWUlMjBDbG90aGluZyUyMEJsb2NrJTIwUHJpbnRpbmclMjAlMjYlMjBOYXR1cmFsJTIwRHllcyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY3OXww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 16,
@@ -205,7 +205,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 3.3,
     "date_listed": "2023-10-27",
-    "image_url": "https://source.unsplash.com/600x600/?block,print,bed,sheet,natural,dye,cotton,turmeric"
+    "image_url": "https://images.unsplash.com/photo-1560579392-7031c9c222f5?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxOYXR1cmFsJTIwRHllJTIwQmVkJTIwU2hlZXQlMjAlMjhEb3VibGUlMjklMjBUZXh0aWxlJTIwYW5kJTIwRmFicmljcyUyMEJsb2NrJTIwUHJpbnRpbmclMjAlMjYlMjBOYXR1cmFsJTIwRHllcyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY4MHww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 17,
@@ -231,7 +231,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 4.7,
     "date_listed": "2023-10-07",
-    "image_url": "https://source.unsplash.com/600x600/?block,print,stole,cotton,indigo,buti,scarf"
+    "image_url": "https://images.unsplash.com/photo-1560579392-7031c9c222f5?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbG9jayUyMFByaW50JTIwU3RvbGUlMjBUZXh0aWxlJTIwYW5kJTIwRmFicmljcyUyMEJsb2NrJTIwUHJpbnRpbmclMjAlMjYlMjBOYXR1cmFsJTIwRHllcyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY4Mnww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 19,
@@ -244,7 +244,7 @@
     "seller_specialty": "Block Printing & Natural Dyes",
     "rating": 4.7,
     "date_listed": "2024-07-28",
-    "image_url": "https://source.unsplash.com/600x600/?block,print,curtain,panel,indigo,cotton,fabric"
+    "image_url": "https://images.unsplash.com/photo-1703242327538-919ac43a41b6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxCbG9jayUyMFByaW50JTIwQ3VydGFpbiUyMFBhbmVsJTIwSG9tZSUyMERlY29yJTIwQmxvY2slMjBQcmludGluZyUyMCUyNiUyME5hdHVyYWwlMjBEeWVzJTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjgyfDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 20,
@@ -320,7 +320,7 @@
     "stock": 119,
     "seller": "Lakshmi Sharma",
     "seller_specialty": "Kundan & Meenakari",
-    "rating": 4.0,
+    "rating": 4,
     "date_listed": "2022-01-24",
     "image_url": "https://source.unsplash.com/600x600/?kundan,haar,long,necklace,bridal,pearl,layers"
   },
@@ -346,7 +346,7 @@
     "stock": 87,
     "seller": "Lakshmi Sharma",
     "seller_specialty": "Kundan & Meenakari",
-    "rating": 3.0,
+    "rating": 3,
     "date_listed": "2024-06-09",
     "image_url": "https://source.unsplash.com/600x600/?kundan,nath,nose,pin,pearl,indian,bridal"
   },
@@ -400,7 +400,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 3.6,
     "date_listed": "2022-11-27",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,canvas,painting,acrylic,wall,art,large"
+    "image_url": "https://images.unsplash.com/photo-1737662374799-aae29ea19ad6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwQ2FudmFzJTIwUGFpbnRpbmclMjAlMjhMYXJnZSUyOSUyMEFydCUyMGFuZCUyMFBhaW50aW5ncyUyME1hbmRhbGElMjBBcnQlMjBoYW5kbWFkZSUyMGluZGlhfGVufDF8Mnx8fDE3NzU2MzQ2OTJ8MA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 32,
@@ -413,7 +413,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 4.8,
     "date_listed": "2023-10-26",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,dot,art,painted,stone,pebble,set"
+    "image_url": "https://images.unsplash.com/photo-1737662374367-8fb0d598041d?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwRG90JTIwQXJ0JTIwU3RvbmUlMjBTZXQlMjBBcnQlMjBhbmQlMjBQYWludGluZ3MlMjBNYW5kYWxhJTIwQXJ0JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NjkzfDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 33,
@@ -426,7 +426,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 4.8,
     "date_listed": "2023-09-22",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,coloring,journal,book,spiral,art"
+    "image_url": "https://images.unsplash.com/photo-1628450860617-97f211be90b6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwQ29sb3JpbmclMjBKb3VybmFsJTIwQXJ0JTIwYW5kJTIwUGFpbnRpbmdzJTIwTWFuZGFsYSUyMEFydCUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY5NHww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 34,
@@ -439,7 +439,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 4.7,
     "date_listed": "2022-06-11",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,wall,tapestry,bohemian,cotton,large"
+    "image_url": "https://images.unsplash.com/photo-1737662374367-8fb0d598041d?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwV2FsbCUyMFRhcGVzdHJ5JTIwQXJ0JTIwYW5kJTIwUGFpbnRpbmdzJTIwTWFuZGFsYSUyMEFydCUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY5NXww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 35,
@@ -452,7 +452,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 4.6,
     "date_listed": "2024-12-26",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,art,print,framed,gold,black,wall"
+    "image_url": "https://images.unsplash.com/photo-1628450860617-97f211be90b6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwQXJ0JTIwUHJpbnQlMjAlMjhBMyUyQyUyMEZyYW1lZCUyOSUyMEFydCUyMGFuZCUyMFBhaW50aW5ncyUyME1hbmRhbGElMjBBcnQlMjBoYW5kbWFkZSUyMGluZGlhfGVufDF8Mnx8fDE3NzU2MzQ2OTZ8MA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 36,
@@ -465,7 +465,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 4.3,
     "date_listed": "2022-12-05",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,ceramic,coaster,set,art,glazed"
+    "image_url": "https://images.unsplash.com/photo-1737662374367-8fb0d598041d?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwQ2VyYW1pYyUyMENvYXN0ZXIlMjBTZXQlMjBBcnQlMjBhbmQlMjBQYWludGluZ3MlMjBNYW5kYWxhJTIwQXJ0JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0Njk2fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 37,
@@ -478,7 +478,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 4.9,
     "date_listed": "2023-02-16",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,painted,terracotta,pot,white,blue,art"
+    "image_url": "https://images.unsplash.com/photo-1737662374367-8fb0d598041d?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwVGVycmFjb3R0YSUyMFBvdCUyMFBhaW50aW5nJTIwQXJ0JTIwYW5kJTIwUGFpbnRpbmdzJTIwTWFuZGFsYSUyMEFydCUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY5N3ww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 38,
@@ -489,9 +489,9 @@
     "stock": 102,
     "seller": "Anjali Patel",
     "seller_specialty": "Mandala Art",
-    "rating": 5.0,
+    "rating": 5,
     "date_listed": "2024-02-04",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,tealight,glass,candle,holder,painted,glow"
+    "image_url": "https://images.unsplash.com/photo-1737662374367-8fb0d598041d?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwVGVhbGlnaHQlMjBIb2xkZXIlMjBBcnQlMjBhbmQlMjBQYWludGluZ3MlMjBNYW5kYWxhJTIwQXJ0JTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0Njk4fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 39,
@@ -504,7 +504,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 3.8,
     "date_listed": "2023-05-23",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,handpainted,notebook,cover,hardback,art"
+    "image_url": "https://images.unsplash.com/photo-1628450860617-97f211be90b6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwTm90ZWJvb2slMjBDb3ZlciUyMCUyOEhhbmRwYWludGVkJTI5JTIwQXJ0JTIwYW5kJTIwUGFpbnRpbmdzJTIwTWFuZGFsYSUyMEFydCUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDY5OXww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 40,
@@ -517,7 +517,7 @@
     "seller_specialty": "Mandala Art",
     "rating": 2.8,
     "date_listed": "2023-04-17",
-    "image_url": "https://source.unsplash.com/600x600/?mandala,wooden,wall,clock,laser,cut,art,decor"
+    "image_url": "https://images.unsplash.com/photo-1737662374799-aae29ea19ad6?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxNYW5kYWxhJTIwV29vZGVuJTIwV2FsbCUyMENsb2NrJTIwQXJ0JTIwYW5kJTIwUGFpbnRpbmdzJTIwTWFuZGFsYSUyMEFydCUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDcwMHww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 41,
@@ -528,9 +528,9 @@
     "stock": 1,
     "seller": "Suresh Reddy",
     "seller_specialty": "Intricate Wood Carving",
-    "rating": 3.0,
+    "rating": 3,
     "date_listed": "2022-05-01",
-    "image_url": "https://source.unsplash.com/600x600/?sandalwood,carved,elephant,figurine,wood,indian"
+    "image_url": "https://images.unsplash.com/photo-1692616494802-a7344a129382?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxDYXJ2ZWQlMjBTYW5kYWx3b29kJTIwRWxlcGhhbnQlMjBIb21lJTIwRGVjb3IlMjBJbnRyaWNhdGUlMjBXb29kJTIwQ2FydmluZyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDcwMHww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 42,
@@ -543,7 +543,7 @@
     "seller_specialty": "Intricate Wood Carving",
     "rating": 4.7,
     "date_listed": "2022-05-26",
-    "image_url": "https://source.unsplash.com/600x600/?teak,wood,carved,jali,wall,panel,lattice"
+    "image_url": "https://images.unsplash.com/photo-1740293682078-bb62c0b3cf3d?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxUZWFrJTIwV29vZCUyMFdhbGwlMjBQYW5lbCUyMCUyOEphbGklMjklMjBIb21lJTIwRGVjb3IlMjBJbnRyaWNhdGUlMjBXb29kJTIwQ2FydmluZyUyMGhhbmRtYWRlJTIwaW5kaWF8ZW58MXwyfHx8MTc3NTYzNDcwMXww&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 43,
@@ -569,7 +569,7 @@
     "seller_specialty": "Intricate Wood Carving",
     "rating": 4.1,
     "date_listed": "2023-05-13",
-    "image_url": "https://source.unsplash.com/600x600/?ganesha,wooden,wall,plaque,carved,relief,indian"
+    "image_url": "https://images.unsplash.com/photo-1616434655660-ec12978d8be1?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxXb29kZW4lMjBHYW5lc2hhJTIwV2FsbCUyMFBsYXF1ZSUyMEhvbWUlMjBEZWNvciUyMEludHJpY2F0ZSUyMFdvb2QlMjBDYXJ2aW5nJTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NzAzfDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 45,
@@ -621,7 +621,7 @@
     "seller_specialty": "Intricate Wood Carving",
     "rating": 4.6,
     "date_listed": "2022-08-12",
-    "image_url": "https://source.unsplash.com/600x600/?wooden,elephant,bookends,carved,mango,pair"
+    "image_url": "https://images.unsplash.com/photo-1692616494802-a7344a129382?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxXb29kZW4lMjBCb29rZW5kcyUyMCUyOEVsZXBoYW50JTIwUGFpciUyOSUyMEhvbWUlMjBEZWNvciUyMEludHJpY2F0ZSUyMFdvb2QlMjBDYXJ2aW5nJTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NzA2fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 49,
@@ -632,7 +632,7 @@
     "stock": 48,
     "seller": "Suresh Reddy",
     "seller_specialty": "Intricate Wood Carving",
-    "rating": 4.0,
+    "rating": 4,
     "date_listed": "2022-10-15",
     "image_url": "https://source.unsplash.com/600x600/?wooden,tissue,box,cover,carved,floral,sheesham"
   },
@@ -647,7 +647,7 @@
     "seller_specialty": "Intricate Wood Carving",
     "rating": 3.8,
     "date_listed": "2022-06-04",
-    "image_url": "https://source.unsplash.com/600x600/?wooden,jewellery,stand,carved,mango,hooks,tray"
+    "image_url": "https://images.unsplash.com/photo-1682620708650-4b6334d0603a?ixid=M3w5MTg4MDh8MHwxfHNlYXJjaHwxfHxXb29kZW4lMjBKZXdlbGxlcnklMjBTdGFuZCUyMEhvbWUlMjBEZWNvciUyMEludHJpY2F0ZSUyMFdvb2QlMjBDYXJ2aW5nJTIwaGFuZG1hZGUlMjBpbmRpYXxlbnwxfDJ8fHwxNzc1NjM0NzA4fDA&ixlib=rb-4.1.0&auto=format&fit=crop&w=600&h=600&q=80"
   },
   {
     "product_id": 51,
@@ -658,7 +658,7 @@
     "stock": 140,
     "seller": "Priya Singh",
     "seller_specialty": "Natural Fiber Weaving",
-    "rating": 3.0,
+    "rating": 3,
     "date_listed": "2022-01-31",
     "image_url": "https://source.unsplash.com/600x600/?jute,tote,bag,handwoven,natural,fiber,eco"
   },
@@ -749,7 +749,7 @@
     "stock": 130,
     "seller": "Priya Singh",
     "seller_specialty": "Natural Fiber Weaving",
-    "rating": 3.0,
+    "rating": 3,
     "date_listed": "2023-01-16",
     "image_url": "https://source.unsplash.com/600x600/?natural,fiber,coaster,set,jute,woven,round"
   },

@@ -50,6 +50,7 @@ const getProducts = async ({
   const transformed = products.map((p) => ({
     ...p,
     id: p._id?.toString?.() || '',
+    image: p.imageUrl || (Array.isArray(p.images) ? p.images[0] : ''),
     category: p.category?.name || p.category?.toString?.() || '',
     categorySlug: p.category?.slug || '',
     _id: undefined,
@@ -92,6 +93,7 @@ const getProductByIdentifier = async (identifier) => {
   return {
     ...product,
     id: product._id?.toString?.() || '',
+    image: product.imageUrl || (Array.isArray(product.images) ? product.images[0] : ''),
     category: product.category?.name || product.category?.toString?.() || '',
     categorySlug: product.category?.slug || '',
     _id: undefined,

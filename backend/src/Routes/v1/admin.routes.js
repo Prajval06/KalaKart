@@ -30,4 +30,8 @@ router.delete('/products/:productId',
   productController.deleteProduct
 );
 
+router.post('/products/images/refresh',
+  productController.refreshProductImagesFromProvider
+);
+
 module.exports = router;

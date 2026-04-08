@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ToastProps } from '../components/Toast';
+import { DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
 import { products as staticProducts } from '../data/products';
 import type { Product } from '../data/products';
 
@@ -84,7 +85,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // ── Backend sync helpers ──
   const fetchProducts = async () => {
     try {
-      const res = await productsAPI.getProducts();
+      const res = await productsAPI.getProducts({ per_page: 100 });
       if (res.data.success) {
         const list = res.data?.data?.products || [];
         const mapped: Product[] = list.map((p: any) => {
@@ -102,7 +103,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               : (p.category?.name || p.categorySlug || 'Craft'),
             artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
             artisanId: String(rawArtisanId || p.artisanId || ''),
-            image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
+            image: p.imageUrl || (Array.isArray(p.images) && p.images[0]) || p.image || DEFAULT_FALLBACK_IMAGE,
             description: p.description || '',
             state: p.state || 'India',
             rating: p.rating,
