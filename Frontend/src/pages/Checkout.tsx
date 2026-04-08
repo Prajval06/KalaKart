@@ -190,10 +190,16 @@ function CheckoutInner({
 
   /* ── Cart products with quantities ── */
   const allProducts = getAllProducts();
-  const cartProducts = cartItems.map(item => ({
-    ...allProducts.find(p => p.id === item.productId)!,
-    quantity: item.quantity,
-  })).filter(item => item.id);
+  const cartProducts = cartItems.reduce<Array<(ReturnType<typeof getAllProducts>[number] & { quantity: number })>>((acc, item) => {
+    const product = allProducts.find((p) => String(p.id) === String(item.productId));
+    if (product) {
+      acc.push({
+        ...product,
+        quantity: item.quantity,
+      });
+    }
+    return acc;
+  }, []);
 
   if (cartProducts.length === 0) {
     return (
@@ -704,7 +710,7 @@ function CheckoutInner({
                   </div>
                   <div className="flex justify-between text-sm">
                     <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping</span>
-                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{shipping.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{deliveryCharge.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>
                     <span>🏪 Platform fee (10%)</span>
