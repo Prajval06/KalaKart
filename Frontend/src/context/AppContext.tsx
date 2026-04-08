@@ -223,10 +223,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [artisanOrders, currentUser]);
 
   // ── Buyer Cart actions ──
-  const addToCart = async (productId: string, productName: string) => {
+  const addToCart = async (productId: string, productName: string, quantity = 1) => {
+    const qty = Number.isFinite(quantity) ? Math.max(1, Math.floor(quantity)) : 1;
     if (isLoggedIn && isMongoObjectId(productId)) {
       try {
-        const res = await cartAPI.addItem({ product_id: productId, quantity: 1 });
+        const res = await cartAPI.addItem({ product_id: productId, quantity: qty });
         if (res.data.success) {
           const backendItems = res.data.data.cart.items.map((it: any) => ({
             productId: it.product_id,
@@ -241,10 +242,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           const existing = prev.find(item => item.productId === productId);
           if (existing) {
             return prev.map(item =>
-              item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item
+              item.productId === productId ? { ...item, quantity: item.quantity + qty } : item
             );
           }
-          return [...prev, { productId, quantity: 1 }];
+          return [...prev, { productId, quantity: qty }];
         });
       }
     } else {
@@ -252,10 +253,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const existing = prev.find(item => item.productId === productId);
         if (existing) {
           return prev.map(item =>
-            item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item
+            item.productId === productId ? { ...item, quantity: item.quantity + qty } : item
           );
         }
-        return [...prev, { productId, quantity: 1 }];
+        return [...prev, { productId, quantity: qty }];
       });
     }
 
@@ -283,11 +284,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (err) {
         console.error('Failed to update backend quantity:', err);
+        // Fallback to local update so cart controls remain responsive.
+        setCartItems(prev =>
+          prev.map(cartItem =>
+            cartItem.productId === productId ? { ...cartItem, quantity: newQty } : cartItem
+          )
+        );
       }
     } else {
       setCartItems(prev =>
-        prev.map(item =>
-          item.productId === productId ? { ...item, quantity: newQty } : item
+        prev.map(cartItem =>
+          cartItem.productId === productId ? { ...cartItem, quantity: newQty } : cartItem
         )
       );
     }
@@ -308,9 +315,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (err) {
         console.error('Failed to remove from backend cart:', err);
+        // Fallback to local remove when backend request fails.
+        setCartItems(prev => prev.filter(cartItem => cartItem.productId !== productId));
       }
     } else {
-      setCartItems(prev => prev.filter(item => item.productId !== productId));
+      setCartItems(prev => prev.filter(cartItem => cartItem.productId !== productId));
     }
   };
 

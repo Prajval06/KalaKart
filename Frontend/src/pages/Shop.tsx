@@ -4,6 +4,7 @@ import { Heart, Filter } from 'lucide-react';
 import { categories } from '../data/products';
 import { ImageWithFallback, DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
 import { productService } from '../services/product.service';
+import { useTranslation } from 'react-i18next';
 
 type ShopProduct = {
   id: string;
@@ -33,6 +34,7 @@ function normalizeShopProduct(raw: any): ShopProduct {
 }
 
 export default function Shop() {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [allProducts, setAllProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,7 @@ export default function Shop() {
         const normalized = list.map(normalizeShopProduct).filter((p: ShopProduct) => !!p.id);
         setAllProducts(normalized);
       } catch (e) {
-        setError('Failed to load products.');
+        setError(t('shop.noProductsFound'));
         setAllProducts([]);
       } finally {
         setLoading(false);
@@ -68,15 +70,15 @@ export default function Shop() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2">Shop Handicrafts</h1>
-          <p>Discover unique handcrafted products from India's finest artisans</p>
+          <h1 className="mb-2">{t('shop.title')}</h1>
+          <p>{t('shop.subtitle')}</p>
         </div>
 
         {/* Filters */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-            <h3>Filter by Category</h3>
+            <h3>{t('shop.filterByCategory')}</h3>
           </div>
           <div className="flex flex-wrap gap-3">
             {categories.map((category) => (
@@ -98,7 +100,7 @@ export default function Shop() {
 
         {loading && (
           <div className="mb-6">
-            <p style={{ color: 'var(--text-gray)' }}>Loading products...</p>
+            <p style={{ color: 'var(--text-gray)' }}>{t('shop.loadingProducts')}</p>
           </div>
         )}
 
@@ -113,7 +115,10 @@ export default function Shop() {
             {/* Product Count */}
             <div className="mb-6">
               <p style={{ color: 'var(--text-gray)' }}>
-                Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+                {t('shop.showing', {
+                  count: filteredProducts.length,
+                  label: filteredProducts.length === 1 ? t('shop.product') : t('shop.products')
+                })}
               </p>
             </div>
 
@@ -150,7 +155,7 @@ export default function Shop() {
                     </p>
                     <h3 className="text-lg mb-2 line-clamp-1">{product.name}</h3>
                     <p className="text-sm mb-3" style={{ color: 'var(--text-gray)' }}>
-                      by {product.artisan}
+                      {t('shop.by')} {product.artisan}
                     </p>
                     <p className="font-semibold" style={{ color: 'var(--text-dark)' }}>
                       ₹{product.price.toLocaleString('en-IN')}
@@ -163,9 +168,9 @@ export default function Shop() {
             {/* Empty State */}
             {filteredProducts.length === 0 && (
               <div className="text-center py-16">
-                <p className="text-xl mb-2">No products found</p>
+                <p className="text-xl mb-2">{t('shop.noProductsFound')}</p>
                 <p style={{ color: 'var(--text-gray)' }}>
-                  Try selecting a different category
+                  {t('shop.tryDifferentCategory')}
                 </p>
               </div>
             )}

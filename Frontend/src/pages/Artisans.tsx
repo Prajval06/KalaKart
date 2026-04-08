@@ -3,6 +3,7 @@ import { MapPin, Award, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { usersAPI } from '../utils/api';
+import { useTranslation } from 'react-i18next';
 
 type ArtisanCard = {
   id: string;
@@ -15,6 +16,7 @@ type ArtisanCard = {
 };
 
 export default function Artisans() {
+  const { t } = useTranslation();
   const [artisans, setArtisans] = useState<ArtisanCard[]>([]);
 
   useEffect(() => {
@@ -47,8 +49,8 @@ export default function Artisans() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
       <Breadcrumb
         items={[
-          { label: 'Home', href: '/' },
-          { label: 'Artisans' },
+          { label: t('header.home'), href: '/' },
+          { label: t('header.artisans') },
         ]}
       />
 
@@ -56,9 +58,9 @@ export default function Artisans() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-12 text-center">
-            <h1 className="mb-4">Meet Our Artisans</h1>
+            <h1 className="mb-4">{t('artisans.meetOurArtisans')}</h1>
             <p className="text-xl max-w-3xl mx-auto">
-              The talented craftspeople preserving India's rich heritage through their exceptional skills and dedication
+              {t('artisans.subtitle')}
             </p>
           </div>
 
@@ -67,10 +69,10 @@ export default function Artisans() {
               className="text-xs text-white px-3 py-1 rounded-full font-bold"
               style={{ backgroundColor: 'var(--saffron)' }}
             >
-              Our Creators
+              {t('artisans.ourCreators')}
             </span>
             <h2 className="text-lg" style={{ color: 'var(--dark-brown)' }}>
-              Traditional & Independent Craftspeople
+              {t('artisans.traditionalIndependent')}
             </h2>
           </div>
 
@@ -111,7 +113,7 @@ export default function Artisans() {
                       {artisan.yearsOfExperience > 1 && (
                         <div className="flex items-center gap-2">
                           <Award className="w-4 h-4" />
-                          <span className="text-sm">{artisan.yearsOfExperience} years of experience</span>
+                          <span className="text-sm">{t('artisans.yearsOfExperience', { count: artisan.yearsOfExperience })}</span>
                         </div>
                       )}
                     </div>
@@ -140,16 +142,16 @@ export default function Artisans() {
             className="mt-16 p-8 rounded-xl text-center"
             style={{ backgroundColor: 'var(--cream)' }}
           >
-            <h2 className="mb-4">Support Traditional Crafts</h2>
+            <h2 className="mb-4">{t('artisans.supportTraditionalCrafts')}</h2>
             <p className="max-w-2xl mx-auto mb-6">
-              Every purchase helps preserve centuries-old traditions and provides sustainable livelihoods to artisan communities across India.
+              {t('artisans.supportDesc')}
             </p>
             <Link
               to="/"
               className="inline-flex items-center px-6 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
               style={{ backgroundColor: 'var(--saffron)' }}
             >
-              Shop Now
+              {t('artisans.shopNow')}
             </Link>
           </div>
         </div>

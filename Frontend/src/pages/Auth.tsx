@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Eye, EyeOff, Key, Loader2, ShoppingBag, Mail, User, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const logoImage =
   'https://raw.githubusercontent.com/Prajval06/KalaKart/refs/heads/main/Kalakart%20logo.png';
@@ -33,6 +34,7 @@ function GoogleIcon() {
 
 // ── Main Auth Page ───────────────────────────────────────────────────────────
 export default function Auth() {
+  const { t } = useTranslation();
   const navigate       = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, signup, forgotPassword, resetPassword, loginWithGoogle, cartItems, isLoggedIn } =
@@ -87,7 +89,7 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (!email.trim() || !password) { setError('Please fill in all fields.'); return; }
+    if (!email.trim() || !password) { setError(t('auth.fillAllFields')); return; }
     setLoading(true);
     const result = await login(email.trim(), password, userType);
     setLoading(false);
@@ -100,12 +102,12 @@ export default function Auth() {
     setError(''); setSuccess('');
     const displayName = userType === 'seller' ? (businessName.trim() || name.trim()) : name.trim();
     if (!email.trim() || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+      setError(t('auth.fillAllFields'));
       return;
     }
-    if (!displayName) { setError('Please enter your name.'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
-    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    if (!displayName) { setError(t('auth.enterName')); return; }
+    if (password.length < 6) { setError(t('auth.passwordTooShort')); return; }
+    if (password !== confirmPassword) { setError(t('auth.passwordMismatch')); return; }
 
     setLoading(true);
     const result = await signup(email.trim(), password, displayName, userType);
@@ -121,34 +123,34 @@ export default function Auth() {
     setBusinessName('');
     setPhone('');
     setError('');
-    setSuccess('Account created! Please log in.');
+    setSuccess(t('auth.accountCreated'));
   };
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (!email.trim()) { setError('Please enter your email address.'); return; }
+    if (!email.trim()) { setError(t('auth.enterEmail')); return; }
     setLoading(true);
     const result = await forgotPassword(email.trim());
     setLoading(false);
     if (result.error) { setError(result.error); return; }
-    setSuccess(result.success || 'Reset email sent!');
+    setSuccess(result.success || t('auth.resetEmailSent'));
   };
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (!resetToken) { setError('Invalid reset link. Please request a new one.'); return; }
-    if (!password || !confirmPassword) { setError('Please fill in all fields.'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
-    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    if (!resetToken) { setError(t('auth.invalidResetLink')); return; }
+    if (!password || !confirmPassword) { setError(t('auth.fillAllFields')); return; }
+    if (password.length < 8) { setError(t('auth.passwordTooShort')); return; }
+    if (password !== confirmPassword) { setError(t('auth.passwordMismatch')); return; }
 
     setLoading(true);
     const result = await resetPassword(resetToken, password);
     setLoading(false);
     if (result.error) { setError(result.error); return; }
 
-    setSuccess(result.success || 'Password updated successfully.');
+    setSuccess(result.success || t('auth.passwordUpdated'));
     setTimeout(() => navigate('/auth', { replace: true }), 1500);
   };
 
@@ -170,10 +172,10 @@ export default function Auth() {
 
   // ── Title labels ─────────────────────────────────────────────────────────────
   const titles: Record<FormMode | 'reset', { heading: string; sub: string }> = {
-    login:  { heading: 'Welcome Back',     sub: 'Sign in to your account' },
-    signup: { heading: 'Join KalaKart',    sub: 'Create your account today' },
-    forgot: { heading: 'Forgot Password?', sub: 'We\'ll send you a reset link' },
-    reset:  { heading: 'Set New Password',  sub: 'Choose a new password to continue' },
+    login:  { heading: t('auth.loginTitle'),     sub: t('auth.loginSubtitle') },
+    signup: { heading: t('auth.signupTitle'),    sub: t('auth.signupSubtitle') },
+    forgot: { heading: t('auth.forgotTitle'), sub: t('auth.forgotSubtitle') },
+    reset:  { heading: t('auth.resetTitle'),  sub: t('auth.resetSubtitle') },
   };
   const { heading, sub } = resetToken ? titles.reset : titles[mode];
 
@@ -203,9 +205,9 @@ export default function Auth() {
             <ShoppingBag className="w-5 h-5 flex-shrink-0" style={{ color: '#8B2500' }} />
             <div>
               <p className="font-semibold" style={{ color: '#4A2C2A' }}>
-                You have {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in your cart
+                {cartItems.length} {t('auth.cartItems')}
               </p>
-              <p style={{ color: '#8B4513' }}>Login or sign up to complete your purchase</p>
+              <p style={{ color: '#8B4513' }}>{t('auth.loginSubtitle')}</p>
             </div>
           </div>
         )}
@@ -220,7 +222,7 @@ export default function Auth() {
             KALAKART
           </h1>
           <p className="text-[#4A2C2A] font-serif italic mt-1 text-base drop-shadow-sm">
-            Connecting Artisans to the World
+            {t('auth.connectingTagline')}
           </p>
         </div>
 
@@ -261,18 +263,18 @@ export default function Auth() {
               {/* Buyer / Seller tabs (login + signup only) */}
               {mode !== 'forgot' && (
                 <div className="flex justify-center mb-6 bg-[#F5DEB3] p-1 rounded-full w-fit mx-auto shadow-inner">
-                  {(['buyer', 'seller'] as UserType[]).map(t => (
+                  {(['buyer', 'seller'] as UserType[]).map(tabType => (
                     <button
-                      key={t}
+                      key={tabType}
                       type="button"
-                      onClick={() => { setUserType(t); setError(''); }}
+                      onClick={() => { setUserType(tabType); setError(''); }}
                       className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-                        userType === t
+                        userType === tabType
                           ? 'bg-[#8B2500] text-white shadow-md'
                           : 'text-[#5D4037] hover:bg-[#DEB887]'
                       }`}
                     >
-                      {t === 'buyer' ? 'Buyer' : 'Seller'}
+                      {tabType === 'buyer' ? t('auth.buyerMode') : t('auth.sellerMode')}
                     </button>
                   ))}
                 </div>
@@ -330,7 +332,7 @@ export default function Auth() {
                     <input
                       id="login-email"
                       type="email"
-                      placeholder="Email Address"
+                      placeholder={t('auth.emailPlaceholder')}
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       autoComplete="email"
@@ -345,7 +347,7 @@ export default function Auth() {
                     <input
                       id="login-password"
                       type={showPw ? 'text' : 'password'}
-                      placeholder="Password"
+                      placeholder={t('auth.passwordPlaceholder')}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       autoComplete="current-password"
@@ -355,7 +357,7 @@ export default function Auth() {
                       type="button"
                       onClick={() => setShowPw(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
-                      aria-label={showPw ? 'Hide password' : 'Show password'}
+                      aria-label={showPw ? t('auth.hidePassword') : t('auth.showPassword')}
                     >
                       {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
@@ -371,7 +373,7 @@ export default function Auth() {
                         onChange={e => setRememberMe(e.target.checked)}
                         className="w-4 h-4 accent-[#8B2500]"
                       />
-                      <span className="text-[#5D4037]">Remember me</span>
+                      <span className="text-[#5D4037]">{t('auth.rememberMe')}</span>
                     </label>
                     <button
                       id="forgot-password-link"
@@ -379,7 +381,7 @@ export default function Auth() {
                       onClick={() => switchMode('forgot')}
                       className="text-[#8B2500] hover:underline font-semibold font-serif"
                     >
-                      Forgot Password?
+                      {t('auth.forgotPassword')}
                     </button>
                   </div>
 
@@ -395,7 +397,7 @@ export default function Auth() {
                       letterSpacing: '0.05em',
                     }}
                   >
-                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Verifying…</> : 'Login'}
+                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('auth.verifying')}</> : t('auth.loginCta')}
                   </button>
 
                   {/* OR divider */}
@@ -414,20 +416,20 @@ export default function Auth() {
                     className="w-full py-3 rounded-lg font-semibold border-2 border-[#DEB887] hover:bg-[#FFF8DC] transition-colors flex items-center justify-center gap-3 text-[#5D4037] disabled:opacity-60"
                   >
                     <GoogleIcon />
-                    <span className="font-serif">Continue with Google</span>
+                    <span className="font-serif">{t('auth.continueWithGoogle')}</span>
                   </button>
 
                   {/* Switch to Sign Up */}
                   <div className="mt-4 text-center border-t border-[#DAA520]/30 pt-4">
                     <p className="text-[#5D4037] text-sm font-serif">
-                      Don't have an account?{' '}
+                      {t('auth.noAccount')}{' '}
                       <button
                         id="goto-signup"
                         type="button"
                         onClick={() => switchMode('signup')}
                         className="text-[#8B2500] font-bold hover:underline"
                       >
-                        Sign Up
+                        {t('auth.signUp')}
                       </button>
                     </p>
                   </div>
@@ -449,7 +451,7 @@ export default function Auth() {
                       <input
                         id="signup-business"
                         type="text"
-                        placeholder="Business Name"
+                        placeholder={t('auth.businessNameLabel')}
                         value={businessName}
                         onChange={e => setBusinessName(e.target.value)}
                         className={inputCls}
@@ -464,7 +466,7 @@ export default function Auth() {
                       <input
                         id="signup-name"
                         type="text"
-                        placeholder="Full Name"
+                        placeholder={t('auth.fullNameLabel')}
                         value={name}
                         onChange={e => setName(e.target.value)}
                         autoFocus
@@ -479,7 +481,7 @@ export default function Auth() {
                     <input
                       id="signup-email"
                       type="email"
-                      placeholder="Email Address"
+                      placeholder={t('auth.emailLabel')}
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       autoComplete="email"
@@ -498,7 +500,7 @@ export default function Auth() {
                       <input
                         id="signup-phone"
                         type="tel"
-                        placeholder="Phone Number"
+                        placeholder={t('auth.phoneLabel')}
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
                         className={inputCls}
@@ -512,7 +514,7 @@ export default function Auth() {
                     <input
                       id="signup-password"
                       type={showPw ? 'text' : 'password'}
-                      placeholder="Password (min 6 characters)"
+                      placeholder={t('auth.passwordPlaceholder')}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       autoComplete="new-password"
@@ -522,7 +524,7 @@ export default function Auth() {
                       type="button"
                       onClick={() => setShowPw(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
-                      aria-label={showPw ? 'Hide password' : 'Show password'}
+                      aria-label={showPw ? t('auth.hidePassword') : t('auth.showPassword')}
                     >
                       {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
@@ -534,7 +536,7 @@ export default function Auth() {
                     <input
                       id="signup-confirm-password"
                       type={showCPw ? 'text' : 'password'}
-                      placeholder="Confirm Password"
+                      placeholder={t('auth.confirmPasswordLabel')}
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
                       autoComplete="new-password"
@@ -544,7 +546,7 @@ export default function Auth() {
                       type="button"
                       onClick={() => setShowCPw(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
-                      aria-label={showCPw ? 'Hide confirm password' : 'Show confirm password'}
+                      aria-label={showCPw ? t('auth.hideConfirmPassword') : t('auth.showConfirmPassword')}
                     >
                       {showCPw ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
@@ -562,7 +564,7 @@ export default function Auth() {
                       letterSpacing: '0.05em',
                     }}
                   >
-                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Creating Account…</> : 'Sign Up'}
+                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('auth.creatingAccount')}</> : t('auth.signUp')}
                   </button>
 
                   {/* OR divider */}
@@ -581,20 +583,20 @@ export default function Auth() {
                     className="w-full py-3 rounded-lg font-semibold border-2 border-[#DEB887] hover:bg-[#FFF8DC] transition-colors flex items-center justify-center gap-3 text-[#5D4037] disabled:opacity-60"
                   >
                     <GoogleIcon />
-                    <span className="font-serif">Sign up with Google</span>
+                    <span className="font-serif">{t('auth.signUpWithGoogle')}</span>
                   </button>
 
                   {/* Switch to Login */}
                   <div className="mt-4 text-center border-t border-[#DAA520]/30 pt-4">
                     <p className="text-[#5D4037] text-sm font-serif">
-                      Already have an account?{' '}
+                      {t('auth.alreadyHaveAccount')}{' '}
                       <button
                         id="goto-login"
                         type="button"
                         onClick={() => switchMode('login')}
                         className="text-[#8B2500] font-bold hover:underline"
                       >
-                        Login
+                        {t('auth.loginCta')}
                       </button>
                     </p>
                   </div>
@@ -606,7 +608,7 @@ export default function Auth() {
                 <form id="forgot-form" className="space-y-4" onSubmit={handleForgot} noValidate>
 
                   <p className="text-sm text-[#5D4037] font-serif text-center -mt-2 mb-2">
-                    Enter the email linked to your account and we'll send a reset link.
+                    {t('auth.enterLinkedEmail')}
                   </p>
 
                   {/* Email */}
@@ -615,7 +617,7 @@ export default function Auth() {
                     <input
                       id="forgot-email"
                       type="email"
-                      placeholder="Registered Email Address"
+                      placeholder={t('auth.registeredEmail')}
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       autoComplete="email"
@@ -637,8 +639,8 @@ export default function Auth() {
                     }}
                   >
                     {loading
-                      ? <><Loader2 className="w-5 h-5 animate-spin" /> Sending…</>
-                      : 'Send Reset Email'}
+                      ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('auth.sending')}</>
+                      : t('auth.sendResetEmail')}
                   </button>
 
                   {/* Back to Login */}
@@ -648,7 +650,7 @@ export default function Auth() {
                     onClick={() => switchMode('login')}
                     className="w-full py-2 text-sm text-[#8B2500] font-semibold font-serif flex items-center justify-center gap-1 hover:underline"
                   >
-                    <ArrowLeft size={15} /> Back to Login
+                    <ArrowLeft size={15} /> {t('auth.backToLogin')}
                   </button>
                 </form>
               )}
@@ -658,7 +660,7 @@ export default function Auth() {
                 <form id="reset-form" className="space-y-4" onSubmit={handleReset} noValidate>
 
                   <p className="text-sm text-[#5D4037] font-serif text-center -mt-2 mb-2">
-                    Enter a new password for your KalaKart account.
+                    {t('auth.resetIntro')}
                   </p>
 
                   <div className="relative">
@@ -666,7 +668,7 @@ export default function Auth() {
                     <input
                       id="reset-password"
                       type={showPw ? 'text' : 'password'}
-                      placeholder="New Password"
+                      placeholder={t('auth.newPassword')}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       autoComplete="new-password"
@@ -677,7 +679,7 @@ export default function Auth() {
                       type="button"
                       onClick={() => setShowPw(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
-                      aria-label={showPw ? 'Hide password' : 'Show password'}
+                      aria-label={showPw ? t('auth.hidePassword') : t('auth.showPassword')}
                     >
                       {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
@@ -688,7 +690,7 @@ export default function Auth() {
                     <input
                       id="reset-confirm-password"
                       type={showCPw ? 'text' : 'password'}
-                      placeholder="Confirm New Password"
+                      placeholder={t('auth.confirmNewPassword')}
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
                       autoComplete="new-password"
@@ -698,7 +700,7 @@ export default function Auth() {
                       type="button"
                       onClick={() => setShowCPw(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#8B4513]/70 hover:text-[#8B2500]"
-                      aria-label={showCPw ? 'Hide confirm password' : 'Show confirm password'}
+                      aria-label={showCPw ? t('auth.hideConfirmPassword') : t('auth.showConfirmPassword')}
                     >
                       {showCPw ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
@@ -715,7 +717,7 @@ export default function Auth() {
                       letterSpacing: '0.05em',
                     }}
                   >
-                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Updating…</> : 'Update Password'}
+                    {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('auth.updating')}</> : t('auth.updatePassword')}
                   </button>
 
                   <button
@@ -724,7 +726,7 @@ export default function Auth() {
                     onClick={() => navigate('/auth', { replace: true })}
                     className="w-full py-2 text-sm text-[#8B2500] font-semibold font-serif flex items-center justify-center gap-1 hover:underline"
                   >
-                    <ArrowLeft size={15} /> Back to Login
+                    <ArrowLeft size={15} /> {t('auth.backToLogin')}
                   </button>
                 </form>
               )}
@@ -749,7 +751,7 @@ export default function Auth() {
             className="text-[#4A2C2A] font-bold font-serif hover:text-[#8B2500] transition-colors flex items-center justify-center gap-2 drop-shadow-sm bg-white/60 px-5 py-2 rounded-full backdrop-blur-sm shadow-sm"
           >
             <ArrowLeft size={15} />
-            {fromCheckout ? 'Back to Cart' : 'Return to Home'}
+            {fromCheckout ? t('auth.backToCart') : t('auth.returnToHome')}
           </Link>
         </div>
 

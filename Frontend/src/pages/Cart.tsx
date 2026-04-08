@@ -5,6 +5,7 @@ import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
 import { calculatePlatformFee } from '../utils/shipping';
 import { ImageWithFallback } from '../components/ImageWithFallback';
+import { useTranslation } from 'react-i18next';
 
 // ── Status badge colours ──────────────────────────────────────────────────────
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -15,6 +16,7 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
 
 // ── Orders slide-in panel ─────────────────────────────────────────────────────
 function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const { orders } = useAppContext();
 
   return (
@@ -47,7 +49,7 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
         >
           <div className="flex items-center gap-3">
             <ClipboardList className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-            <h3 style={{ color: 'var(--dark-brown)' }}>My Orders</h3>
+            <h3 style={{ color: 'var(--dark-brown)' }}>{t('cart.myOrders')}</h3>
             {orders.length > 0 && (
               <span
                 className="text-xs font-bold px-2 py-0.5 rounded-full"
@@ -76,9 +78,9 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
               >
                 <Package className="w-10 h-10" style={{ color: 'var(--saffron)' }} />
               </div>
-              <p className="font-semibold mb-1" style={{ color: 'var(--dark-brown)' }}>No orders yet</p>
+              <p className="font-semibold mb-1" style={{ color: 'var(--dark-brown)' }}>{t('cart.noOrdersYet')}</p>
               <p className="text-sm" style={{ color: 'var(--text-gray)' }}>
-                Your past orders will appear here after checkout.
+                {t('cart.noOrdersDesc')}
               </p>
               <Link
                 to="/"
@@ -86,7 +88,7 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
                 className="mt-6 inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: 'var(--saffron)' }}
               >
-                Start Shopping <ChevronRight className="w-4 h-4 ml-1" />
+                {t('cart.startShopping')} <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </div>
           ) : (
@@ -142,7 +144,7 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
                             {item.name}
                           </p>
                           <p className="text-xs" style={{ color: 'var(--text-gray)' }}>
-                            by {item.artisan} · ×{item.quantity}
+                            {t('cart.byArtisan', { artisan: item.artisan })} · ×{item.quantity}
                           </p>
                         </div>
                         <p className="text-sm font-semibold flex-shrink-0" style={{ color: 'var(--saffron)' }}>
@@ -163,6 +165,7 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
 
 // ── Main Cart page ────────────────────────────────────────────────────────────
 export default function Cart() {
+  const { t } = useTranslation();
   const { cartItems, updateQuantity, removeItem, isLoggedIn, orders, getAllProducts } = useAppContext();
   const navigate = useNavigate();
   const [ordersOpen, setOrdersOpen] = useState(false);
@@ -191,7 +194,7 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Shopping Cart' }]} />
+      <Breadcrumb items={[{ label: t('header.home'), href: '/' }, { label: t('cart.shoppingCart') }]} />
 
       {/* ── Orders panel ── */}
       <OrdersPanel open={ordersOpen} onClose={() => setOrdersOpen(false)} />
@@ -208,7 +211,7 @@ export default function Cart() {
                 style={{ color: 'var(--dark-brown)' }}
               >
                 <ClipboardList className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-                <span className="font-semibold">My Orders</span>
+                <span className="font-semibold">{t('cart.myOrders')}</span>
                 {orders.length > 0 && (
                   <span
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
@@ -227,16 +230,16 @@ export default function Cart() {
               >
                 <ShoppingBag className="w-12 h-12" style={{ color: 'var(--saffron)' }} />
               </div>
-              <h2 className="mb-4">Your Cart is Empty</h2>
+              <h2 className="mb-4">{t('cart.yourCartEmpty')}</h2>
               <p className="mb-8" style={{ color: 'var(--text-gray)' }}>
-                Discover beautiful handcrafted products and add them to your cart
+                {t('cart.emptyDesc')}
               </p>
               <Link
                 to="/"
                 className="inline-flex items-center px-6 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: 'var(--saffron)' }}
               >
-                Continue Shopping
+                {t('cart.continueShopping')}
               </Link>
             </div>
           </div>
@@ -246,7 +249,7 @@ export default function Cart() {
           <div className="max-w-7xl mx-auto">
             {/* Page title row with Orders icon */}
             <div className="flex items-center justify-between mb-8">
-              <h1>Shopping Cart</h1>
+              <h1>{t('cart.shoppingCart')}</h1>
               <button
                 id="orders-icon-btn"
                 onClick={() => setOrdersOpen(true)}
@@ -254,7 +257,7 @@ export default function Cart() {
                 style={{ color: 'var(--dark-brown)' }}
               >
                 <ClipboardList className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-                <span className="font-semibold hidden sm:inline">My Orders</span>
+                <span className="font-semibold hidden sm:inline">{t('cart.myOrders')}</span>
                 {orders.length > 0 && (
                   <span
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
@@ -279,12 +282,17 @@ export default function Cart() {
                       <Link to={`/product/${item.id}`}>
                         <h3 className="mb-1 hover:opacity-70 transition-opacity">{item.name}</h3>
                       </Link>
-                      <p className="text-sm mb-1" style={{ color: 'var(--text-gray)' }}>by {item.artisan}</p>
+                      <p className="text-sm mb-1" style={{ color: 'var(--text-gray)' }}>{t('cart.byArtisan', { artisan: item.artisan })}</p>
+                      {item.description && (
+                        <p className="text-xs mb-2 line-clamp-2" style={{ color: 'var(--text-gray)' }}>
+                          {item.description}
+                        </p>
+                      )}
                       <p className="font-semibold mb-1" style={{ color: 'var(--saffron)' }}>
                         ₹{item.price.toLocaleString('en-IN')}
                       </p>
                       <p className="text-xs" style={{ color: 'var(--text-gray)' }}>
-                        Delivery share: ₹{Math.round(item.price * 0.03).toLocaleString('en-IN')}
+                        {t('cart.deliveryShare', { amount: Math.round(item.price * 0.03).toLocaleString('en-IN') })}
                       </p>
                     </div>
 
@@ -297,9 +305,8 @@ export default function Cart() {
                       </button>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          disabled={item.quantity <= 1}
-                          className="p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-30"
+                          onClick={() => (item.quantity <= 1 ? removeItem(item.id) : updateQuantity(item.id, -1))}
+                          className="p-1 rounded hover:bg-gray-100 transition-colors"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
@@ -319,31 +326,31 @@ export default function Cart() {
               {/* Order Summary */}
               <div className="lg:col-span-1">
                 <div className="bg-white p-6 rounded-xl sticky top-24" style={{ border: '2px solid var(--beige)' }}>
-                  <h3 className="mb-5">Order Summary</h3>
+                  <h3 className="mb-5">{t('cart.orderSummary')}</h3>
 
 
 
                   {/* Price Breakdown */}
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between">
-                      <span style={{ color: 'var(--text-gray)' }}>Subtotal</span>
+                      <span style={{ color: 'var(--text-gray)' }}>{t('cart.subtotal')}</span>
                       <span className="font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span style={{ color: 'var(--text-gray)' }}>🛵 Delivery (3%)</span>
+                      <span style={{ color: 'var(--text-gray)' }}>🛵 {t('cart.delivery')}</span>
                       <span className="font-semibold">₹{deliveryCharge.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>
-                      <span>🏪 Platform fee (10%)</span>
+                      <span>🏪 {t('cart.platformFee')}</span>
                       <span>₹{platformFee.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>
-                      <span>🧑‍🎨 Artisan earnings (90%)</span>
+                      <span>🧑‍🎨 {t('cart.artisanEarnings')}</span>
                       <span>₹{artisanEarnings.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="border-t pt-3" style={{ borderColor: 'var(--beige)' }}>
                       <div className="flex justify-between">
-                        <span className="font-semibold">Total</span>
+                        <span className="font-semibold">{t('cart.total')}</span>
                         <span className="font-bold text-xl" style={{ color: 'var(--saffron)' }}>
                           ₹{total.toLocaleString('en-IN')}
                         </span>
@@ -359,12 +366,12 @@ export default function Cart() {
                     style={{ backgroundColor: 'var(--saffron)' }}
                   >
                     {!isLoggedIn && <LogIn className="w-4 h-4" />}
-                    {isLoggedIn ? 'Proceed to Checkout' : 'Login to Checkout'}
+                    {isLoggedIn ? t('cart.proceedToCheckout') : t('cart.loginToCheckout')}
                   </button>
 
                   {!isLoggedIn && (
                     <p className="text-xs text-center mb-3" style={{ color: 'var(--text-gray)' }}>
-                      Your cart is saved — login to complete your order
+                      {t('cart.cartSavedLogin')}
                     </p>
                   )}
 
@@ -373,7 +380,7 @@ export default function Cart() {
                     className="block text-center py-3 hover:opacity-70 transition-opacity"
                     style={{ color: 'var(--saffron)' }}
                   >
-                    Continue Shopping
+                    {t('cart.continueShopping')}
                   </Link>
 
                   <div className="mt-6 pt-6 space-y-3" style={{ borderTop: '2px solid var(--beige)' }}>

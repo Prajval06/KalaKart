@@ -1,17 +1,19 @@
 import { Heart, Users, Sparkles } from 'lucide-react';
 import { Link } from 'react-router';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { useTranslation } from 'react-i18next';
 
 export default function About() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--cream-bg)' }}>
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'About Us' }]} />
+      <Breadcrumb items={[{ label: t('header.home'), href: '/' }, { label: t('about.aboutUs') }]} />
 
       <div className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="mb-6">About KalaKart</h1>
+            <h1 className="mb-6">{t('about.aboutUs')}</h1>
             <p className="text-xl max-w-3xl mx-auto">
               Connecting India's talented artisans with the world, one handcrafted masterpiece at a time
             </p>
@@ -23,7 +25,7 @@ export default function About() {
             style={{ backgroundColor: 'var(--cream)' }}
           >
             <div>
-              <h2 className="mb-4">Our Story</h2>
+              <h2 className="mb-4">{t('about.missionTitle')}</h2>
               <p className="mb-4">
                 KalaKart was born from a simple yet powerful vision: to preserve India's rich heritage of traditional crafts while 
                 empowering the artisans who keep these age-old traditions alive.
@@ -47,7 +49,7 @@ export default function About() {
 
           {/* Values */}
           <div className="mb-16">
-            <h2 className="text-center mb-12">Our Values</h2>
+            <h2 className="text-center mb-12">{t('about.valuesTitle')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center p-6">
                 <div 
@@ -56,7 +58,7 @@ export default function About() {
                 >
                   <Heart className="w-8 h-8" />
                 </div>
-                <h3 className="mb-3">Authenticity</h3>
+                <h3 className="mb-3">{t('about.authenticity')}</h3>
                 <p>
                   Every product is 100% handcrafted by verified artisans using traditional techniques passed down through generations.
                 </p>
@@ -69,7 +71,7 @@ export default function About() {
                 >
                   <Users className="w-8 h-8" />
                 </div>
-                <h3 className="mb-3">Community</h3>
+                <h3 className="mb-3">{t('about.community')}</h3>
                 <p>
                   We're committed to fair trade practices and creating sustainable livelihoods for artisan communities across India.
                 </p>
@@ -82,7 +84,7 @@ export default function About() {
                 >
                   <Sparkles className="w-8 h-8" />
                 </div>
-                <h3 className="mb-3">Heritage</h3>
+                <h3 className="mb-3">{t('about.sustainability')}</h3>
                 <p>
                   Preserving India's cultural heritage by supporting traditional crafts and ensuring they thrive for future generations.
                 </p>
@@ -141,7 +143,7 @@ export default function About() {
             className="text-center p-12 rounded-xl"
             style={{ backgroundColor: 'var(--cream)' }}
           >
-            <h2 className="mb-4">Join Our Mission</h2>
+            <h2 className="mb-4">{t('about.joinUs')}</h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               Be part of preserving India's cultural heritage. Every purchase makes a difference.
             </p>
@@ -151,14 +153,14 @@ export default function About() {
                 className="inline-flex items-center px-6 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: 'var(--saffron)' }}
               >
-                Shop Now
+                {t('artisans.shopNow')}
               </Link>
               <Link
                 to="/artisans"
                 className="inline-flex items-center px-6 py-3 rounded-lg font-semibold border-2 hover:opacity-70 transition-opacity"
                 style={{ borderColor: 'var(--saffron)', color: 'var(--saffron)' }}
               >
-                Meet Our Artisans
+                {t('artisans.meetOurArtisans')}
               </Link>
             </div>
           </div>

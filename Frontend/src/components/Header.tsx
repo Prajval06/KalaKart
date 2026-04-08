@@ -1,10 +1,13 @@
 import {
   ShoppingCart, Menu, X, User, Heart, Search,
-  LogOut, LayoutDashboard,
+  LogOut, LayoutDashboard, ChevronDown, Store, Bell, Headset, Megaphone,
+  Package,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const logoImage =
   'https://raw.githubusercontent.com/Prajval06/KalaKart/refs/heads/main/Kalakart%20logo.png';
@@ -90,6 +93,7 @@ function UserAvatar({ name, photoURL }: { name: string; photoURL?: string }) {
 
 // ── SearchBox ────────────────────────────────────────────────────────────────
 function SearchBox({ mobile = false }: { mobile?: boolean }) {
+  const { t } = useTranslation();
   const { getAllProducts, getCompletedArtisanProfiles } = useAppContext();
   const allProducts              = getAllProducts();
   const allArtisans: SearchArtisan[] = getCompletedArtisanProfiles().map((artisan) => ({
@@ -170,7 +174,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
         onChange={e => { setQuery(e.target.value); setActiveIdx(-1); }}
         onFocus={() => setFocused(true)}
         onKeyDown={handleKeyDown}
-        placeholder={mobile ? 'Search...' : 'Search for handicrafts, artisans...'}
+        placeholder={mobile ? t('header.searchPlaceholderMobile') : t('header.searchPlaceholderDesktop')}
         autoComplete="off"
         className={`w-full ${mobile ? 'px-4 py-2 pr-10 text-sm' : 'px-4 py-3 pr-12'} rounded-full border-2 focus:outline-none focus:ring-2 transition-shadow`}
         style={{
@@ -178,7 +182,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
           backgroundColor: 'white',
           boxShadow: focused ? '0 0 0 3px rgba(139,37,0,0.08)' : undefined,
         }}
-        aria-label="Search KalaKart"
+        aria-label={mobile ? t('header.searchPlaceholderMobile') : t('header.searchPlaceholderDesktop')}
         aria-autocomplete="list"
         aria-expanded={showDropdown}
       />
@@ -187,7 +191,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
         onClick={() => commitSearch(query)}
         className={`absolute ${mobile ? 'right-2 top-1/2 -translate-y-1/2' : 'right-1 top-1/2 -translate-y-1/2 p-2 rounded-full hover:opacity-70'} transition-opacity`}
         style={mobile ? undefined : { backgroundColor: 'var(--cream-bg, #FFF8E7)' }}
-        aria-label="Submit search"
+        aria-label={t('header.submitSearch')}
       >
         <Search className={`${mobile ? 'w-5 h-5' : 'w-5 h-5'}`} style={{ color: 'var(--dark-brown, #5D4037)' }} />
       </button>
@@ -234,7 +238,7 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
             className="w-full text-left px-4 py-2.5 text-xs font-semibold text-[#8B2500] bg-[#FFF8E7] hover:bg-[#FFF0D0] transition-colors flex items-center gap-2"
           >
             <Search size={12} />
-            See all results for "{query}"
+            {t('header.seeAllResults', { query })}
           </button>
         </div>
       )}
@@ -244,20 +248,26 @@ function SearchBox({ mobile = false }: { mobile?: boolean }) {
 
 // ── Header component ──────────────────────────────────────────────────────────
 export function Header({ cartCount, wishlistCount }: HeaderProps) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen]     = useState(false);
-  const [dropdownOpen, setDropdown] = useState(false);
-  const dropdownRef                 = useRef<HTMLDivElement>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
   const location                    = useLocation();
   const navigate                    = useNavigate();
   const { isLoggedIn, currentUser, logout } = useAppContext();
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdown(false);
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false);
+      }
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -266,8 +276,14 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
 
   const handleLogout = () => {
     logout();
-    setDropdown(false);
+    setAccountOpen(false);
+    setMoreOpen(false);
     navigate('/');
+  };
+
+  const closeDesktopMenus = () => {
+    setAccountOpen(false);
+    setMoreOpen(false);
   };
 
   return (
@@ -294,71 +310,158 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
           {/* Right Icons */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* User / Profile */}
+            {/* Account + More (desktop, signed in) */}
             {isLoggedIn && currentUser ? (
-              <div ref={dropdownRef} className="relative">
-                <button
-                  id="profile-avatar-btn"
-                  onClick={() => setDropdown(v => !v)}
-                  className="w-11 h-11 rounded-full flex items-center justify-center hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-[#8B2500] focus:ring-offset-1 overflow-hidden shadow-md border-2 border-[#DAA520]"
-                  style={{ backgroundColor: '#F4C95D' }}
-                  aria-label="User menu"
-                  aria-expanded={dropdownOpen}
-                >
-                  <UserAvatar name={currentUser.name} photoURL={currentUser.photoURL} />
-                </button>
-
-                {dropdownOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl border border-[#DEB887] overflow-hidden z-50"
-                    style={{ backgroundColor: '#FFF8E7' }}
+              <>
+                <div ref={accountRef} className="relative hidden md:block">
+                  <button
+                    id="account-menu-btn"
+                    onClick={() => { setAccountOpen(v => !v); setMoreOpen(false); }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FFF0D0] transition-colors"
+                    style={{ color: 'var(--dark-brown)' }}
+                    aria-expanded={accountOpen}
                   >
-                    <div className="px-4 py-3 border-b border-[#DEB887]/60 bg-[#FFF0D0]">
-                      <p className="text-xs text-[#8B4513] font-serif">Signed in as</p>
-                      <p className="text-sm font-bold text-[#4A2C2A] truncate">{currentUser.name}</p>
-                      <p className="text-xs text-[#8B4513] truncate">{currentUser.email}</p>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden border border-[#DAA520]" style={{ backgroundColor: '#F4C95D' }}>
+                      <UserAvatar name={currentUser.name} photoURL={currentUser.photoURL} />
                     </div>
+                    <span className="font-medium max-w-[90px] truncate">{currentUser.name.split(' ')[0]}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
 
-                    {currentUser.userType === 'seller' && (
-                      <button
-                        id="go-to-dashboard"
-                        onClick={() => { setDropdown(false); navigate('/seller-dashboard'); }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#4A2C2A] font-serif hover:bg-[#FFF0D0] transition-colors"
-                      >
-                        <LayoutDashboard size={16} className="text-[#8B2500]" />
-                        Dashboard
-                      </button>
-                    )}
+                  {accountOpen && (
+                    <div className="absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl border border-[#DEB887] overflow-hidden z-50" style={{ backgroundColor: '#FFF8E7' }}>
+                      <div className="px-5 py-4 border-b border-[#DEB887]/60">
+                        <p className="text-2xl font-semibold text-[#3B3B3B]">Your Account</p>
+                      </div>
 
-                    <button
-                      id="logout-btn"
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#C03030] font-serif hover:bg-red-50 transition-colors border-t border-[#DEB887]/40"
-                    >
-                      <LogOut size={16} />
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
+                      <div className="py-2">
+                        {currentUser.userType === 'seller' && (
+                          <button
+                            onClick={() => { closeDesktopMenus(); navigate('/seller-dashboard'); }}
+                            className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                          >
+                            <LayoutDashboard className="w-5 h-5" />
+                            <span>{t('header.dashboard')}</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => { closeDesktopMenus(); navigate('/setup-profile'); }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <User className="w-5 h-5" />
+                          <span>My Profile</span>
+                        </button>
+
+                        <button
+                          onClick={() => { closeDesktopMenus(); navigate('/orders'); }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Package className="w-5 h-5" />
+                          <span>{t('cart.myOrders')}</span>
+                        </button>
+
+                        <button
+                          onClick={() => { closeDesktopMenus(); navigate('/wishlist'); }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Heart className="w-5 h-5" />
+                          <span>Wishlist</span>
+                        </button>
+
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          <span>{t('header.signOut')}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div ref={moreRef} className="relative hidden md:block">
+                  <button
+                    id="more-menu-btn"
+                    onClick={() => { setMoreOpen(v => !v); setAccountOpen(false); }}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-[#FFF0D0] transition-colors"
+                    style={{ color: 'var(--dark-brown)' }}
+                    aria-expanded={moreOpen}
+                  >
+                    <span className="font-medium">More</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+
+                  {moreOpen && (
+                    <div className="absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl border border-[#DEB887] overflow-hidden z-50" style={{ backgroundColor: '#FFF8E7' }}>
+                      <div className="px-5 py-4 border-b border-[#DEB887]/60">
+                        <p className="text-2xl font-semibold text-[#3B3B3B]">More</p>
+                      </div>
+
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            closeDesktopMenus();
+                            if (currentUser.userType === 'seller') navigate('/seller-dashboard');
+                            else navigate('/auth');
+                          }}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Store className="w-5 h-5" />
+                          <span>Become a Seller</span>
+                        </button>
+
+                        <button
+                          onClick={() => closeDesktopMenus()}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Bell className="w-5 h-5" />
+                          <span>Notification Settings</span>
+                        </button>
+
+                        <button
+                          onClick={() => closeDesktopMenus()}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Headset className="w-5 h-5" />
+                          <span>24x7 Customer Care</span>
+                        </button>
+
+                        <button
+                          onClick={() => closeDesktopMenus()}
+                          className="w-full flex items-center gap-3 px-5 py-3 text-[18px] text-[#3D3D3D] hover:bg-[#E7F2FC] transition-colors text-left"
+                        >
+                          <Megaphone className="w-5 h-5" />
+                          <span>Advertise on KalaKart</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <Link
                 id="profile-icon-btn"
                 to="/auth"
                 className="w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
                 style={{ backgroundColor: '#F4C95D' }}
-                aria-label="Sign in"
+                aria-label={t('header.signInAria')}
               >
                 <User className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
               </Link>
             )}
+
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
 
             {/* Wishlist */}
             <Link
               to="/wishlist"
               className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
               style={{ backgroundColor: 'var(--dark-brown)' }}
-              aria-label="Wishlist"
+              aria-label={t('header.wishlistAria')}
             >
               <Heart className="w-5 h-5 text-white" />
               {wishlistCount > 0 && (
@@ -376,7 +479,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
               to="/cart"
               className="relative w-11 h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
               style={{ backgroundColor: '#D77A3F' }}
-              aria-label="Cart"
+              aria-label={t('header.cartAria')}
             >
               <ShoppingCart className="w-5 h-5 text-white" />
               {cartCount > 0 && (
@@ -393,7 +496,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
             <button
               className="md:hidden p-2 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setMenuOpen(v => !v)}
-              aria-label="Toggle mobile menu"
+              aria-label={t('header.toggleMobileMenu')}
             >
               {menuOpen
                 ? <X className="w-6 h-6" style={{ color: 'var(--dark-brown)' }} />
@@ -412,12 +515,12 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
           <nav className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-3">
               {[
-                { to: '/', label: 'Home' },
-                { to: '/shop', label: 'Shop' },
-                { to: '/artisans', label: 'Artisans' },
-                { to: '/about', label: 'About' },
+                { to: '/', label: t('header.home') },
+                { to: '/shop', label: t('header.shop') },
+                { to: '/artisans', label: t('header.artisans') },
+                { to: '/about', label: t('header.about') },
                 ...(currentUser?.userType === 'seller'
-                  ? [{ to: '/seller-dashboard', label: 'Seller Dashboard' }]
+                  ? [{ to: '/seller-dashboard', label: t('header.sellerDashboard') }]
                   : []),
               ].map(({ to, label }) => (
                 <Link
@@ -436,7 +539,7 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                   className="py-2 text-left font-semibold"
                   style={{ color: '#C03030' }}
                 >
-                  Sign Out
+                  {t('header.signOut')}
                 </button>
               ) : (
                 <Link
@@ -445,9 +548,12 @@ export function Header({ cartCount, wishlistCount }: HeaderProps) {
                   style={{ color: 'var(--text-dark)' }}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Login / Sign Up
+                  {t('header.loginSignup')}
                 </Link>
               )}
+              <div className="pt-2">
+                <LanguageSwitcher mobile />
+              </div>
             </div>
           </nav>
         )}

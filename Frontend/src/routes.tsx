@@ -14,6 +14,7 @@ import SellerDashboard from "./pages/SellerDashboard";
 import SetupProfile from "./pages/SetupProfile";
 import CategoryPage from "./pages/CategoryPage";
 import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
 
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
       { path: "search", element: <SearchResults /> },
       { path: "category/:categoryName", element: <CategoryPage /> },
       { path: "checkout", element: <Checkout /> },
+      { path: "orders", element: <Orders /> },
       { path: "*", element: <NotFound /> },
     ],
   },

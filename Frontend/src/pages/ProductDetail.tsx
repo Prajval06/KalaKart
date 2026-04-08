@@ -3,13 +3,14 @@ import { useParams, Link } from 'react-router';
 import {
   ShoppingCart, Heart, MapPin, Award,
   User, ChevronDown, ChevronUp,
-  Shield, Star, X, BadgeCheck, Sparkles,
+  Shield, Star, X, BadgeCheck, Sparkles, Plus, Minus,
 } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ImageWithFallback, DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
 import { useAppContext } from '../context/AppContext';
 import { productService } from '../services/product.service';
 import { useAutoRedirectOnNotFound } from '../hooks/useAutoRedirectOnNotFound';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────── Verified Artisan Modal ─────────────────────── */
 function VerifiedModal({ onClose }: { onClose: () => void }) {
@@ -138,8 +139,10 @@ function normalizeProduct(raw: any): UiProduct {
 }
 
 export default function ProductDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const { addToCart, toggleWishlist, wishlistItems, getAllProducts } = useAppContext();
+  const [selectedQty, setSelectedQty] = useState(1);
 
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -357,7 +360,7 @@ export default function ProductDetail() {
                 style={{ backgroundColor: 'rgba(74,140,74,0.1)', border: '1px solid rgba(74,140,74,0.25)' }}
               >
                 <BadgeCheck className="w-4 h-4" style={{ color: '#4A8C4A' }} />
-                <span className="text-sm font-semibold" style={{ color: '#4A8C4A' }}>✔ Verified Artisan Product</span>
+                <span className="text-sm font-semibold" style={{ color: '#4A8C4A' }}>✔ {t('productDetail.verifiedArtisanProduct')}</span>
               </button>
 
               <div
@@ -379,7 +382,7 @@ export default function ProductDetail() {
               >
                 <User className="w-8 h-8" style={{ color: 'var(--saffron)' }} />
                 <div>
-                  <p className="text-xs" style={{ color: 'var(--text-gray)' }}>Made by</p>
+                  <p className="text-xs" style={{ color: 'var(--text-gray)' }}>{t('productDetail.madeBy')}</p>
                   {product.artisanId ? (
                     <Link
                       to={`/artisan/${encodeURIComponent(product.artisanId)}`}
@@ -400,18 +403,35 @@ export default function ProductDetail() {
               >
                 <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--saffron)' }} />
                 <span className="text-sm" style={{ color: 'var(--dark-brown)' }}>
-                  Sourced directly from: <strong>{product.state || 'India'}</strong>
+                  {t('productDetail.sourcedFrom')} <strong>{product.state || 'India'}</strong>
                 </span>
               </div>
 
               <div className="flex gap-3 mb-6">
+                <div className="flex items-center gap-2 px-2 rounded-xl" style={{ border: '1px solid var(--beige)', backgroundColor: 'white' }}>
+                  <button
+                    onClick={() => setSelectedQty((q) => Math.max(1, q - 1))}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-8 text-center font-semibold" style={{ color: 'var(--dark-brown)' }}>{selectedQty}</span>
+                  <button
+                    onClick={() => setSelectedQty((q) => q + 1)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
                 <button
-                  onClick={() => addToCart(product.id, product.name)}
+                  onClick={() => addToCart(product.id, product.name, selectedQty)}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-white font-semibold hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: 'var(--saffron)' }}
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
+                  {t('productDetail.addToCart')}
                 </button>
               </div>
             </div>
@@ -428,7 +448,7 @@ export default function ProductDetail() {
             <div className="flex items-center gap-3 mb-6">
               <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
               <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
-              <span className="text-sm tracking-widest uppercase" style={{ color: 'var(--saffron)' }}>About This Product</span>
+              <span className="text-sm tracking-widest uppercase" style={{ color: 'var(--saffron)' }}>{t('productDetail.aboutThisProduct')}</span>
               <Sparkles className="w-5 h-5" style={{ color: 'var(--saffron)' }} />
               <div className="h-px flex-1" style={{ backgroundColor: 'rgba(180,140,90,0.3)' }} />
             </div>
