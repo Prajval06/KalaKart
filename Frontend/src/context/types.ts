@@ -122,4 +122,5 @@ export interface AppContextType {
   getCompletedArtisanProfiles: () => ArtisanProfile[];
   // Global catalog
   getAllProducts: () => Product[];
+  getDbProducts: () => Product[];
 }

@@ -6,7 +6,7 @@ import {
   ArrowLeft, CircleCheck, ShoppingBag,
 } from 'lucide-react';
 import { useAppContext, type AddressData, type OrderItem } from '../context/AppContext';
-import { calculateShipping, calculatePlatformFee } from '../utils/shipping';
+import { calculatePlatformFee } from '../utils/shipping';
 
 /* ─────────────────────────── Progress Stepper ───────────────────────────── */
 const PROGRESS_STEPS = ['Cart', 'Login', 'Address', 'Payment'];
@@ -213,8 +213,9 @@ function CheckoutInner({
 
   /* ── Zone & pricing ── */
   const subtotal = cartProducts.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping  = cartProducts.reduce((sum, item) => sum + calculateShipping(item.category, item.price), 0);
+  const deliveryCharge = Math.round(subtotal * 0.03);
   const platformFee = cartProducts.reduce((sum, item) => sum + calculatePlatformFee(item.price) * item.quantity, 0);
+  const artisanEarnings = subtotal - platformFee;
 
   /* ── Steps ── */
   const [step, setStep]                   = useState<CheckoutStep>('address');
@@ -241,7 +242,7 @@ function CheckoutInner({
   const progressIndex = step === 'address' ? 2 : step === 'payment' ? 3 : 4;
 
   const codExtra = paymentMethod === 'cod' ? 25 : 0;
-  const total    = subtotal + shipping + codExtra;
+  const total    = subtotal + deliveryCharge + codExtra;
 
   const updateForm = (field: keyof AddressData, value: string) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -281,7 +282,7 @@ function CheckoutInner({
       artisan: p.artisan,
       category: p.category,
     }));
-    savePlacedOrder(orderItems, subtotal + shipping + codExtra, num);
+    savePlacedOrder(orderItems, subtotal + deliveryCharge + codExtra, num);
     onClearCart();
     setStep('success');
     setPlacing(false);
@@ -344,6 +345,40 @@ function CheckoutInner({
                       {savedAddress && (
                         <p className="text-xs" style={{ color: '#4A8C4A' }}>✔ Pre-filled from your saved address</p>
                       )}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 rounded-2xl p-5" style={{ backgroundColor: 'var(--cream)' }}>
+                    <h4 className="mb-4" style={{ color: 'var(--dark-brown)' }}>Bill Summary</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span style={{ color: 'var(--text-gray)' }}>Subtotal</span>
+                        <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{subtotal.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: 'var(--text-gray)' }}>🛵 Delivery (3%)</span>
+                        <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{deliveryCharge.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: 'var(--text-gray)' }}>🏪 Platform fee (10%)</span>
+                        <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{platformFee.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: 'var(--text-gray)' }}>🧑‍🎨 Artisan earnings (90%)</span>
+                        <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{artisanEarnings.toLocaleString('en-IN')}</span>
+                      </div>
+                      {codExtra > 0 && (
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-gray)' }}>Cash on Delivery</span>
+                          <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>₹{codExtra.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-3 mt-2" style={{ borderColor: 'var(--beige)' }}>
+                        <div className="flex justify-between">
+                          <span className="font-semibold" style={{ color: 'var(--dark-brown)' }}>Total Payable</span>
+                          <span className="font-bold" style={{ color: 'var(--saffron)' }}>₹{total.toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

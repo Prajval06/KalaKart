@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Heart, Filter } from 'lucide-react';
 import { categories } from '../data/products';
+import { ImageWithFallback, DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
 import { productService } from '../services/product.service';
 
 type ShopProduct = {
@@ -23,7 +24,7 @@ function normalizeShopProduct(raw: any): ShopProduct {
     _id: p._id,
     slug: p.slug ?? null,
     name: p.name || 'Unnamed Product',
-    image: (Array.isArray(p.images) && p.images[0]) || p.image || '/placeholder.jpg',
+    image: p.imageUrl || (Array.isArray(p.images) && p.images[0]) || p.image || DEFAULT_FALLBACK_IMAGE,
     price: Number(p.price || 0),
     category: typeof p.category === 'string' ? p.category : 'Craft',
     artisan: p.artisanName || p.artisan || 'KalaKart Artisan',
@@ -125,7 +126,7 @@ export default function Shop() {
                   className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <div className="relative aspect-square overflow-hidden">
-                    <img
+                    <ImageWithFallback
                       src={product.image}
                       alt={product.name}
                       className="w-full h-full object-cover"

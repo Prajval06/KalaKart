@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { SearchX, Package, Users } from 'lucide-react';
 import { artisans } from '../data/artisans';
 import { useAppContext } from '../context/AppContext';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 // ── Search helpers ────────────────────────────────────────────────────────────
 function normalize(s: string) {
@@ -51,7 +52,7 @@ function ProductCard({ product, query }: { product: any; query: string }) {
       className="group bg-white rounded-xl overflow-hidden shadow hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
     >
       <div className="relative aspect-square overflow-hidden">
-        <img
+        <ImageWithFallback
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -88,7 +89,7 @@ function ArtisanCard({ artisan, query }: { artisan: (typeof artisans)[0]; query:
       to={`/artisan/${artisan.id}`}
       className="group bg-white rounded-xl overflow-hidden shadow hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex gap-4 p-4 items-center"
     >
-      <img
+      <ImageWithFallback
         src={artisan.image}
         alt={artisan.name}
         className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2 border-[#DAA520]"

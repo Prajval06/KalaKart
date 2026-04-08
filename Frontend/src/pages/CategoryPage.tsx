@@ -3,6 +3,7 @@ import { ShoppingBag, SlidersHorizontal, ChevronDown, ArrowLeft } from 'lucide-r
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 const CATEGORY_ACCENTS: Record<string, { accent: string; emoji: string; bg: string }> = {
   'Jewelry':            { accent: '#B5851A', emoji: '💎', bg: '#FDF6E3' },
@@ -358,7 +359,7 @@ export default function CategoryPage() {
                 className="group rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="aspect-square relative overflow-hidden">
-                  <img
+                  <ImageWithFallback
                     src={product.image}
                     alt={product.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-106 transition-transform duration-400"

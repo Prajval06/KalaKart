@@ -8,6 +8,8 @@
     "dev:nodemon": "npx --no-install nodemon backend/src/server.js",
     "start": "node backend/src/server.js",
     "seed": "node backend/src/scripts/seed.js",
+    "seed:images": "node backend/src/scripts/refreshCatalogImages.js",
+    "update:product-images": "node backend/src/scripts/update-product-images.js",
     "seed:artisans": "node backend/src/scripts/artisans.seed.js",
     "test": "jest --runInBand --forceExit",
     "test:watch": "jest --watchAll --runInBand",

@@ -7,7 +7,8 @@ import {
   Sparkles, ArrowRight, BookOpen, User,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import type { ArtisanProduct, SellerOrderStatus, SellerOrder } from '../context/AppContext';
+import type { ArtisanProduct, SellerOrderStatus, SellerOrder } from '../context/types';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 // ─── Types ────────────────────────────────────────────────────────
 type Section = 'home' | 'products' | 'orders' | 'earnings';
@@ -254,7 +255,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
                     className="relative rounded-xl overflow-hidden group"
                     style={{ aspectRatio: '1', border: idx === 0 ? '2px solid var(--sage-green)' : '2px solid transparent' }}
                   >
-                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <ImageWithFallback src={src} alt="" className="w-full h-full object-cover" />
 
                     {/* Cover badge */}
                     {idx === 0 && (
@@ -561,7 +562,7 @@ function ExistingArtisanHome({
           {newOrders.map(order => (
             <div key={order.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid #f5f0e5' }}>
               <div className="flex items-center gap-3">
-                <img src={order.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                <ImageWithFallback src={order.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
                 <div>
                   <p className="text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{order.product}</p>
                   <p className="text-xs text-gray-500">{order.customer} • ₹{order.amount.toLocaleString('en-IN')}</p>
@@ -697,7 +698,7 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
                   <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                        <ImageWithFallback src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
                         <div>
                           <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>{p.name}</p>
                           <p className="text-xs text-gray-500">{p.category}</p>
@@ -802,7 +803,7 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>{o.id}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={o.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                        <ImageWithFallback src={o.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
                         <span className="text-sm" style={{ fontWeight: 500 }}>{o.product}</span>
                       </div>
                     </td>

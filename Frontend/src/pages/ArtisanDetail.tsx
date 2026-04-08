@@ -3,6 +3,7 @@ import { MapPin, Award } from 'lucide-react';
 import { artisans } from '../data/artisans';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 export default function ArtisanDetail() {
   const { artisanId } = useParams();
@@ -74,7 +75,7 @@ export default function ArtisanDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             {/* Image */}
             <div className="relative aspect-[4/5] rounded-xl overflow-hidden">
-              <img 
+              <ImageWithFallback 
                 src={artisan.image} 
                 alt={artisan.name}
                 className="w-full h-full object-cover"
@@ -142,7 +143,7 @@ export default function ArtisanDetail() {
                     className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     <div className="relative aspect-square overflow-hidden">
-                      <img 
+                      <ImageWithFallback 
                         src={product.image} 
                         alt={product.name}
                         className="w-full h-full object-cover"

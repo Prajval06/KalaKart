@@ -43,14 +43,16 @@ const getProducts = async ({
   const skip = (pageNum - 1) * perPageNum;
 
   const [products, total] = await Promise.all([
-    Product.find(filter).sort(sortOption).skip(skip).limit(perPageNum).lean(),
+    Product.find(filter).populate('category', 'name slug display_order').sort(sortOption).skip(skip).limit(perPageNum).lean(),
     Product.countDocuments(filter),
   ]);
 
   const transformed = products.map((p) => ({
     ...p,
     id: p._id?.toString?.() || '',
-    category: p.category?.toString?.() || '',
+    image: p.imageUrl || (Array.isArray(p.images) ? p.images[0] : ''),
+    category: p.category?.name || p.category?.toString?.() || '',
+    categorySlug: p.category?.slug || '',
     _id: undefined,
     __v: undefined,
   }));
@@ -76,14 +78,14 @@ const getProductByIdentifier = async (identifier) => {
   const key = decodeURIComponent(String(identifier || '')).trim();
   if (!key) throw AppError.create('PRODUCT_NOT_FOUND');
 
-  let product = await Product.findOne({ slug: key, isAvailable: true }).lean();
+  let product = await Product.findOne({ slug: key, isAvailable: true }).populate('category', 'name slug display_order').lean();
 
   if (!product && mongoose.Types.ObjectId.isValid(key)) {
-    product = await Product.findOne({ _id: key, isAvailable: true }).lean();
+    product = await Product.findOne({ _id: key, isAvailable: true }).populate('category', 'name slug display_order').lean();
   }
 
   if (!product) {
-    product = await Product.findOne({ id: key, isAvailable: true }).lean();
+    product = await Product.findOne({ id: key, isAvailable: true }).populate('category', 'name slug display_order').lean();
   }
 
   if (!product) throw AppError.create('PRODUCT_NOT_FOUND');
@@ -91,7 +93,9 @@ const getProductByIdentifier = async (identifier) => {
   return {
     ...product,
     id: product._id?.toString?.() || '',
-    category: product.category?.toString?.() || '',
+    image: product.imageUrl || (Array.isArray(product.images) ? product.images[0] : ''),
+    category: product.category?.name || product.category?.toString?.() || '',
+    categorySlug: product.category?.slug || '',
     _id: undefined,
     __v: undefined,
   };

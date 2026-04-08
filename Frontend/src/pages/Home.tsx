@@ -1,40 +1,46 @@
 import { Link } from 'react-router';
 import { ArrowRight, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
-// ── Category config: display name, emoji, accent colour ──────────
-const CATEGORY_CONFIG: Record<string, { emoji: string; accent: string; label: string }> = {
-  'Jewelry':          { emoji: '💎', accent: '#B5851A', label: 'Jewelry' },
-  'Art & Paintings':  { emoji: '🎨', accent: '#7C3D12', label: 'Art & Paintings' },
-  'Pottery & Ceramics': { emoji: '🏺', accent: '#4B8B6F', label: 'Pottery & Ceramics' },
-  'Clothing':         { emoji: '👗', accent: '#9B2335', label: 'Clothing' },
-  'Textiles & Fabrics': { emoji: '🧵', accent: '#6B4E8A', label: 'Textiles & Fabrics' },
-  'Miniatures':       { emoji: '🖼️', accent: '#1A6B8A', label: 'Miniatures' },
-  'Crafts & Weaving': { emoji: '🧶', accent: '#5A7A2E', label: 'Crafts & Weaving' },
-  'Home Decor':       { emoji: '🏮', accent: '#8B4513', label: 'Home Decor' },
-};
-
-const FEATURED_CATEGORIES = [
+const HOME_CATEGORY_ORDER = [
+  'Pottery & Ceramics',
   'Jewelry',
   'Art & Paintings',
   'Clothing',
-  'Pottery & Ceramics',
-  'Crafts & Weaving',
   'Textiles & Fabrics',
   'Home Decor',
+  'Crafts & Weaving',
 ];
+
+const HOME_CATEGORY_META: Record<string, { emoji: string; accent: string; label: string }> = {
+  'Pottery & Ceramics': { emoji: '🏺', accent: '#4B8B6F', label: 'Pottery & Ceramics' },
+  Jewelry: { emoji: '💎', accent: '#B5851A', label: 'Jewelry' },
+  'Art & Paintings': { emoji: '🎨', accent: '#7C3D12', label: 'Art & Paintings' },
+  Clothing: { emoji: '👗', accent: '#9B2335', label: 'Clothing' },
+  'Textiles & Fabrics': { emoji: '🧵', accent: '#6B4E8A', label: 'Textiles & Fabrics' },
+  'Home Decor': { emoji: '🏮', accent: '#8B4513', label: 'Home Decor' },
+  'Crafts & Weaving': { emoji: '🧶', accent: '#5A7A2E', label: 'Crafts & Weaving' },
+};
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { getAllProducts } = useAppContext();
-  const allProducts = getAllProducts();
+  const { getDbProducts } = useAppContext();
+  const dbProducts = getDbProducts();
+  const featuredProducts = useMemo(
+    () => [...dbProducts].sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name)),
+    [dbProducts]
+  );
 
-  // Group products by category
-  const productsByCategory = FEATURED_CATEGORIES.reduce<Record<string, any[]>>((acc, cat) => {
-    acc[cat] = allProducts.filter(p => p.category === cat);
-    return acc;
-  }, {});
+  const productsByCategory = useMemo(() => {
+    return HOME_CATEGORY_ORDER.reduce<Record<string, typeof dbProducts>>((acc, category) => {
+      acc[category] = dbProducts
+        .filter((product) => product.category === category)
+        .sort((a, b) => a.name.localeCompare(b.name));
+      return acc;
+    }, {} as Record<string, typeof dbProducts>);
+  }, [dbProducts]);
 
   // Artisan carousel slides with artisan profiles
   const artisanSlides = [
@@ -164,7 +170,7 @@ export default function Home() {
           {/* Main Hero Slider */}
           <div className="rounded-3xl overflow-hidden relative min-h-[400px] hero-slider">
             <div className="absolute inset-0 w-full h-full">
-              <img 
+              <ImageWithFallback 
                 src={artisanSlides[currentSlide].image}
                 alt={artisanSlides[currentSlide].artisanName}
                 className="absolute inset-0 w-full h-full object-cover"
@@ -254,6 +260,76 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Main Product Showcase */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 style={{ color: 'var(--dark-brown)' }}>Featured Catalog</h2>
+              <p className="text-sm mt-1" style={{ color: '#8B7765' }}>
+                Products loaded from the catalog and displayed on the homepage.
+              </p>
+            </div>
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-1 text-sm font-semibold hover:opacity-80 transition-opacity"
+              style={{ color: 'var(--rust-red)' }}
+            >
+              View all <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {featuredProducts.length === 0 ? (
+            <div className="rounded-2xl p-8 bg-white text-center" style={{ border: '1px solid var(--beige)' }}>
+              <p className="text-lg mb-2" style={{ color: 'var(--dark-brown)' }}>No products available yet</p>
+              <p className="text-sm" style={{ color: '#8B7765' }}>
+                Seed the database to make products appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+              {featuredProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/product/${product.id}`}
+                  className="group rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="aspect-square relative overflow-hidden">
+                    <ImageWithFallback
+                      src={product.image}
+                      alt={product.name}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: 'linear-gradient(to top, rgba(80,34,14,0.72), transparent 60%)' }}
+                    />
+                    <div
+                      className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-white text-xs"
+                      style={{ backgroundColor: 'rgba(80,34,14,0.78)' }}
+                    >
+                      {product.category}
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p
+                      className="line-clamp-2 mb-1"
+                      style={{ color: 'var(--dark-brown)', fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.35 }}
+                    >
+                      {product.name}
+                    </p>
+                    <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.7rem' }}>
+                      by {product.artisan}
+                    </p>
+                    <p style={{ color: 'var(--rust-red)', fontSize: '0.85rem', fontWeight: 700, marginTop: '0.35rem' }}>
+                      ₹{product.price.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Categories Section */}
         <div className="mb-12">
           <h2 className="mb-6" style={{ color: 'var(--dark-brown)' }}>Shop by Category</h2>
@@ -266,7 +342,7 @@ export default function Home() {
                 className="flex-shrink-0 rounded-2xl overflow-hidden relative hover:shadow-xl transition-all duration-300 hover:scale-105 group"
                 style={{ width: '180px', height: '200px' }}
               >
-                <img
+                <ImageWithFallback
                   src={category.image}
                   alt={category.name}
                   className="absolute inset-0 w-full h-full object-cover"
@@ -304,22 +380,26 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Featured Products by Category ── */}
-        <div className="space-y-12">
-          <div className="flex justify-between items-center">
-            <h2 style={{ color: 'var(--dark-brown)' }}>Featured Products</h2>
+        {/* ── Mongo Product Showcase ── */}
+        <div className="space-y-12 mb-16">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 style={{ color: 'var(--dark-brown)' }}>Product Catalog</h2>
+              <p className="text-sm mt-1" style={{ color: '#8B7765' }}>
+                Live catalog entries fetched from the backend database.
+              </p>
+            </div>
           </div>
 
-          {FEATURED_CATEGORIES.map(cat => {
-            const catProducts = productsByCategory[cat];
-            if (!catProducts || catProducts.length === 0) return null;
-            const cfg = CATEGORY_CONFIG[cat];
+          {HOME_CATEGORY_ORDER.map((categoryName) => {
+            const categoryProducts = productsByCategory[categoryName] || [];
+            if (categoryProducts.length === 0) return null;
+            const cfg = HOME_CATEGORY_META[categoryName];
+
             return (
-              <div key={cat}>
-                {/* Category Row Header */}
+              <div key={categoryName}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    {/* Decorative left bar */}
                     <div className="w-1 h-8 rounded-full" style={{ backgroundColor: cfg.accent }} />
                     <span className="text-2xl">{cfg.emoji}</span>
                     <h3 style={{ color: 'var(--dark-brown)' }}>{cfg.label}</h3>
@@ -327,25 +407,17 @@ export default function Home() {
                       className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-xs text-white"
                       style={{ backgroundColor: cfg.accent, opacity: 0.85 }}
                     >
-                      {catProducts.length} items
+                      {categoryProducts.length} items
                     </span>
                   </div>
-                  <Link
-                    to={`/category/${encodeURIComponent(cat)}`}
-                    className="flex items-center gap-1 text-sm hover:opacity-70 transition-opacity"
-                    style={{ color: cfg.accent }}
-                  >
-                    See all <ChevronRight className="w-4 h-4" />
-                  </Link>
                 </div>
 
-                {/* Horizontally scrollable product row */}
                 <div className="relative">
                   <div
                     className="flex gap-4 overflow-x-auto pb-3"
                     style={{ scrollbarWidth: 'thin', scrollbarColor: `${cfg.accent}40 transparent` }}
                   >
-                    {catProducts.map(product => (
+                    {categoryProducts.map((product) => (
                       <Link
                         key={product.id}
                         to={`/product/${product.id}`}
@@ -353,12 +425,11 @@ export default function Home() {
                         style={{ backgroundColor: 'white' }}
                       >
                         <div className="aspect-square relative overflow-hidden">
-                          <img
+                          <ImageWithFallback
                             src={product.image}
                             alt={product.name}
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
-                          {/* Hover overlay */}
                           <div
                             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                             style={{ background: `linear-gradient(to top, ${cfg.accent}cc, ${cfg.accent}22)` }}
@@ -374,26 +445,19 @@ export default function Home() {
                           <p style={{ color: cfg.accent, fontSize: '0.75rem', fontWeight: 700 }}>
                             ₹{product.price.toLocaleString('en-IN')}
                           </p>
-                          <p
-                            className="truncate mt-0.5"
-                            style={{ color: '#9B8B7A', fontSize: '0.65rem' }}
-                          >
+                          <p className="truncate mt-0.5" style={{ color: '#9B8B7A', fontSize: '0.65rem' }}>
                             by {product.artisan}
                           </p>
                         </div>
                       </Link>
                     ))}
 
-                    {/* "See all" end card */}
                     <Link
-                      to={`/category/${encodeURIComponent(cat)}`}
+                      to={`/category/${encodeURIComponent(categoryName)}`}
                       className="flex-none w-40 sm:w-44 rounded-2xl flex flex-col items-center justify-center gap-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-dashed"
                       style={{ borderColor: `${cfg.accent}60`, minHeight: '200px', backgroundColor: `${cfg.accent}08` }}
                     >
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: `${cfg.accent}20` }}
-                      >
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${cfg.accent}20` }}>
                         <ArrowRight className="w-5 h-5" style={{ color: cfg.accent }} />
                       </div>
                       <p className="text-xs text-center px-4" style={{ color: cfg.accent, fontWeight: 600 }}>
@@ -402,12 +466,21 @@ export default function Home() {
                     </Link>
                   </div>
 
-                  {/* Bottom border separator */}
                   <div className="mt-2 h-px" style={{ background: `linear-gradient(to right, ${cfg.accent}40, transparent)` }} />
                 </div>
               </div>
             );
           })}
+
+          {dbProducts.length === 0 && (
+            <div className="rounded-2xl p-8 bg-white text-center" style={{ border: '1px solid var(--beige)' }}>
+              <p className="text-lg mb-2" style={{ color: 'var(--dark-brown)' }}>No database products found</p>
+              <p className="text-sm" style={{ color: '#8B7765' }}>
+                Add products to the catalog and refresh the page to see them here.
+              </p>
+            </div>
+          )}
+        </div>
 
           <div className="text-center mt-4 md:hidden">
             <Link
@@ -419,7 +492,6 @@ export default function Home() {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
           </div>
-        </div>
 
         {/* About Section */}
         <div 

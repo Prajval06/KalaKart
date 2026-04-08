@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router';
 import { Trash2, Plus, Minus, ShoppingBag, LogIn, ClipboardList, X, Package, ChevronRight } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { useAppContext } from '../context/AppContext';
-import { calculateShipping, calculatePlatformFee } from '../utils/shipping';
+import { calculatePlatformFee } from '../utils/shipping';
+import { ImageWithFallback } from '../components/ImageWithFallback';
 
 // ── Status badge colours ──────────────────────────────────────────────────────
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -127,7 +128,7 @@ function OrdersPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
                     {order.items.map(item => (
                       <div key={item.productId} className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-                          <img
+                          <ImageWithFallback
                             src={item.image}
                             alt={item.name}
                             className="w-full h-full object-cover"
@@ -173,8 +174,10 @@ export default function Cart() {
   })).filter(item => item.id);
 
   const subtotal = cartProducts.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping  = cartProducts.reduce((sum, item) => sum + calculateShipping(item.category, item.price), 0);
-  const total = subtotal + shipping;
+  const deliveryCharge = Math.round(subtotal * 0.03);
+  const total = subtotal + deliveryCharge;
+  const platformFee = cartProducts.reduce((sum, item) => sum + calculatePlatformFee(item.price) * item.quantity, 0);
+  const artisanEarnings = subtotal - platformFee;
 
   const handleProceedToCheckout = () => {
     if (isLoggedIn) {
@@ -281,7 +284,7 @@ export default function Cart() {
                         ₹{item.price.toLocaleString('en-IN')}
                       </p>
                       <p className="text-xs" style={{ color: 'var(--text-gray)' }}>
-                        🚚 Shipping: ₹{calculateShipping(item.category, item.price).toLocaleString('en-IN')}
+                        Delivery share: ₹{Math.round(item.price * 0.03).toLocaleString('en-IN')}
                       </p>
                     </div>
 
@@ -327,12 +330,16 @@ export default function Cart() {
                       <span className="font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span style={{ color: 'var(--text-gray)' }}>🚚 Shipping</span>
-                      <span className="font-semibold">₹{shipping.toLocaleString('en-IN')}</span>
+                      <span style={{ color: 'var(--text-gray)' }}>🛵 Delivery (3%)</span>
+                      <span className="font-semibold">₹{deliveryCharge.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>
                       <span>🏪 Platform fee (10%)</span>
-                      <span>₹{cartProducts.reduce((s, i) => s + calculatePlatformFee(i.price) * i.quantity, 0).toLocaleString('en-IN')}</span>
+                      <span>₹{platformFee.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs" style={{ color: 'var(--text-gray)' }}>
+                      <span>🧑‍🎨 Artisan earnings (90%)</span>
+                      <span>₹{artisanEarnings.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="border-t pt-3" style={{ borderColor: 'var(--beige)' }}>
                       <div className="flex justify-between">
@@ -371,7 +378,9 @@ export default function Cart() {
 
                   <div className="mt-6 pt-6 space-y-3" style={{ borderTop: '2px solid var(--beige)' }}>
                     {[
-                      '10% platform fee helps us operate and support artisans',
+                      '10% platform fee is deducted from product price',
+                      '90% of each product price goes to the artisan',
+                      '3% delivery charge is added separately',
                       '100% authentic handcrafted products',
                       'Support local artisan communities',
                     ].map(txt => (
