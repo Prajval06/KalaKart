@@ -280,6 +280,11 @@ export default function Cart() {
                         <h3 className="mb-1 hover:opacity-70 transition-opacity">{item.name}</h3>
                       </Link>
                       <p className="text-sm mb-1" style={{ color: 'var(--text-gray)' }}>by {item.artisan}</p>
+                      {item.description && (
+                        <p className="text-xs mb-2 line-clamp-2" style={{ color: 'var(--text-gray)' }}>
+                          {item.description}
+                        </p>
+                      )}
                       <p className="font-semibold mb-1" style={{ color: 'var(--saffron)' }}>
                         ₹{item.price.toLocaleString('en-IN')}
                       </p>

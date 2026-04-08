@@ -691,6 +691,11 @@ function CheckoutInner({
                         <p className="text-xs mb-0.5" style={{ color: 'var(--saffron)' }}>{item.category}</p>
                         <p className="text-sm font-semibold line-clamp-1" style={{ color: 'var(--dark-brown)' }}>{item.name}</p>
                         <p className="text-xs" style={{ color: 'var(--text-gray)' }}>by {item.artisan}</p>
+                        {item.description && (
+                          <p className="text-xs mt-0.5 line-clamp-2" style={{ color: 'var(--text-gray)' }}>
+                            {item.description}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-xs" style={{ color: 'var(--text-gray)' }}>×{item.quantity}</p>

@@ -102,14 +102,14 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               <Lightbulb className="w-4 h-4" />
               <span className="text-sm" style={{ fontWeight: 600 }}>Smart Suggestions</span>
             </div>
-            {suggestions.map((s, i) => <p key={i} className="text-sm text-gray-600 ml-6">• {s}</p>)}
+            {suggestions.map((s, i) => <p key={i} className="text-sm text-gray-700 ml-6">• {s}</p>)}
           </div>
         )}
 
         <div className="space-y-4">
           {/* Product Name */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Product Name *</label>
+            <label className="block text-sm text-gray-700 mb-1">Product Name *</label>
             <input
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
               value={form.name}
@@ -121,7 +121,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
           {/* Price & Stock */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Price (₹) *</label>
+              <label className="block text-sm text-gray-700 mb-1">Price (₹) *</label>
               <input
                 type="number"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -131,7 +131,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Stock</label>
+              <label className="block text-sm text-gray-700 mb-1">Stock</label>
               <input
                 type="number"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200"
@@ -144,7 +144,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
 
           {/* Category */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Category *</label>
+            <label className="block text-sm text-gray-700 mb-1">Category *</label>
             <select
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 bg-white"
               value={form.category}
@@ -168,7 +168,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
 
           {/* Description */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Description</label>
+            <label className="block text-sm text-gray-700 mb-1">Description</label>
             <textarea
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 resize-none"
               rows={3}
@@ -180,7 +180,7 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
 
           {/* Status */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Status</label>
+            <label className="block text-sm text-gray-700 mb-1">Status</label>
             <select
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-200 bg-white"
               value={form.status}
@@ -194,10 +194,10 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
           {/* ── Image Upload ── */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm text-gray-600">
+              <label className="block text-sm text-gray-700">
                 Product Photos
                 {images.length > 0 && (
-                  <span className="ml-2 text-xs text-gray-400">({images.length} added · first is cover)</span>
+                  <span className="ml-2 text-xs text-gray-600">({images.length} added · first is cover)</span>
                 )}
               </label>
             </div>
@@ -245,8 +245,8 @@ function ProductModal({ editingProduct, onClose, onSave, onCreate }: ProductModa
                 }}
               >
                 <ImageIcon className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm text-gray-400">or drag & drop photos here</p>
-                <p className="text-xs text-gray-300 mt-1">JPG, PNG, WEBP — up to 10 photos</p>
+                <p className="text-sm text-gray-600">or drag & drop photos here</p>
+                <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP — up to 10 photos</p>
               </div>
             )}
 
@@ -376,7 +376,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
           <h1 className="text-white text-2xl sm:text-3xl mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
             Namaste, {firstName}! 🙏
           </h1>
-          <p className="text-white/70 text-sm sm:text-base max-w-md leading-relaxed">
+          <p className="text-white/90 text-sm sm:text-base max-w-md leading-relaxed">
             Your artisan store is ready. Complete these 2 steps to start selling your crafts to buyers across India.
           </p>
         </div>
@@ -397,14 +397,15 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
           return (
             <div
               key={kpi.label}
-              className="bg-white rounded-2xl p-5 shadow-sm opacity-60"
+              className="bg-white rounded-2xl p-5 shadow-sm opacity-70 border"
+              style={{ borderColor: '#EFE4D2' }}
               title="Data will appear once you start selling"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: kpi.color }}>
                   <KIcon className="w-5 h-5" />
                 </div>
-                <span className="text-sm text-gray-500">{kpi.label}</span>
+                <span className="text-sm text-gray-700">{kpi.label}</span>
               </div>
               <p className="text-2xl" style={{ color: 'var(--dark-brown)', fontWeight: 700 }}>{kpi.value}</p>
             </div>
@@ -421,8 +422,8 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
             return (
               <div
                 key={step.title}
-                className="bg-white rounded-2xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow"
-                style={{ borderTop: `3px solid ${step.color}` }}
+                className="bg-white rounded-2xl p-6 shadow-sm border flex flex-col gap-4 hover:shadow-md transition-shadow"
+                style={{ borderColor: '#EFE4D2', borderTop: `3px solid ${step.color}` }}
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -442,7 +443,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
                   <h4 className="mb-1" style={{ color: 'var(--dark-brown)', fontWeight: 700, fontSize: '0.95rem' }}>
                     {step.title}
                   </h4>
-                  <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{step.desc}</p>
                 </div>
                 <button
                   onClick={step.action}
@@ -458,7 +459,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
       </div>
 
       {/* Tips */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: '#EFE4D2' }}>
         <div className="flex items-center gap-2 mb-4">
           <Lightbulb className="w-5 h-5" style={{ color: 'var(--rust-red)' }} />
           <h3 style={{ color: 'var(--dark-brown)' }}>Quick Tips for New Artisans</h3>
@@ -477,7 +478,7 @@ function NewArtisanHome({ userName, onAddProduct, onGoToProfile }: NewArtisanHom
               >
                 {i + 1}
               </span>
-              <p className="text-sm text-gray-600">{tip}</p>
+              <p className="text-sm text-gray-700">{tip}</p>
             </div>
           ))}
         </div>
@@ -523,12 +524,12 @@ function ExistingArtisanHome({
         ].map(kpi => {
           const KIcon = kpi.icon;
           return (
-            <div key={kpi.label} className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div key={kpi.label} className="bg-white rounded-2xl p-5 shadow-sm border hover:shadow-md transition-shadow" style={{ borderColor: '#EFE4D2' }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: kpi.color }}>
                   <KIcon className="w-5 h-5" />
                 </div>
-                <span className="text-sm text-gray-500">{kpi.label}</span>
+                <span className="text-sm text-gray-700">{kpi.label}</span>
               </div>
               <p className="text-2xl" style={{ color: 'var(--dark-brown)', fontWeight: 700 }}>{kpi.value}</p>
             </div>
@@ -541,14 +542,14 @@ function ExistingArtisanHome({
         <button
           onClick={onAddProduct}
           className="flex items-center justify-center gap-3 py-4 rounded-2xl text-white transition-all hover:opacity-90 shadow-sm"
-          style={{ backgroundColor: 'var(--sage-green)' }}
+          style={{ backgroundColor: 'var(--sage-green)', boxShadow: '0 10px 18px rgba(74,140,74,0.2)' }}
         >
           <Plus className="w-5 h-5" /> Add Product
         </button>
         <button
           onClick={onViewOrders}
           className="flex items-center justify-center gap-3 py-4 rounded-2xl text-white transition-all hover:opacity-90 shadow-sm"
-          style={{ backgroundColor: 'var(--rust-red)' }}
+          style={{ backgroundColor: 'var(--rust-red)', boxShadow: '0 10px 18px rgba(140,74,54,0.2)' }}
         >
           <ShoppingBag className="w-5 h-5" /> View Orders
         </button>
@@ -556,7 +557,7 @@ function ExistingArtisanHome({
 
       {/* New Orders */}
       {newOrders.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: '#EFE4D2' }}>
           <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #f0ebe0' }}>
             <h3 style={{ color: 'var(--dark-brown)' }}>New Orders</h3>
             <span className="px-3 py-1 rounded-full text-xs text-white" style={{ backgroundColor: 'var(--rust-red)' }}>
@@ -569,7 +570,7 @@ function ExistingArtisanHome({
                 <ImageWithFallback src={order.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
                 <div>
                   <p className="text-sm" style={{ color: 'var(--dark-brown)', fontWeight: 600 }}>{order.product}</p>
-                  <p className="text-xs text-gray-500">{order.customer} • ₹{order.amount.toLocaleString('en-IN')}</p>
+                  <p className="text-xs text-gray-700">{order.customer} • ₹{order.amount.toLocaleString('en-IN')}</p>
                 </div>
               </div>
               <button
@@ -585,10 +586,10 @@ function ExistingArtisanHome({
       )}
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-2xl shadow-sm p-5">
+      <div className="bg-white rounded-2xl shadow-sm p-5 border" style={{ borderColor: '#EFE4D2' }}>
         <h3 className="mb-4" style={{ color: 'var(--dark-brown)' }}>Recent Activity</h3>
         {outOfStock.length === 0 && lowStock.length === 0 && orders.filter(o => o.status === 'completed').length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">No recent activity yet</p>
+          <p className="text-sm text-gray-600 text-center py-4">No recent activity yet</p>
         ) : (
           <div className="space-y-3">
             {outOfStock.map(p => (
@@ -616,7 +617,7 @@ function ExistingArtisanHome({
       </div>
 
       {/* Store Story */}
-      <div className="bg-white rounded-2xl shadow-sm p-5">
+      <div className="bg-white rounded-2xl shadow-sm p-5 border" style={{ borderColor: '#EFE4D2' }}>
         <div className="flex items-center justify-between mb-3">
           <h3 style={{ color: 'var(--dark-brown)' }}>Your Store Story</h3>
           {!editingStory ? (
@@ -642,7 +643,7 @@ function ExistingArtisanHome({
             placeholder="Tell buyers your craft story..."
           />
         ) : (
-          <p className="text-sm text-gray-600 leading-relaxed italic">"{storeStory}"</p>
+          <p className="text-sm text-gray-700 leading-relaxed italic">"{storeStory}"</p>
         )}
       </div>
     </div>
@@ -673,12 +674,12 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: '#EFE4D2' }}>
         {filtered.length === 0 ? (
           <div className="p-16 text-center">
             <Package className="w-14 h-14 mx-auto mb-4 text-gray-200" />
-            <p className="text-gray-500 mb-1" style={{ fontWeight: 600 }}>No products yet</p>
-            <p className="text-sm text-gray-400 mb-5">Your listings will appear here once you add them</p>
+            <p className="text-gray-700 mb-1" style={{ fontWeight: 600 }}>No products yet</p>
+            <p className="text-sm text-gray-600 mb-5">Your listings will appear here once you add them</p>
             <button
               onClick={onAdd}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm hover:opacity-90 transition-opacity"
@@ -699,20 +700,20 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
               </thead>
               <tbody>
                 {filtered.map(p => (
-                  <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                  <tr key={p.id} className="border-t border-gray-100 hover:bg-amber-50/30 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <ImageWithFallback src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
                         <div>
                           <p className="text-sm" style={{ fontWeight: 600, color: 'var(--dark-brown)' }}>{p.name}</p>
-                          <p className="text-xs text-gray-500">{p.category}</p>
+                          <p className="text-xs text-gray-700">{p.category}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>₹{p.price.toLocaleString('en-IN')}</td>
                     <td className="px-5 py-4">
                       {p.readOnly ? (
-                        <span className="text-xs text-gray-500">Managed in catalog</span>
+                        <span className="text-xs text-gray-700">Managed in catalog</span>
                       ) : (
                         <span className={`text-sm ${p.stock === 0 ? 'text-red-600' : p.stock <= 3 ? 'text-amber-600' : 'text-gray-700'}`} style={{ fontWeight: p.stock <= 3 ? 600 : 400 }}>
                           {p.stock === 0 ? 'Out of Stock' : p.stock <= 3 ? `Low (${p.stock})` : p.stock}
@@ -727,7 +728,7 @@ function ProductsSection({ products, search, onEdit, onDelete, onAdd }: Products
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {p.readOnly ? (
-                          <span className="text-xs text-gray-500">Read only</span>
+                          <span className="text-xs text-gray-700">Read only</span>
                         ) : (
                           <>
                             <button onClick={() => onEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -794,12 +795,12 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: '#EFE4D2' }}>
         {filtered.length === 0 ? (
           <div className="p-14 text-center">
             <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-            <p className="text-gray-500 text-sm" style={{ fontWeight: 500 }}>No {orderTab} orders</p>
-            {orderTab === 'new' && <p className="text-gray-400 text-xs mt-1">New orders will appear here when buyers purchase your products</p>}
+            <p className="text-gray-700 text-sm" style={{ fontWeight: 500 }}>No {orderTab} orders</p>
+            {orderTab === 'new' && <p className="text-gray-600 text-xs mt-1">New orders will appear here when buyers purchase your products</p>}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -813,7 +814,7 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
               </thead>
               <tbody>
                 {filtered.map(o => (
-                  <tr key={o.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                  <tr key={o.id} className="border-t border-gray-100 hover:bg-amber-50/30 transition-colors">
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600 }}>{o.id}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -821,9 +822,9 @@ function OrdersSection({ orders, orderTab, setOrderTab, onOrderAction }: OrdersS
                         <span className="text-sm" style={{ fontWeight: 500 }}>{o.product}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm text-gray-600">{o.customer}</td>
+                    <td className="px-5 py-4 text-sm text-gray-700">{o.customer}</td>
                     <td className="px-5 py-4 text-sm" style={{ fontWeight: 600, color: 'var(--rust-red)' }}>₹{o.amount.toLocaleString('en-IN')}</td>
-                    <td className="px-5 py-4 text-sm text-gray-600">
+                    <td className="px-5 py-4 text-sm text-gray-700">
                       {new Date(o.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                     </td>
                     <td className="px-5 py-4">
@@ -876,17 +877,17 @@ function EarningsSection({ orders }: EarningsSectionProps) {
             { label: 'Total Earned', value: '₹0', sub: 'Complete orders to see earnings', color: 'var(--dark-brown)' },
             { label: 'Available Balance', value: '₹0', sub: 'Withdrawals enabled after first sale', color: 'var(--sage-green)' },
           ].map(c => (
-            <div key={c.label} className="bg-white rounded-2xl p-5 shadow-sm opacity-60">
-              <p className="text-sm text-gray-500 mb-1">{c.label}</p>
+            <div key={c.label} className="bg-white rounded-2xl p-5 shadow-sm border opacity-70" style={{ borderColor: '#EFE4D2' }}>
+              <p className="text-sm text-gray-700 mb-1">{c.label}</p>
               <p className="text-3xl" style={{ color: c.color, fontWeight: 700 }}>{c.value}</p>
-              <p className="text-xs mt-2 text-gray-400">{c.sub}</p>
+              <p className="text-xs mt-2 text-gray-600">{c.sub}</p>
             </div>
           ))}
         </div>
-        <div className="bg-white rounded-2xl p-10 shadow-sm text-center">
+        <div className="bg-white rounded-2xl p-10 shadow-sm border text-center" style={{ borderColor: '#EFE4D2' }}>
           <IndianRupee className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-          <p className="text-gray-500" style={{ fontWeight: 600 }}>No transactions yet</p>
-          <p className="text-sm text-gray-400 mt-1">Your earnings will appear here as orders are completed</p>
+          <p className="text-gray-700" style={{ fontWeight: 600 }}>No transactions yet</p>
+          <p className="text-sm text-gray-600 mt-1">Your earnings will appear here as orders are completed</p>
         </div>
       </div>
     );
@@ -895,23 +896,23 @@ function EarningsSection({ orders }: EarningsSectionProps) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Total Earned</p>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border" style={{ borderColor: '#EFE4D2' }}>
+          <p className="text-sm text-gray-700 mb-1">Total Earned</p>
           <p className="text-3xl" style={{ color: 'var(--dark-brown)', fontWeight: 700 }}>₹{totalEarnings.toLocaleString('en-IN')}</p>
           <p className="text-xs mt-2 text-green-600 flex items-center gap-1" style={{ fontWeight: 500 }}>
             <TrendingUp className="w-3.5 h-3.5" /> {completed.length} completed order{completed.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Available Balance</p>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border" style={{ borderColor: '#EFE4D2' }}>
+          <p className="text-sm text-gray-700 mb-1">Available Balance</p>
           <p className="text-3xl" style={{ color: 'var(--sage-green)', fontWeight: 700 }}>₹{availableBalance.toLocaleString('en-IN')}</p>
-          <p className="text-xs mt-2 text-gray-400 flex items-center gap-1">
+          <p className="text-xs mt-2 text-gray-600 flex items-center gap-1">
             <Star className="w-3.5 h-3.5 text-amber-500" /> After 8% platform fee
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: '#EFE4D2' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid #f0ebe0' }}>
           <h3 style={{ color: 'var(--dark-brown)' }}>Transaction History</h3>
         </div>
@@ -926,12 +927,12 @@ function EarningsSection({ orders }: EarningsSectionProps) {
             </thead>
             <tbody>
               {completed.map(o => (
-                <tr key={o.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4 text-sm text-gray-600">
+                <tr key={o.id} className="border-t border-gray-100 hover:bg-amber-50/30 transition-colors">
+                  <td className="px-5 py-4 text-sm text-gray-700">
                     {new Date(o.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="px-5 py-4 text-sm" style={{ fontWeight: 500 }}>{o.id}</td>
-                  <td className="px-5 py-4 text-sm text-gray-600">{o.product}</td>
+                  <td className="px-5 py-4 text-sm text-gray-700">{o.product}</td>
                   <td className="px-5 py-4 text-sm" style={{ fontWeight: 600, color: 'var(--sage-green)' }}>+ ₹{o.amount.toLocaleString('en-IN')}</td>
                 </tr>
               ))}
@@ -1076,16 +1077,24 @@ export default function SellerDashboard() {
   if (!currentUser) return null;
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: '#F8F4EA' }}>
+    <div
+      className="flex min-h-screen"
+      style={{
+        background: 'radial-gradient(circle at top left, #F5EAD8 0%, #F8F4EA 40%, #F4EFE6 100%)',
+      }}
+    >
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-64 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ backgroundColor: '#8B4513' }}
+        className={`fixed lg:sticky top-0 lg:top-4 left-0 z-50 lg:z-auto h-screen lg:h-[calc(100vh-2rem)] w-64 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:ml-4 lg:rounded-3xl lg:shadow-2xl ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{
+          background: 'linear-gradient(180deg, #8B4513 0%, #6F3210 100%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}
       >
         <div className="flex items-center justify-between mb-10">
           <div>
@@ -1105,10 +1114,11 @@ export default function SellerDashboard() {
               <button
                 key={item.key}
                 onClick={() => { setSection(item.key); setSidebarOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200"
                 style={{
-                  backgroundColor: active ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  color: active ? 'white' : 'rgba(255,255,255,0.6)',
+                  backgroundColor: active ? 'rgba(255,255,255,0.18)' : 'transparent',
+                  color: active ? 'white' : 'rgba(255,255,255,0.82)',
+                  boxShadow: active ? 'inset 0 0 0 1px rgba(255,255,255,0.2)' : 'none',
                 }}
               >
                 <NIcon className="w-5 h-5" />
@@ -1124,7 +1134,7 @@ export default function SellerDashboard() {
         </nav>
 
         {/* Real user profile */}
-        <div className="mt-auto pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="mt-auto pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.14)' }}>
           <div className="flex items-center gap-3">
             {currentUser.photoURL ? (
               <img src={currentUser.photoURL} alt="" className="w-9 h-9 rounded-full object-cover" />
@@ -1135,27 +1145,39 @@ export default function SellerDashboard() {
             )}
             <div className="min-w-0">
               <p className="text-sm text-white truncate" style={{ fontWeight: 500 }}>{name}</p>
-              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.5)' }}>{currentUser.email}</p>
+              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.78)' }}>{currentUser.email}</p>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 lg:pr-4">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-30 bg-white shadow-sm px-4 sm:px-6 py-3 flex items-center gap-3">
+        <header
+          className="sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center gap-3 border-b"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.88)',
+            backdropFilter: 'blur(10px)',
+            borderBottomColor: 'rgba(139,69,19,0.08)',
+          }}
+        >
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-gray-100">
             <Menu className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
           </button>
 
           <div className="flex-1 max-w-md relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2"
               placeholder="Search products, orders..."
               value={search}
               onChange={e => setSearch(e.target.value)}
+              style={{
+                borderColor: '#E8DFCF',
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                boxShadow: '0 1px 0 rgba(0,0,0,0.02)',
+              }}
             />
           </div>
 
@@ -1165,6 +1187,7 @@ export default function SellerDashboard() {
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
+                style={{ border: '1px solid #EFE4D2', backgroundColor: 'rgba(255,255,255,0.9)' }}
               >
                 <Bell className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
                 {newOrdersCount > 0 && (
@@ -1181,13 +1204,13 @@ export default function SellerDashboard() {
                     artisanOrders.filter(o => o.status === 'new').slice(0, 5).map(o => (
                       <div key={o.id} className="px-4 py-3 hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid #f9f5eb' }}>
                         <p className="text-sm text-gray-700">New order from <strong>{o.customer}</strong> for {o.product}</p>
-                        <p className="text-xs text-gray-400 mt-1">₹{o.amount.toLocaleString('en-IN')}</p>
+                        <p className="text-xs text-gray-600 mt-1">₹{o.amount.toLocaleString('en-IN')}</p>
                       </div>
                     ))
                   ) : (
                     <div className="px-4 py-8 text-center">
                       <Bell className="w-8 h-8 mx-auto mb-2 text-gray-200" />
-                      <p className="text-sm text-gray-400">No new notifications</p>
+                      <p className="text-sm text-gray-600">No new notifications</p>
                     </div>
                   )}
                 </div>
@@ -1198,6 +1221,7 @@ export default function SellerDashboard() {
               onClick={() => navigate('/setup-profile')}
               title="Setup Profile"
               className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
+              style={{ border: '1px solid #EFE4D2', backgroundColor: 'rgba(255,255,255,0.9)' }}
             >
               <User className="w-5 h-5" style={{ color: 'var(--dark-brown)' }} />
             </button>
@@ -1205,7 +1229,7 @@ export default function SellerDashboard() {
             <button
               onClick={() => setShowAddProduct(true)}
               className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-white transition-colors hover:opacity-90"
-              style={{ backgroundColor: 'var(--sage-green)' }}
+              style={{ backgroundColor: 'var(--sage-green)', boxShadow: '0 8px 18px rgba(74,140,74,0.2)' }}
             >
               <Plus className="w-4 h-4" /> Add Product
             </button>
@@ -1213,8 +1237,8 @@ export default function SellerDashboard() {
         </header>
 
         {/* Smart Tip Bar */}
-        <div className="px-4 sm:px-6 py-3" style={{ backgroundColor: '#FFF9EB' }}>
-          <div className="flex items-center gap-3">
+        <div className="px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-3 rounded-2xl px-4 py-3 border" style={{ backgroundColor: '#FFF9EB', borderColor: '#F1E2C2' }}>
             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--peach-pink)' }}>
               <Lightbulb className="w-4 h-4" style={{ color: 'var(--rust-red)' }} />
             </div>
@@ -1226,7 +1250,7 @@ export default function SellerDashboard() {
               onClick={() => setSmartIdx(i => (i + 1) % tips.length)}
               className="ml-auto shrink-0 p-1 rounded hover:bg-white/60 transition-colors"
             >
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-gray-600" />
             </button>
           </div>
         </div>
