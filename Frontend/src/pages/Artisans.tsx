@@ -28,11 +28,11 @@ export default function Artisans() {
         const mapped = list.map((a: any) => ({
           id: String(a.id || a._id || ''),
           name: a.full_name || 'KalaKart Artisan',
-          image: a.profileImage || '',
-          specialization: a.specialty || 'Independent Artisan',
-          state: a.location || 'India',
-          yearsOfExperience: Number(a.yearsOfExperience || 1),
-          bio: a.bio || '',
+            image: a.profileImage || '',
+            specialization: a.specialty || 'Independent Artisan',
+            state: a.location || 'India',
+            yearsOfExperience: Number(a.yearsOfExperience || 1),
+            bio: a.bio || '',
         }));
 
         setArtisans(mapped.filter((a: ArtisanCard) => !!a.id));

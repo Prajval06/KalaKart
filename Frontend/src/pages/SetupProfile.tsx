@@ -149,7 +149,7 @@ export default function SetupProfile() {
               <textarea
                 className="w-full px-4 py-3 rounded-xl border-2 resize-none focus:outline-none transition-colors text-sm"
                 style={{
-                  borderColor: errors.description ? 'var(--rust-red)' : descValid ? 'var(--sage-green)' : '#e5e7eb',
+                borderColor: errors.description ? 'var(--rust-red)' : descValid ? 'var(--sage-green)' : '#e5e7eb',
                   minHeight: 130,
                 }}
                 placeholder="e.g. I am a third-generation Banarasi weaver from Varanasi, crafting silk sarees using traditional handloom techniques that have been in my family for over 80 years…"
@@ -205,3 +205,5 @@ export default function SetupProfile() {
     </div>
   );
 }
+
+
