@@ -16,8 +16,13 @@ const start = async () => {
       console.log(`✅ Catalog seeded on startup: ${result.productsCount} products`);
     }
   } catch (err) {
-    console.warn('⚠️  MongoDB connection failed:', err.message);
-    console.warn('⚠️  Server starting without database...');
+    console.error('⚠️  MongoDB connection failed:', err.message);
+    // In production we must not start the server without DB connectivity — let orchestrator restart
+    if (config.nodeEnv === 'production') {
+      console.error('⚠️  Exiting: database connection required in production.');
+      process.exit(1);
+    }
+    console.warn('⚠️  Server starting without database (non-production)...');
   }
 
   app.listen(config.port, () => {

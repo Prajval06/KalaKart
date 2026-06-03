@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const config = require('./config/config');
 const v1Routes = require('./Routes/v1');
@@ -17,6 +18,9 @@ app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'],
   credentials: true,
 }));
+
+// Parse cookies (used for HttpOnly refresh tokens)
+app.use(cookieParser());
 
 // Logging
 app.use(morgan(config.nodeEnv === 'development' ? 'dev' : 'combined'));
