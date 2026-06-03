@@ -13,9 +13,9 @@ const app = express();
 // Security headers
 app.use(helmet());
 
-// CORS — only allow your Next.js frontend
+// CORS — allow configured frontends
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'],
+  origin: config.corsOrigins,
   credentials: true,
 }));
 
@@ -35,8 +35,12 @@ app.use(express.json());
 // Routes
 app.use('/api/v1', v1Routes);
 
-// Health check
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+// Health check — report DB readiness
+app.get('/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const ready = mongoose.connection && mongoose.connection.readyState === 1; // 1 = connected
+  res.json({ status: ready ? 'ok' : 'degraded', database: { ready } });
+});
 
 // 404 handler — must come after all routes
 app.use((req, res, next) => {
