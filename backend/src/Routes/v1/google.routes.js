@@ -5,20 +5,32 @@
  * GET  /api/v1/auth/google/callback   → Google redirects back here with ?code=
  * GET  /api/v1/auth/me                → returns session info from JWT (protected)
  *
- * Flow:
+ * Flow (Phase 2 — secure, no token in URL):
  *  1. Browser visits /auth/google → server redirects to Google with client_id etc.
  *  2. User consents on Google → Google redirects to /auth/google/callback?code=XXX
- *  3. Server exchanges code for access_token via POST to Google token endpoint
- *  4. Server uses access_token to GET user profile from Google
- *  5. Server finds/creates MongoDB user, issues JWT, redirects to frontend
+ *  3. Server exchanges code for Google access_token via POST to Google token endpoint
+ *  4. Server uses Google access_token to GET user profile from Google
+ *  5. Server finds/creates MongoDB user
+ *  6. Server creates a refresh Session, sets kk_refresh HttpOnly cookie
+ *  7. Server redirects to /auth-success with ONLY role + name params (no JWT)
  */
 
 const router  = require('express').Router();
 const axios   = require('axios');
 const jwt     = require('jsonwebtoken');
 const User    = require('../../models/user.model');
+const Session = require('../../models/session.model');
 const config  = require('../../config/config');
 const { sendWelcomeEmail } = require('../../services/email.service');
+
+// Shared cookie options — mirrors auth.controller.js for consistency
+const REFRESH_COOKIE = 'kk_refresh';
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure:   config.nodeEnv === 'production',
+  sameSite: 'lax',
+  maxAge:   config.refreshExpireDays * 24 * 60 * 60 * 1000,
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /google  →  Redirect to Google consent screen
@@ -52,7 +64,10 @@ router.get('/google', (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /google/callback  →  Exchange code → token → user info → JWT → redirect
+// GET /google/callback  →  Exchange code → user info → Session cookie → redirect
+// Phase 2: JWT is NEVER placed in the redirect URL. Only the HttpOnly cookie
+//          carries the refresh token. The redirect URL carries only non-sensitive
+//          UX params: `role` (for routing) and `name` (for greeting).
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/google/callback', async (req, res) => {
   const { code, state, error: oauthError } = req.query;
@@ -63,7 +78,7 @@ router.get('/google/callback', async (req, res) => {
   }
 
   try {
-    // ── Step 1: Exchange code for tokens ──────────────────────────────────────
+    // ── Step 1: Exchange authorization code for Google access token ───────────
     const tokenRes = await axios.post(
       'https://oauth2.googleapis.com/token',
       new URLSearchParams({
@@ -75,12 +90,12 @@ router.get('/google/callback', async (req, res) => {
       }).toString(),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-    const { access_token } = tokenRes.data;
+    const { access_token: googleAccessToken } = tokenRes.data;
 
     // ── Step 2: Fetch Google user profile ─────────────────────────────────────
     const profileRes = await axios.get(
       'https://www.googleapis.com/oauth2/v2/userinfo',
-      { headers: { Authorization: `Bearer ${access_token}` } }
+      { headers: { Authorization: `Bearer ${googleAccessToken}` } }
     );
     const { id: googleId, email, name, picture: profileImage } = profileRes.data;
 
@@ -88,7 +103,7 @@ router.get('/google/callback', async (req, res) => {
     let user = await User.findOne({ googleId });
 
     if (user) {
-      // Returning Google user — refresh image and upgrade to admin if they are signing in as seller
+      // Returning Google user — refresh image; upgrade role if signing in as seller
       user.profileImage = profileImage;
       if (state === 'seller' && user.role !== 'admin') {
         user.role = 'admin';
@@ -110,11 +125,11 @@ router.get('/google/callback', async (req, res) => {
         // Create new account
         user = await User.create({
           googleId,
-          email: email.toLowerCase(),
-          full_name:   name,
+          email:        email.toLowerCase(),
+          full_name:    name,
           profileImage,
-          authMethod:  'google',
-          role:        state === 'seller' ? 'admin' : 'customer',
+          authMethod:   'google',
+          role:         state === 'seller' ? 'admin' : 'customer',
         });
 
         try {
@@ -125,42 +140,40 @@ router.get('/google/callback', async (req, res) => {
       }
     }
 
-    // ── Step 4: Issue JWT (same format as email login) ────────────────────────
-    const access_token_jwt = jwt.sign(
-      { sub: user._id, role: user.role },
+    // ── Step 4: Create server-side refresh session ────────────────────────────
+    // Mirrors the session creation in auth.service.js login/register
+    const refresh_token = jwt.sign(
+      { sub: user._id, type: 'refresh' },
       config.jwtSecret,
-      { expiresIn: `${config.jwtExpireMinutes}m` }
+      { expiresIn: `${config.refreshExpireDays}d` }
     );
 
-    // Include a longer-lived token for frontend persistence (7 days)
-    const session_token = jwt.sign(
-      { sub: user._id, role: user.role, type: 'session' },
-      config.jwtSecret,
-      { expiresIn: '7d' }
-    );
+    const sessionExpiresAt = new Date();
+    sessionExpiresAt.setDate(sessionExpiresAt.getDate() + config.refreshExpireDays);
 
-    // ── Step 5: Send user data + token to frontend via redirect ───────────────
-    // Determine the initial landing page (userType) based on user's INTENT (state)
-    // but fall back to their DB role if state is missing.
-    const redirectUserType = state || (user.role === 'admin' ? 'seller' : 'buyer');
-
-    const userData = JSON.stringify({
-      id:           user._id,
-      name:         user.full_name,
-      email:        user.email,
-      photoURL:     user.profileImage,
-      userType:     redirectUserType,
+    await Session.create({
+      user_id:    user._id,
+      refresh_token,
+      expires_at: sessionExpiresAt,
     });
 
-    const redirectUrl = `${config.frontendUrl}/auth-success` +
-      `?token=${session_token}` +
-      `&user=${encodeURIComponent(userData)}`;
+    // ── Step 5: Set kk_refresh HttpOnly cookie ────────────────────────────────
+    // The refresh token lives in the cookie only — never in the URL or body.
+    res.cookie(REFRESH_COOKIE, refresh_token, refreshCookieOptions);
+
+    // ── Step 6: Redirect to /auth-success WITHOUT any token in the URL ────────
+    // Only non-sensitive UX context is passed: `role` for routing, `name` for greeting.
+    const redirectRole = state || (user.role === 'admin' ? 'seller' : 'buyer');
+    const redirectUrl  = new URL(`${config.frontendUrl}/auth-success`);
+    redirectUrl.searchParams.set('role', redirectRole);
+    redirectUrl.searchParams.set('name', encodeURIComponent(user.full_name || name));
 
     if (config.nodeEnv === 'development') {
-      console.log(`[Google Auth] Success for ${email}. Intent: ${state || 'none'}, Final Role: ${user.role}`);
+      console.log(`[Google Auth] ✓ Session created for ${email}. Role: ${user.role}, Intent: ${state || 'none'}`);
+      console.log(`[Google Auth] ✓ kk_refresh cookie set. Redirecting without token in URL.`);
     }
 
-    return res.redirect(redirectUrl);
+    return res.redirect(redirectUrl.toString());
 
   } catch (err) {
     console.error('Google OAuth callback error:', err.response?.data || err.message);
