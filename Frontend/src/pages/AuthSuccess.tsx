@@ -1,32 +1,39 @@
 /**
- * AuthSuccess Page
+ * AuthSuccess Page  (Sprint 1B Phase 2)
  * ─────────────────────────────────────────────────────────────────────────────
- * Google OAuth redirects the user to /auth-success?token=JWT&user=JSON after
- * a successful login. This page:
- *  1. Reads the token and user data from URL search params
- *  2. Saves them into localStorage (keys: kk_token, kk_user)
- *  3. Updates the AppContext so the navbar/rest of the app reflects login
- *  4. Redirects the user to the homepage (or wherever they came from)
+ * Google OAuth now redirects to /auth-success?role=buyer|seller&name=...
+ * WITHOUT a token in the URL. The kk_refresh HttpOnly cookie was already set
+ * by the backend callback.
  *
- * On error, it reads ?error= from the URL and redirects to /auth with the error.
+ * This page:
+ *  1. Reads `?role` (for routing) and `?name` (for greeting) — non-sensitive only
+ *  2. Calls POST /auth/refresh via the kk_refresh cookie to obtain an access token
+ *  3. Calls GET /users/me with the access token to retrieve full user data
+ *  4. Updates AppContext (loginWithGoogleToken) so the app reflects login
+ *  5. Redirects the user to the correct dashboard
+ *
+ * On error from Google/backend it reads ?error= and redirects to /auth.
+ *
+ * Phase 2 invariant: no JWT ever appears in the URL / browser history.
  */
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAppContext } from '../context/AppContext';
+import { authAPI, api, setAccessToken, getErrorMessage } from '../utils/api';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function AuthSuccess() {
-  const [searchParams]            = useSearchParams();
-  const navigate                  = useNavigate();
-  const { loginWithGoogleToken }  = useAppContext();
-  const [status, setStatus]       = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage]     = useState('Processing your login…');
+  const [searchParams]           = useSearchParams();
+  const navigate                 = useNavigate();
+  const { loginWithGoogleToken } = useAppContext();
+  const [status, setStatus]      = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage]    = useState('Processing your login…');
 
   useEffect(() => {
-    const token     = searchParams.get('token');
-    const userParam = searchParams.get('user');
-    const error     = searchParams.get('error');
+    const role  = searchParams.get('role') as 'buyer' | 'seller' | null;
+    const name  = searchParams.get('name') ? decodeURIComponent(searchParams.get('name')!) : '';
+    const error = searchParams.get('error');
 
     // ── Error from Google / backend ───────────────────────────────────────────
     if (error) {
@@ -39,34 +46,50 @@ export default function AuthSuccess() {
       return;
     }
 
-    // ── No token — shouldn't happen, but guard anyway ─────────────────────────
-    if (!token || !userParam) {
-      navigate('/auth', { replace: true });
-      return;
-    }
+    // ── Bootstrap auth from kk_refresh cookie ─────────────────────────────────
+    // Call /auth/refresh — the browser automatically sends the HttpOnly cookie.
+    // This is safe: no token is read from the URL.
+    (async () => {
+      try {
+        // Step 1: Exchange cookie → access token
+        const refreshRes = await authAPI.refresh();
+        const accessToken: string = refreshRes.data?.data?.access_token;
 
-    // ── Parse user ────────────────────────────────────────────────────────────
-    try {
-      const user = JSON.parse(decodeURIComponent(userParam));
+        if (!accessToken) {
+          throw new Error('No access token returned from refresh');
+        }
 
-      // Persist token and user into localStorage + update AppContext
-      loginWithGoogleToken(token, {
-        email:    user.email,
-        name:     user.name,
-        photoURL: user.photoURL,
-        userType: user.userType ?? 'buyer',
-      });
+        // Step 2: Fetch full user profile.
+        // We set the memory token first so the Axios interceptor injects it automatically.
+        setAccessToken(accessToken);
+        const meRes = await api.get('/users/me');
+        const userData = meRes.data?.data?.user || meRes.data?.data;
 
-      setStatus('success');
-      setMessage(`Welcome back, ${user.name}! Redirecting…`);
+        const resolvedUserType = role || (userData?.role === 'artisan' ? 'seller' : 'buyer');
+        const displayName      = name || userData?.full_name || 'there';
 
-      // Give the user a moment to see the success state
-      setTimeout(() => {
-        navigate(user.userType === 'seller' ? '/seller-dashboard' : '/', { replace: true });
-      }, 1200);
-    } catch {
-      navigate('/auth?error=google_auth_failed', { replace: true });
-    }
+        // Step 3: Persist into AppContext (reuse existing loginWithGoogleToken)
+        loginWithGoogleToken(accessToken, {
+          email:    userData?.email    || '',
+          name:     userData?.full_name || displayName,
+          photoURL: userData?.profileImage || undefined,
+          userType: resolvedUserType,
+        });
+
+        setStatus('success');
+        setMessage(`Welcome back, ${displayName}! Redirecting…`);
+
+        setTimeout(() => {
+          navigate(resolvedUserType === 'seller' ? '/seller-dashboard' : '/', { replace: true });
+        }, 1200);
+
+      } catch (err) {
+        console.error('[AuthSuccess] refresh/me failed:', getErrorMessage(err));
+        setStatus('error');
+        setMessage('Session could not be established. Please sign in again.');
+        setTimeout(() => navigate('/auth?error=google_auth_failed', { replace: true }), 2500);
+      }
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

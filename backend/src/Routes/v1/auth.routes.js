@@ -27,7 +27,7 @@ const registerLimiter = isTest ? passThrough : rateLimit({
 
 router.post('/register', registerLimiter, validate(schemas.register), register);
 router.post('/login',    loginLimiter,    validate(schemas.login),    login);
-router.post('/refresh',                  validate(schemas.refresh),   refreshToken);
+router.post('/refresh',                                               refreshToken);
 router.post('/forgot-password',          validate(schemas.forgotPassword), forgotPassword);
 router.post('/reset-password',           validate(schemas.resetPassword),  resetPassword);
 

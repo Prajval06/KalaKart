@@ -36,6 +36,12 @@ const login = asyncHandler(async (req, res) => {
 const refreshToken = asyncHandler(async (req, res) => {
   // Prefer refresh token from HttpOnly cookie, fallback to body (for compatibility/test)
   const token = req.cookies?.[REFRESH_COOKIE] || req.body?.refresh_token;
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'INVALID_REFRESH_TOKEN', message: 'No refresh token provided' },
+    });
+  }
   const result = await authService.refresh({ refresh_token: token });
   return success(res, result);
 });

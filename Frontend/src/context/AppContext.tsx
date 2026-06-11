@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ToastProps } from '../components/Toast';
+import { Loader2 } from 'lucide-react';
 import { DEFAULT_FALLBACK_IMAGE } from '../components/ImageWithFallback';
 import { products as staticProducts } from '../data/products';
 import type { Product } from '../data/products';
@@ -10,15 +11,15 @@ import type {
 } from './types';
 
 const LS_USER      = 'kk_user';
-const LS_TOKEN     = 'kk_token';
 const LS_SAVED_ADDR = 'kk_address';
 const LS_ORDERS     = 'kk_orders';
 const LS_PRODUCTS   = 'kk_artisan_products';
 const LS_PROFILES   = 'kk_artisan_profiles';
 
-import {
-  authAPI, productsAPI, cartAPI, wishlistAPI, usersAPI, getErrorMessage, API_BASE_URL
+  authAPI, productsAPI, cartAPI, wishlistAPI, usersAPI, getErrorMessage, API_BASE_URL, setAccessToken
 } from '../utils/api';
+
+
 
 const AppContext = createContext<AppContextType | null>(null);
 
@@ -47,8 +48,9 @@ const isMongoObjectId = (value: string) => /^[a-f\d]{24}$/i.test(String(value ||
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(loadUser);
-  const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem(LS_TOKEN));
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const isLoggedIn = !!currentUser && !!authToken;
+  const [isAppLoading, setIsAppLoading] = useState(true);
 
   const [toasts, setToasts] = useState<Omit<ToastProps, 'onClose'>[]>([]);
 
@@ -186,8 +188,54 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // Sync state on initial load / login
   useEffect(() => {
-    fetchProducts();
-    fetchArtisans();
+    const restoreSession = async () => {
+      try {
+        const res = await authAPI.refresh();
+        const token = res.data?.data?.access_token;
+        if (token) {
+          setAccessToken(token);
+          setAuthToken(token);
+          
+          // Get fresh user data to ensure sync
+          const meRes = await authAPI.getMe();
+          const userData = meRes.data?.data?.user || meRes.data?.data;
+          const user: AuthUser = {
+            email: userData?.email || '',
+            name: userData?.full_name || '',
+            userType: userData?.role === 'artisan' ? 'seller' : 'buyer',
+          };
+          setCurrentUser(user);
+          saveJSON(LS_USER, user);
+        }
+      } catch (err) {
+        // If refresh fails, silently clear state and remain logged out
+        setCurrentUser(null);
+        setAuthToken(null);
+        setAccessToken(null);
+        localStorage.removeItem(LS_USER);
+      } finally {
+        setIsAppLoading(false);
+        fetchProducts();
+        fetchArtisans();
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  // Handle transparent logout from interceptor
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setCurrentUser(null);
+      setAuthToken(null);
+      setAccessToken(null);
+      localStorage.removeItem(LS_USER);
+      setCartItems([]);
+      setWishlistItems([]);
+      setOrders([]);
+    };
+    window.addEventListener('kk_unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('kk_unauthorized', handleUnauthorized);
   }, []);
 
   useEffect(() => {
@@ -376,8 +424,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
       setCurrentUser(user);
       setAuthToken(data.data.access_token);
+      setAccessToken(data.data.access_token);
       saveJSON(LS_USER, user);
-      localStorage.setItem(LS_TOKEN, data.data.access_token);
 
       return {};
     } catch (err) {
@@ -403,8 +451,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
       setCurrentUser(user);
       setAuthToken(data.data.access_token);
+      setAccessToken(data.data.access_token);
       saveJSON(LS_USER, user);
-      localStorage.setItem(LS_TOKEN, data.data.access_token);
 
       return {};
     } catch (err) {
@@ -415,8 +463,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setCurrentUser(null);
     setAuthToken(null);
+    setAccessToken(null);
     localStorage.removeItem(LS_USER);
-    localStorage.removeItem(LS_TOKEN);
     setCartItems([]);
     setWishlistItems([]);
     setOrders([]);
@@ -459,8 +507,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     
     setCurrentUser(finalUser);
     setAuthToken(token);
+    setAccessToken(token);
     saveJSON(LS_USER, finalUser);
-    localStorage.setItem(LS_TOKEN, token);
     localStorage.removeItem('kk_pending_user_type');
   };
 
@@ -559,6 +607,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getDbProducts = (): Product[] => dbProducts;
+
+  if (isAppLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F0E8' }}>
+        <Loader2 className="w-14 h-14 animate-spin" style={{ color: '#8B2500' }} />
+      </div>
+    );
+  }
 
   return (
     <AppContext.Provider value={{
