@@ -91,6 +91,7 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (data: any) => api.post('/auth/register', data),
   login: (data: any) => api.post('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
   // Sends no body — relies on kk_refresh HttpOnly cookie being present (withCredentials: true)
   refresh: () => api.post('/auth/refresh', {}),
   forgotPassword: (data: { email: string }) => api.post('/auth/forgot-password', data),

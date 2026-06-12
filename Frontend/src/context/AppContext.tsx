@@ -460,15 +460,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    setAuthToken(null);
-    setAccessToken(null);
-    localStorage.removeItem(LS_USER);
-    setCartItems([]);
-    setWishlistItems([]);
-    setOrders([]);
-    // window.location.href = '/';
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (err) {
+      console.warn('Backend logout failed or already logged out:', err);
+    } finally {
+      setCurrentUser(null);
+      setAuthToken(null);
+      setAccessToken(null);
+      localStorage.removeItem(LS_USER);
+      setCartItems([]);
+      setWishlistItems([]);
+      setOrders([]);
+    }
   };
 
   const forgotPassword = async (email: string) => {

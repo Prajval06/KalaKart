@@ -1,5 +1,6 @@
 import joblib
 import os
+import asyncio
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
@@ -8,6 +9,53 @@ from app.database import get_db
 from bson import ObjectId
 
 MODEL_FILE = os.path.join(settings.model_path, "recommender.joblib")
+
+
+def _load_model_sync(path: str) -> dict:
+    """Blocking joblib load — run via asyncio.to_thread."""
+    return joblib.load(path)
+
+
+def _compute_similarity_sync(orders: list) -> dict | None:
+    """
+    Pure CPU-bound computation: builds the pandas user-product matrix,
+    runs cosine_similarity, then persists the result via joblib.dump.
+    Must be called via asyncio.to_thread — never directly from an async context.
+    Returns a dict with matrix/product_ids/product_index, or None if not enough data.
+    """
+    rows = []
+    for order in orders:
+        user_id = str(order["user_id"])
+        for item in order.get("items", []):
+            rows.append({
+                "user_id":    user_id,
+                "product_id": str(item["product_id"])
+            })
+
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return None
+
+    # Pivot: rows=products, cols=users, values=purchase count
+    matrix = df.groupby(["product_id", "user_id"]).size().unstack(fill_value=0)
+
+    product_ids   = matrix.index.tolist()
+    product_index = {pid: i for i, pid in enumerate(product_ids)}
+
+    # Cosine similarity between products (CPU-bound)
+    similarity_matrix = cosine_similarity(matrix.values)
+
+    result = {
+        "matrix":        similarity_matrix,
+        "product_ids":   product_ids,
+        "product_index": product_index,
+    }
+
+    os.makedirs(settings.model_path, exist_ok=True)
+    joblib.dump(result, MODEL_FILE)
+    print(f"✅ Recommender trained on {len(product_ids)} products, {len(orders)} orders")
+    return result
+
 
 class RecommendationService:
 
@@ -18,7 +66,8 @@ class RecommendationService:
     @classmethod
     async def load_or_train(cls):
         if os.path.exists(MODEL_FILE):
-            data = joblib.load(MODEL_FILE)
+            # joblib.load is blocking file I/O — offload to thread
+            data = await asyncio.to_thread(_load_model_sync, MODEL_FILE)
             cls._similarity_matrix = data["matrix"]
             cls._product_ids        = data["product_ids"]
             cls._product_index      = data["product_index"]
@@ -37,7 +86,7 @@ class RecommendationService:
             print("⚠️  No DB connection — recommender skipped")
             return
 
-        # Pull all orders with their items
+        # Pull all orders with their items (async Motor I/O — fine on event loop)
         orders = await db.orders.find(
             {"status": {"$in": ["paid", "shipped", "delivered"]}},
             {"user_id": 1, "items.product_id": 1}
@@ -47,40 +96,14 @@ class RecommendationService:
             print("⚠️  Not enough orders to train recommender — need at least 5")
             return
 
-        # Build user-product matrix
-        rows = []
-        for order in orders:
-            user_id = str(order["user_id"])
-            for item in order.get("items", []):
-                rows.append({
-                    "user_id":    user_id,
-                    "product_id": str(item["product_id"])
-                })
-
-        df = pd.DataFrame(rows)
-        if df.empty:
+        # Offload CPU-bound pandas/numpy/joblib work to a thread
+        result = await asyncio.to_thread(_compute_similarity_sync, orders)
+        if result is None:
             return
 
-        # Pivot: rows=products, cols=users, values=purchase count
-        matrix = df.groupby(["product_id", "user_id"]).size().unstack(fill_value=0)
-
-        product_ids    = matrix.index.tolist()
-        product_index  = {pid: i for i, pid in enumerate(product_ids)}
-
-        # Cosine similarity between products
-        similarity_matrix = cosine_similarity(matrix.values)
-
-        cls._similarity_matrix = similarity_matrix
-        cls._product_ids        = product_ids
-        cls._product_index      = product_index
-
-        os.makedirs(settings.model_path, exist_ok=True)
-        joblib.dump({
-            "matrix":        similarity_matrix,
-            "product_ids":   product_ids,
-            "product_index": product_index,
-        }, MODEL_FILE)
-        print(f"✅ Recommender trained on {len(product_ids)} products, {len(orders)} orders")
+        cls._similarity_matrix = result["matrix"]
+        cls._product_ids        = result["product_ids"]
+        cls._product_index      = result["product_index"]
 
     @classmethod
     async def get_similar_products(cls, product_id: str, top_n: int = 5) -> list[str]:
@@ -132,4 +155,4 @@ class RecommendationService:
         ]
 
         results = await db.orders.aggregate(pipeline).to_list(length=top_n)
-        return [str(r["_id"]) for r in results]
+        return [str(r["_id"]) for r in results]

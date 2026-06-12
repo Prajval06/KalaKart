@@ -56,4 +56,13 @@ const resetPassword = asyncHandler(async (req, res) => {
   return success(res, result);
 });
 
-module.exports = { register, login, refreshToken, forgotPassword, resetPassword };
+const logout = asyncHandler(async (req, res) => {
+  const token = req.cookies?.[REFRESH_COOKIE] || req.body?.refresh_token;
+  if (token) {
+    await authService.logout({ refresh_token: token });
+  }
+  res.clearCookie(REFRESH_COOKIE, refreshCookieOptions);
+  return success(res, { message: 'Logged out successfully' });
+});
+
+module.exports = { register, login, refreshToken, forgotPassword, resetPassword, logout };
