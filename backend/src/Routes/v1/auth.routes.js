@@ -1,5 +1,5 @@
 const router    = require('express').Router();
-const { register, login, refreshToken, forgotPassword, resetPassword } = require('../../controller/auth.controller');
+const { register, login, refreshToken, forgotPassword, resetPassword, logout } = require('../../controller/auth.controller');
 const validate  = require('../../middlewares/validate.middleware');
 const schemas   = require('../../validators/auth.validators');
 const rateLimit = require('express-rate-limit');
@@ -27,6 +27,7 @@ const registerLimiter = isTest ? passThrough : rateLimit({
 
 router.post('/register', registerLimiter, validate(schemas.register), register);
 router.post('/login',    loginLimiter,    validate(schemas.login),    login);
+router.post('/logout',                                                logout);
 router.post('/refresh',                                               refreshToken);
 router.post('/forgot-password',          validate(schemas.forgotPassword), forgotPassword);
 router.post('/reset-password',           validate(schemas.resetPassword),  resetPassword);

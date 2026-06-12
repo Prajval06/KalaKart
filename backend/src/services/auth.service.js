@@ -160,4 +160,10 @@ const resetPassword = async ({ token, new_password }) => {
   };
 };
 
-module.exports = { register, login, refresh, forgotPassword, resetPassword };
+const logout = async ({ refresh_token }) => {
+  const Session = require('../models/session.model'); // Ensure we have the model
+  await Session.deleteOne({ refresh_token });
+  return { success: true, message: 'Logged out successfully' };
+};
+
+module.exports = { register, login, refresh, forgotPassword, resetPassword, logout };

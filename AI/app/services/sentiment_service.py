@@ -43,10 +43,10 @@ SEED_DATA = [
 ]
 
 
-def _train_sync():
+def _train_sync() -> Pipeline:
     """
     Pure synchronous sklearn training.
-    Called inside a thread so it never blocks the event loop.
+    Must be called via asyncio.to_thread — never directly from an async context.
     """
     texts, labels = zip(*SEED_DATA)
 
@@ -70,6 +70,21 @@ def _train_sync():
     return pipeline
 
 
+def _predict_sync(pipeline: Pipeline, text: str) -> dict:
+    """
+    Pure synchronous sklearn inference.
+    Must be called via asyncio.to_thread — never directly from an async context.
+    """
+    label      = pipeline.predict([text])[0]
+    proba      = pipeline.predict_proba([text])[0]
+    classes    = pipeline.classes_.tolist()
+    confidence = float(proba[classes.index(label)])
+    return {
+        "label":      label,
+        "confidence": round(confidence, 4)
+    }
+
+
 class SentimentService:
 
     _pipeline: Pipeline | None = None
@@ -79,30 +94,24 @@ class SentimentService:
         try:
             os.makedirs(os.path.dirname(MODEL_FILE), exist_ok=True)
             if os.path.exists(MODEL_FILE):
-                cls._pipeline = joblib.load(MODEL_FILE)
-                print(f"Sentiment model loaded from disk")
+                # joblib.load is blocking file I/O — offload to thread
+                cls._pipeline = await asyncio.to_thread(joblib.load, MODEL_FILE)
+                print("Sentiment model loaded from disk")
             else:
-                print(f"Training sentiment model from scratch...")
-                await cls.train()
+                print("Training sentiment model from scratch...")
+                cls._pipeline = await asyncio.to_thread(_train_sync)
         except Exception as e:
             import traceback
             print(f"SENTIMENT ERROR: {type(e).__name__}: {e}")
             traceback.print_exc()
             raise
+
     @classmethod
-    def predict(cls, text: str) -> dict:
-        # If model not loaded yet — train synchronously right now
-        # This handles the case where startup training was skipped
+    async def predict(cls, text: str) -> dict:
+        # If model not loaded yet — train in a thread (never blocks event loop)
         if cls._pipeline is None:
-            print("Model not loaded — training synchronously on first request...")
-            cls._pipeline = _train_sync()
+            print("Model not loaded — training in background thread on first request...")
+            cls._pipeline = await asyncio.to_thread(_train_sync)
 
-        label      = cls._pipeline.predict([text])[0]
-        proba      = cls._pipeline.predict_proba([text])[0]
-        classes    = cls._pipeline.classes_.tolist()
-        confidence = float(proba[classes.index(label)])
-
-        return {
-            "label":      label,
-            "confidence": round(confidence, 4)
-        }
+        # sklearn inference is CPU-bound — offload to thread
+        return await asyncio.to_thread(_predict_sync, cls._pipeline, text)
