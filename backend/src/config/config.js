@@ -47,10 +47,16 @@ if (hasPartialSmtpConfig) {
 let corsOrigins = [];
 if (env.CORS_ORIGINS) {
   corsOrigins = env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean);
-} else if (env.FRONTEND_URL) {
-  corsOrigins = [env.FRONTEND_URL];
 } else {
-  corsOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'];
+  corsOrigins = [
+    env.FRONTEND_URL, 
+    env.CLIENT_URL, 
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173'
+  ].filter(Boolean);
 }
 
 module.exports = {
