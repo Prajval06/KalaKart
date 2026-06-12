@@ -16,6 +16,7 @@ const LS_ORDERS     = 'kk_orders';
 const LS_PRODUCTS   = 'kk_artisan_products';
 const LS_PROFILES   = 'kk_artisan_profiles';
 
+import {
   authAPI, productsAPI, cartAPI, wishlistAPI, usersAPI, getErrorMessage, API_BASE_URL, setAccessToken
 } from '../utils/api';
 

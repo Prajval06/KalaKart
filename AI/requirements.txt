@@ -30,6 +30,7 @@ tiktoken
 faiss-cpu
 chromadb
 pymongo
+motor
 
 # Backend / App
 fastapi

@@ -24,8 +24,8 @@ async def lifespan(app: FastAPI):
     try:
         await connect_db()
     except Exception as e:
-        print(f"❌ FATAL: MongoDB connection failed at startup: {e}")
-        print("❌ Service cannot start without a database connection. Exiting.")
+        print(f"FATAL: MongoDB connection failed at startup: {e}")
+        print("Service cannot start without a database connection. Exiting.")
         sys.exit(1)
 
     os.makedirs(settings.model_path, exist_ok=True)
@@ -35,13 +35,13 @@ async def lifespan(app: FastAPI):
     # fail. A failure here indicates a broken environment (disk, memory, import).
     try:
         await asyncio.wait_for(SentimentService.load_or_train(), timeout=60)
-        print("✅ Sentiment model ready")
+        print("Sentiment model ready")
     except asyncio.TimeoutError:
-        print("❌ FATAL: Sentiment model timed out after 60s.")
-        print("❌ Check disk space and model path. Exiting.")
+        print("FATAL: Sentiment model timed out after 60s.")
+        print("Check disk space and model path. Exiting.")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ FATAL: Sentiment model failed to load/train: {e}")
+        print(f"FATAL: Sentiment model failed to load/train: {e}")
         sys.exit(1)
 
     # ── Step 3: Recommender model — soft dependency ────────────────────────────
@@ -50,18 +50,18 @@ async def lifespan(app: FastAPI):
     try:
         await asyncio.wait_for(RecommendationService.load_or_train(), timeout=30)
         if RecommendationService._similarity_matrix is not None:
-            print("✅ Recommender model ready")
+            print("Recommender model ready")
         else:
-            print("⚠️  Recommender model not trained — insufficient order data (need ≥5 orders)")
-            print("⚠️  Recommendations will fall back to popular products until retrained")
+            print("WARNING: Recommender model not trained — insufficient order data (need ≥5 orders)")
+            print("WARNING: Recommendations will fall back to popular products until retrained")
     except asyncio.TimeoutError:
-        print("⚠️  Recommender model timed out after 30s — continuing without it")
+        print("WARNING: Recommender model timed out after 30s — continuing without it")
     except Exception as e:
-        print(f"⚠️  Recommender model failed: {e} — continuing without it")
+        print(f"WARNING: Recommender model failed: {e} — continuing without it")
 
     # ── Startup complete ───────────────────────────────────────────────────────
     _service_ready = True
-    print("🚀 ML Service startup complete — service is ready")
+    print("ML Service startup complete — service is ready")
 
     yield
 

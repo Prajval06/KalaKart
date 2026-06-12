@@ -19,25 +19,18 @@ const createOrder = async (userId, { shipping_address, payment_intent_id, notes 
   session.startTransaction();
   try {
     const cart = await Cart.findOne({ user_id: userId }).session(session);
-  const STATUS_TRANSITIONS = {
-    pending:   ['paid', 'cancelled'],
-    paid:      ['shipped', 'cancelled'],
-    shipped:   ['delivered'],
-    delivered: [],
-    cancelled: [],
-  };
     if (!cart || cart.items.length === 0) throw AppError.create('CART_EMPTY');
 
     // Final inventory check before creating order
-    const session = await Cart.db.startSession();
+    for (const item of cart.items) {
       const product = await Product.findById(item.product_id).session(session);
       if (!product || !product.isAvailable) {
-        throw new (require('../utils/AppError'))(
+        throw new AppError(
           400, 'PRODUCT_NOT_FOUND', `Product "${item.name}" is no longer available`
         );
       }
       if (product.stock < item.quantity) {
-        throw new (require('../utils/AppError'))(
+        throw new AppError(
           400, 'INSUFFICIENT_INVENTORY', `Insufficient stock for "${item.name}"`
         );
       }
@@ -87,7 +80,7 @@ const fulfillOrder = async (paymentIntentId) => {
 
     // No order found OR already fulfilled — no-op (idempotent)
     if (!order || order.status !== 'pending') {
-    const session = await Order.db.startSession();
+      await session.abortTransaction();
       session.endSession();
       return;
     }

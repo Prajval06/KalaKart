@@ -18,5 +18,5 @@ class Settings(BaseSettings):
     }
 
 settings = Settings()
-print(f"📋 Config loaded — MongoDB: {settings.mongodb_url[:30]}...")
-print(f"📋 Model path: {settings.model_path}")
+print(f"Config loaded - MongoDB: {settings.mongodb_url[:30]}...")
+print(f"Model path: {settings.model_path}")
